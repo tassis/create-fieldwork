@@ -1,0 +1,209 @@
+version: 1
+plan: .ramblings/plans/2026-11-06-redstone-link-isolator.md
+status: in_progress
+active_task: task-6
+updated_at: "2026-11-07"
+next_action: "Private-controller receiver optimization delivered as a local0.1.0 worktree JAR; see controller-movement-refresh/player guide for current hash. Existing v0.1.0 tag was not modified/published. Leave deferred client/multiplayer/explosion checks to later player reports; owner decides any future commit/version/tag."
+controller_optimization_delivery:
+  status: ready_for_player_testing
+  artifact: build/libs/create_fieldwork-neoforge-1.21.1-0.1.0.jar
+  sha256: a7769b40ca8a7f1bee15a6c21929f724e1748eb009e614ab34d312c6408e0000
+  evidence: docs/testing/controller-movement-refresh.md
+  provenance: "Later local worktree build after version/tag preparation, not a replacement of the existing v0.1.0 tag or hosted Release."
+  server: "Observed installer ready06:09:49Z; console stop saved all dimensions06:10:47Z; inspect exited/exit0/OOMfalse. Not a live-status guarantee."
+candidate_delivery:
+  status: ready_for_player_testing
+  artifact: build/libs/create_fieldwork-neoforge-1.21.1-0.1.0-dev.jar
+  sha256: c6536ce872e8acf97b1253f6304c09c7a1fa7b305ef1afb9912077477381ab4a
+  hash_note: "Historical 2026-11-07 six-face texture candidate, not the versioned 0.1.0 artifact. All 58 Java-class bytes matched the 765e scoped revision. Fully close game/server before replacing JAR; client rendering was not accepted."
+  guide: docs/testing/player-test-guide.md
+  evidence: docs/testing/redstone-link-isolator-acceptance.md
+  server: "That candidate's installer reached ready and console-save/stop completed: exited/exit0/OOMfalse. This is historical evidence, not current service status."
+design_review:
+  status: scope_confirmed_implementation_authorized
+  document: docs/design/redstone-link-isolator-v1.md
+  brief: .ramblings/briefs/2026-11-06-redstone-link-isolator-v1-design.md
+  implementation_started: true
+  decisions: [D01, D02, D03]
+  decision_status:
+    D01: confirmed_optional_deferred
+    D02: public_world_observer_confirmed_private_train_deferred
+    D03: initial_recipe_defined_under_owner_delegation
+tasks:
+  - id: task-controller-receivers
+    title: Receiver-limited position updates for stable private controllers
+    status: completed
+    depends_on: [task-refresh-scope]
+    evidence:
+      - "Per-frequency private receiver sets with ALL/NONE/union/unknown semantics; unchanged source/session/alive/key plus four matching Private scopes required. Restricted provenance/session/liveness changes use full old/new frequencies even with unchanged position."
+      - "controller-receivers-verified-*.log: clean build/JUnit85, network148, refresh69, movement81, lifecycle23, packed24, independent-JVM seed24/reload25; each complete save/state close. Per-position counters prove same-frequency B/WORLD Create/Simulated untouched while A crosses range both ways; fixture observed private3/full9 updater calls (not timing)."
+      - "Same-position source-kind/session/liveness fallback, private A+B union, nested ALL broadening, unknown/copy algebra covered. Oracle integration review found no blocker."
+      - "Installer06:09:49Z ready, console status empty and save/stop06:10:47Z, exit0/OOMfalse. Build/install SHA256 a7769b40ca8a7f1bee15a6c21929f724e1748eb009e614ab34d312c6408e0000; archive excludes drivers/counters/faults and retains PNGs. No commit/tag/push/Release action; concurrent0.1.0 version/docs retained."
+  - id: task-ci-tag
+    title: GitHub Actions artifact and tag Release workflow
+    status: completed
+    depends_on: [task-7-candidate]
+    evidence:
+      - "build.yml supports branch/PR/manual artifacts and matching v* tag Release/JAR; hyphenated versions prerelease. Java21/Gradle9.2.1, exact NeoForge naming, SHA pins and minimal permissions."
+      - "actionlint, actual version-script positive/negative fixtures, nonpublishing stable/prerelease argv checks, texture checks and local clean test build passed."
+      - "Readonly gh api verified five action commits. Invalid reference Gradle pin replaced by official v4 ed408507eac070d1f99cc633dbcf757c94c7933a; review found no blockers. Local tests did not publish or prove a hosted run. See docs/testing/github-actions.md."
+  - id: task-texture-integration
+    title: Install six-face PNGs and active-top production models
+    status: completed
+    depends_on: [task-texture-template]
+    evidence:
+      - "Seven 16x16 main PNGs; base cube face references and active up override. Blockstate/item model retained. Readonly --check-installed passed and allows editing main independently."
+      - "placeholder-textures-build.log clean build/JUnit85; network148 complete save/state close. Archive includes seven PNGs; all 58 Java-class paths/bytes identical to prior installed scoped revision."
+      - "Installer ready03:59:16Z, console stop04:00:07Z saved all dimensions, exit0/OOMfalse. Build/install SHA256 c6536ce872e8acf97b1253f6304c09c7a1fa7b305ef1afb9912077477381ab4a; .audit/placeholder-textures-artifacts.log. Client rendering unverified."
+  - id: task-texture-template
+    title: Export editable six-face texture templates
+    status: completed
+    depends_on: [task-6-content]
+    evidence:
+      - "Seven 16x16 face PNGs, 64x48 net, 512x384 preview and inactive/active model templates in art/redstone_link_isolator/. Original generated art, not copied upstream images."
+      - "Exporter --check passed nine PNG dimensions/CRC/pixels and JSON syntax; preview visually inspected. Default regeneration refuses existing PNGs."
+      - "Template ZIP includes seven faces, two previews, two models and README; CRC test passed. This slice initially changed art only, retaining logic JAR hash765e; integration happened separately."
+  - id: task-refresh-scope
+    title: Dimension/frequency refresh selection and PRIVATE non-boundary marker fast path
+    status: completed
+    depends_on: [task-7-candidate]
+    evidence:
+      - "RefreshScope, before-touch/destination/final union, reentrant merging, controller level/player/key selection and READY PRIVATE fast path implemented."
+      - "Intermediate network146/refresh55 saved/closed. Full-refresh negative control; zero unrelated Create/Simulated/dimension updates; non-boundary zero cold updates; old/new key/dimension, controller-only/live-tracking, fallback and fault/no-op/nested tests."
+      - "Final scoped-refresh-release-*.log: JUnit85/network148/refresh69/lifecycle23/packed24/independent-JVM seed24-reload25; each saved/closed. Added WORLD-native zero extra refresh, cross-dimension controller reversal/callback isolation and stale-onRemove replacement controls."
+      - "Review PASS; retain upstream WORLD semantics and linear Simulated filtering, no MSPT claim. Installer01:53:52Z ready,01:54:46Z console save; artifact/exit0/OOMfalse evidence in .audit/scoped-refresh-artifacts.log. No driver/fault/counter classes ship."
+    verification_scope:
+      - "Old-scope collection before touch, destination/final union, controller provenance/live tracking and publication fallback."
+      - "Reentrant work merging, targeted controller reconciliation, marker fault/no-op/nested actual-state correction."
+      - "Counter controls, full main regression, review and packaged artifact/hash/smoke update; no timing benchmark."
+  - id: task-1
+    title: Pin development dependencies and test tooling
+    status: completed
+    depends_on: []
+    evidence:
+      - "clean build --write-verification-metadata sha256 passed; three Modrinth hashes matched smoke lock."
+      - "Independent testmod dedicated launch succeeded without duplicate nested runtime JARs; main archive excluded testmod."
+  - id: task-2
+    title: Validate narrow Create and Simulated hooks
+    status: completed
+    depends_on: [task-1]
+    evidence:
+      - "scope-hook-probe.md: first12 assertions at10:51:28Z, Create calls82; Simulated not yet exercised."
+      - "At10:54:17Z expanded35 passed: direction/modulation/raw, bidirectional/cross-craft, legal7/forbidden15 and projection. Later same-private range/frequency cases passed."
+      - "Prototype hooks stayed testmod-only; main archive inspection excluded them."
+  - id: task-2-controller
+    title: Audit handheld and lectern provenance/scope
+    status: completed
+    depends_on: [task-1, task-2]
+    evidence:
+      - "controller-endpoints.md records exact server routing, WORLD coordinates, ManualFrequencyEntry30-tick lifetime and Sable movement producer."
+      - "Controller40 with saving: real packet.handle, handheld/lectern, range/release/timeout, controlled ownership and three actual Sable packet-producer cases; includes unsafe null fallback observation."
+      - "Motion37 uses real ServerPlayer/vanilla listener: rejected WORLD clears tracking before acceptance; PENDING denies. Accepted plot/supportedWORLD, airborne, teleport pending, disconnect, rotation and Nether round trip covered."
+    remaining:
+      - "Research direction established; production server/session state was subsequent Task3/5 work. Full client codec/UI remains Task6/7."
+  - id: task-2-train
+    title: Research private train global visibility/cache
+    status: cancelled
+    depends_on: [task-1, task-2]
+    evidence:
+      - "train-global-condition.md: exact tickCompletion, unused Train argument, no-range query, LastChecked/globalPowerVersion and lowActivation."
+      - "Train71 at16:08:15Z: real Train/Carriage/condition, WORLD/A/B, high/low, mixed/offline anchors/NBT, epoch/session/range/dimensions; not natural driving or true restart."
+      - "Train95 at16:25:47Z includes UNSAFE cold-WORLD-anchor loss and replacement-plot UUID controls, with complete save; not safety acceptance."
+      - "Root begin invalidation and repeated PENDING queries passed. Same-root addDestination skipped rescan while fresh context saw PENDING; no incorrect completion proved."
+      - "Suite71 complete-save regression; build8s passed with test NO-SOURCE. Natural plot allocator reuse established, natural WORLD-anchor provenance/stale Train survival unproven."
+      - "train-player: WORLD station assembly succeeded; PRIVATE lacked real graph edge point after parent loading. Final120s timeout lacked complete save; no accepted result/occurrence-rate claim."
+    remaining:
+      - "Superseded private-consumer requirement needed verifiable carrier provenance/expected UUID, cold index and no WORLD fallback."
+      - "Prototype per-query carriage/dimension enumeration was unsuitable for production O(1) membership."
+      - "Expansion/publication/failure cache, late sources, last member, independent-JVM Train reload/natural flow and unrelated-failure isolation were incomplete in this research branch."
+      - "No production private-consumer hook or accepted private station fixture; budget limits were not product blockers."
+    disposition: "Owner approved fixed-WORLD consumers; private Train membership research deferred, not passed. Required source visibility/cache moved to task-5-train."
+  - id: task-3-policy
+    title: Production CraftKey/Scope/PairPolicy and JUnit
+    status: completed
+    depends_on: [task-2, task-2-controller]
+    evidence:
+      - "pure-core.md: test build34s passed, JUnit75/zero failures/errors."
+      - "Clean build passed with some cache restoration; research suite71 saved. At that milestone archive contained pure core only and an empty strict mixin, not functional isolation."
+      - "Pure-core review found no blockers; server isolation/resolver null-to-PENDING remained later integration gates."
+  - id: task-3
+    title: Server-owned registry and holder
+    status: completed
+    depends_on: [task-3-policy]
+    evidence:
+      - "Phase1:75 policy+7 state JUnit; main-only core8 with research excluded, real holder/registry and normal stop close/save."
+      - "Review PASS: missing key conservativePRIVATE, FAILED=PENDING, immutable snapshots/positions, idempotence, thread/server/session and stale-reference close."
+    completion_scope: "Resolver/main hooks later integrated; network136 covered markers,7/15/range/controllers/D02. Client/full release remains Task6/7."
+  - id: task-4
+    title: Research lifecycle reconstruction/publication boundaries
+    status: completed
+    depends_on: []
+    next_action: "Normal V1 lifecycle research is complete; strong D01 recovery deferred. Actual isolator events and candidate/error timing have separate production acceptance."
+    evidence:
+      - "lifecycle-boundaries.md exact descriptors/offsets; transformed ServerLevel shows ready before container field write and initialize at constructor tail."
+      - "Baseline installer reached ready twice; actual console stop saved all dimensions, exited/exit0/OOMfalse. Build passed with test NO-SOURCE at that stage; not feature acceptance."
+      - "Suite71 at11:06:38Z, Create3335/Simulated814/lifecycleViolations empty, save checked. Holding load UUID, null/throw/retry, heatmap split/nesting and obsidian/quarantine controls."
+      - "Earlier assertion-passing Body has been removed shutdown was rejected; verifier/save guard and holding/removal fixture corrected."
+      - "Seed5 at11:15:24Z/reload9 at11:15:58Z: different JVM start times, same saved UUID, startup reconstruction and post-tick internal15/external0; complete saves. Suite71 dispatcher regression passed."
+      - "Initial multi fixture lost external-receiver support and failed. Corrected setup later passed seed200/reload207 at12:03:36Z/12:04:13Z: packed inputs4/pending observations12/chunk checks6."
+      - "Edges19: dead endpoint/plot reuse, restricted-only liveness, swallowed write/ledger controls. Later suite71/clean build/archive exclusion passed."
+      - "Recovery19: failedA/unrelatedB, named repair, duplicate source-clear and two-marker partial cases."
+      - "Expected-unsafe failure seed5/reload7: both markers absent, memory token denies seed, actual restart emits WORLD15. D01 later deferred stronger recovery."
+    remaining:
+      - "Prototype obsidian/oracle tests alone do not prove actual isolator wiring; production tests are separate."
+      - "Missing callbacks, I/O failures and all overlapping/cross-dimension composites are not automatically accepted."
+      - "Lost-marker strong recovery remains deferred; do not reclassify its negative control as safe."
+  - id: task-5
+    title: Integrate isolator, lifecycle transactions and refresh
+    status: completed
+    depends_on: [task-3, task-4]
+    evidence:
+      - "Main marker/registry/lifecycle/resolver/per-receiver refresh/controller integration passed network136/lifecycle23/packed24/seed24-reload25, complete saves."
+      - "Phase2 review HOLD identified post-publication barrier-release P1; fixed, follow-up PASS. Remediation clean build/JUnit82 and full phase136/23/24/24/25 saved/closed; publication and visual faults separated."
+  - id: task-5-train
+    title: Fixed-WORLD train source visibility/cache
+    status: completed
+    depends_on: [task-3, task-5]
+    evidence:
+      - "Main adapter/epoch/session/tri-state implemented. Network136/packed24 cover high-low, pending/late registration, root expansion, last member, dimensions/no-range and unchanged other caller; phase2 PASS."
+    progress: "Fixed-WORLD integration/regression passed; real client train GUI remains Task7. Private consumers deferred."
+    verification_scope:
+      - "WORLD/PRIVATE/PENDING, polarities, dimensions/no-range, scope/session cache, pending expansion/release, last member and other callers; no Train membership resolution."
+  - id: task-6-content
+    title: Implement content/recipe and headless checks
+    status: completed
+    depends_on: [task-5, task-5-train]
+    evidence:
+      - "Real shaped recipe match/missing ingredients/output1, loot/tool tier, advancement, BE, WORLD ACTIVE and no ordinary power tested; assets/lang/models/creative entry implemented. Client appearance/GUI remains Task6/7."
+  - id: task-6
+    title: Player content and recipe client acceptance
+    status: pending
+    depends_on: [task-5, task-5-train]
+    evidence: []
+    progress: "Implementation/headless checks complete; actual models/localization/GUI/crafting/unlock/visual synchronization await player acceptance."
+  - id: task-7-candidate
+    title: Packaged installer smoke and player-test delivery
+    status: completed
+    depends_on: [task-6-content]
+    evidence:
+      - "Initial final installer18:25:20Z ready; PTY console marker normalization;18:26:04Z stop saved all dimensions, exited/exit0/OOMfalse."
+      - "Initial build/install hash aa67eebec9c0f5c3ab1819cf9540250650314a2a8e60021608ef254eb8824077; external hashes matched lock. Raw artifact/inspect and archive evidence saved separately."
+      - "Player guide/acceptance/mixin audit record installation, hashes, coverage/limits. Phase3 review PASS; raw hash/inspect gap remedied. Not full client/multiplayer/explosion/performance acceptance."
+  - id: task-7
+    title: Full packaged/player acceptance matrix
+    status: pending
+    depends_on: [task-6]
+    evidence:
+      - "2026-11-07 single-player report: identical-blueprint/frequency craft lifted together before isolation, independently afterward. No log/screenshot or independently confirmed controller/hash."
+      - "Existing WORLD lever source15 immediately controlled craft after final-marker removal; supports restoration without source retoggle."
+      - "Follow-up reported replacement blocks existing WORLD15, save/exit/reentry preserves isolation/internal control, two markers remain private until last removal. No full-controller/multiplayer/dedicated-restart/explosion/performance claim."
+notes:
+  - "Current D02 fixed-WORLD decision supersedes earlier private-consumer requirement; ordinary craft/controller isolation unchanged. Source protection is not excluded."
+  - "D01 owner temporarily preferred a journal, then explicitly deferred stronger upstream data-loss recovery; normal registry stays transient."
+  - "D03 ordinary shaped3x3/output1 initially approved by delegation, later implemented/headlessly tested; client acceptance still pending."
+  - "Historical planning/research-only and no-main statements describe their earlier milestones, not current implementation."
+  - "Early record_blocked call rejected missing execution_state schema; no plugin configuration changed. Only real product/technical barriers count as blockers, not advisory/tool state."
+  - "Historical goal budget reports included1000000 configured/3029088 reported usage and other limit anomalies; work stopped/preserved rather than falsely marked complete. These are not product decisions."
+  - "Normal membership compares server/dimension/UUID, not AABB/scans. Later evidence extended PENDING beyond lost private tracking to unaccepted private proposals."
+  - "Docker SIGTERM exit143 did not prove saving; prefer console stop with All dimensions are saved."
+  - "Translation/reorganization preserves task IDs/status/dependencies; it does not execute remaining player tests."

@@ -1,0 +1,28 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "dev.tassis.createfieldwork.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "MinecraftServerMixin",
+    "RedstoneLinkNetworkMixin",
+    "SimulatedReceiverMixin",
+    "AssemblyLifecycleMixin",
+    "LoadLifecycleMixin",
+    "ContainerLifecycleMixin",
+    "SplitLifecycleMixin",
+    "DisassemblyLifecycleMixin",
+    "MarkerMutationMixin",
+    "TrainConditionMixin",
+    "NetworkRegistrationMixin",
+    "ManualControllerEntryMixin",
+    "ControllerPacketMixin",
+    "ControllerHandlerMixin",
+    "PlayerMovementMixin",
+    "LinkPublicationMixin"
+  ],
+  "client": [],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

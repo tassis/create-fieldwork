@@ -1,0 +1,2 @@
+# Read https://aka.ms/MinecraftEULA before changing this to true.
+eula=true

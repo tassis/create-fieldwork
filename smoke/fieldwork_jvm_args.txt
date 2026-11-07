@@ -1,0 +1,5 @@
+-Xms1G
+-Xmx3G
+-Dmixin.debug.export=true
+-Dmixin.debug.export.filter=com.simibubi.create.content.redstone.link.**
+-Dmixin.dumpTargetOnFailure=true
