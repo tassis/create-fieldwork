@@ -1,6 +1,6 @@
 # Player Testing Guide
 
-Current version: **0.1.0**. Client/GUI, multiplayer, real explosions and the complete lifecycle matrix still need validation. Prefer a new or backed-up world. Metadata currently declares All Rights Reserved; the final license is undecided.
+Current version: **0.1.0**. Client/GUI, multiplayer, real explosions and the complete lifecycle matrix still need validation. Prefer a new or backed-up world. The project is licensed under GNU GPL v3.0 only (`GPL-3.0-only`); see [LICENSE](../../LICENSE).
 
 ## Obtain and identify the build
 

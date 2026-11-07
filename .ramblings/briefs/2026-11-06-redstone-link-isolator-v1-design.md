@@ -40,4 +40,4 @@ Rejected alternatives:
 
 ## Follow-through
 
-Implementation proceeded through pure policy/JUnit, server registry/holder, main hooks/lifecycle/refresh, controller/train adapters and player content. Source visibility/cache required independent main tests rather than old private-train probes. Client visuals/GUI, full player matrix and final license remain outstanding; see the checklist without treating this brief as completion evidence.
+Implementation proceeded through pure policy/JUnit, server registry/holder, main hooks/lifecycle/refresh, controller/train adapters and player content. Source visibility/cache required independent main tests rather than old private-train probes. The owner selected GNU GPL v3.0 only (`GPL-3.0-only`). Client visuals/GUI and the full player matrix remain outstanding; see the checklist without treating this brief as completion evidence.
