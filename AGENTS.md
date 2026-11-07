@@ -9,7 +9,7 @@
 - **D02:** every train condition observes public WORLD sources only. Private train consumers and Train ownership research are deferred. Source visibility, high/low, PENDING and cache/session behavior remain required.
 - **D03:** ordinary shaped 3×3 crafting, `OBO/ELE/BPB`, output one. Implemented and headlessly tested; client crafting/unlock interaction remains part of player acceptance.
 - Version `0.1.0` is available for player testing. Client/GUI/multiplayer/explosion acceptance is incomplete. Use the [production acceptance record](docs/testing/redstone-link-isolator-acceptance.md), not historical prototype pass counts.
-- Metadata uses `All Rights Reserved`; the owner must select the final license.
+- The project uses GNU GPL v3.0 only (`GPL-3.0-only`); see [LICENSE](LICENSE). Keep main and test-driver metadata consistent and include the license text in the packaged JAR.
 
 ## Pinned toolchain
 
