@@ -33,3 +33,17 @@ The repository must allow Actions and the release job's contents-write permissio
 - Actual release Bash was extracted and its final publishing call replaced **in memory** with argv printing. Stable/dev tag, path, repo, title, verify-tag/generate-notes/prerelease flags passed; no real Release command was executed by that test.
 - Texture validation and Docker `clean test build` passed (some Gradle tasks restored from cache). At that slice the JAR hash remained `c6536ce872e8acf97b1253f6304c09c7a1fa7b305ef1afb9912077477381ab4a`; this is a historical dev-candidate hash.
 - Read-only workflow review found no blockers. Hosted execution was not established by these local tests.
+
+## Dependency-verification repair: 2026-11-07
+
+The GPL-licensed `v0.1.0` tag build failed in `createMinecraftArtifacts`: the verification metadata pinned JUnit BOM POMs but lacked their Gradle `.module` metadata. Refreshing local dependency resolution reproduced the same three compile-classpath failures (5.10.0, 5.10.1 and 5.9.3). After those were supplied, the runtime classpath exposed the same omission for 5.7.2.
+
+All four `.module` files were fetched separately from Maven Central and NeoForged Releases, compared byte-for-byte, and checked against Central's published `.sha256` values before adding exact artifact entries to `gradle/verification-metadata.xml`. Existing checksums and strict metadata verification remain enabled; no wildcard trust or verification bypass was added.
+
+The repaired dependency resolution and full build passed with:
+
+```sh
+./scripts/gradle-docker.sh clean test build --refresh-dependencies
+```
+
+Compilation/test outputs can still come from Gradle's build cache; `--refresh-dependencies` specifically rechecks dependency metadata resolution. The successful local run restored the 85-test JUnit result from cache. When auditing verification metadata, include a refreshed-dependency run: an ordinary warm-cache build alone did not expose these missing artifacts.
