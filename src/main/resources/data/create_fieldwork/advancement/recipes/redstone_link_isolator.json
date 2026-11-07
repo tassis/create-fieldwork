@@ -1,0 +1,9 @@
+{
+  "parent":"minecraft:recipes/root",
+  "criteria":{
+    "has_link":{"trigger":"minecraft:inventory_changed","conditions":{"items":[{"items":"create:redstone_link"}]}},
+    "has_the_recipe":{"trigger":"minecraft:recipe_unlocked","conditions":{"recipe":"create_fieldwork:redstone_link_isolator"}}
+  },
+  "requirements":[["has_link","has_the_recipe"]],
+  "rewards":{"recipes":["create_fieldwork:redstone_link_isolator"]}
+}

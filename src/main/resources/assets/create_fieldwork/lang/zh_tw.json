@@ -1,0 +1,5 @@
+{
+  "block.create_fieldwork.redstone_link_isolator": "紅石連結隔離器",
+  "block.create_fieldwork.redstone_link_isolator.tooltip": "裝在已組裝的航空實體內時，紅石連結只與同一實體通訊，仍受原本頻率與距離限制。",
+  "block.create_fieldwork.redstone_link_isolator.train_tooltip": "火車時刻表條件只觀察公開訊號，不讀取私人航空實體網路。"
+}
