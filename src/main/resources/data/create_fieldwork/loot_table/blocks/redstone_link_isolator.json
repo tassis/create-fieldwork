@@ -1,0 +1,1 @@
+{"type":"minecraft:block","pools":[{"rolls":1,"entries":[{"type":"minecraft:item","name":"create_fieldwork:redstone_link_isolator"}],"conditions":[{"condition":"minecraft:survives_explosion"}]}]}
