@@ -121,7 +121,7 @@ Only RedstoneLinkCondition's global call/cache is adapted. Never resolve Train a
 
 Register one block/item/BE, creative entry, derived ACTIVE, original assets, English/Traditional Chinese tooltip, loot/tool tags and approved recipe. Use1.21.1 singular recipe/loot_table paths. D03 is ordinary shaped3×3 with existing ingredients/output1, unlock via Link. Main network tests real match/missing materials/output, loot/tool tags/advancement/BE/ACTIVE/no ordinary output.
 
-Task6 remains pending for actual client models/translations/tooltips/crafting/unlock/drop/synchronization. Resource existence or server loading cannot substitute for rendering/GUI acceptance. License remains owner-selected.
+Task6 remains pending for actual client models/translations/tooltips/crafting/unlock/drop/synchronization. Resource existence or server loading cannot substitute for rendering/GUI acceptance. The owner selected GNU GPL v3.0 only (`GPL-3.0-only`); the full text is in the root LICENSE and packaged JAR.
 
 ### Task7-candidate / Task7: delivery versus full acceptance
 

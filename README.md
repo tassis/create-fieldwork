@@ -85,4 +85,6 @@ The scoped-refresh revision recorded 85 JUnit tests, network 148, refresh 69, li
 
 ## License
 
-Metadata currently declares **All Rights Reserved**. The owner has not selected a final license.
+Copyright (C) 2026 Tassis.
+
+Create: Fieldwork is licensed under the **GNU General Public License v3.0 only** (`GPL-3.0-only`). You may redistribute and modify it under those terms. It is provided without warranty; see [LICENSE](LICENSE) for the full text.
