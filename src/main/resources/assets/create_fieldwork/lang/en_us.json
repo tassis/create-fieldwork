@@ -1,0 +1,5 @@
+{
+  "block.create_fieldwork.redstone_link_isolator": "Redstone Link Isolator",
+  "block.create_fieldwork.redstone_link_isolator.tooltip": "On an assembled craft, Redstone Links communicate only within that craft. Frequency and range still apply.",
+  "block.create_fieldwork.redstone_link_isolator.train_tooltip": "Train schedule conditions observe public signals only, not private craft networks."
+}

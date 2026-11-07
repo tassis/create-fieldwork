@@ -1,0 +1,6 @@
+{
+  "parent": "create_fieldwork:block/redstone_link_isolator",
+  "textures": {
+    "up": "create_fieldwork:block/redstone_link_isolator/up_active"
+  }
+}

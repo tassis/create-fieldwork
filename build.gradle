@@ -1,0 +1,242 @@
+import java.security.MessageDigest
+
+plugins {
+    id 'java'
+    id 'net.neoforged.moddev' version '2.0.141'
+}
+
+version = mod_version
+group = mod_group_id
+
+base {
+    archivesName = "${mod_id}-neoforge-${minecraft_version}"
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+repositories {
+    mavenCentral()
+    exclusiveContent {
+        forRepository { maven { url = 'https://api.modrinth.com/maven' } }
+        filter { includeGroup 'maven.modrinth' }
+    }
+}
+
+configurations {
+    auditedMods
+    implementation.extendsFrom auditedMods
+}
+
+dependencies {
+    auditedMods 'maven.modrinth:LNytGWDc:UjX6dr61'
+    auditedMods 'maven.modrinth:T9PomCSv:U678xqle'
+    auditedMods 'maven.modrinth:oWaK0Q19:44pLdPGg'
+    testImplementation platform('org.junit:junit-bom:5.11.4')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+def verifyAuditedMods = tasks.register('verifyAuditedMods') {
+    inputs.files(configurations.auditedMods)
+    inputs.file('smoke/artifacts.lock')
+    doLast {
+        def expected = file('smoke/artifacts.lock').readLines()
+                .findAll { it && !it.startsWith('#') }
+                .collect { it.split(/\s+/)[0] }.toSet()
+        configurations.auditedMods.files.each { artifact ->
+            def digest = MessageDigest.getInstance('SHA-256')
+            artifact.withInputStream { input ->
+                byte[] buffer = new byte[65536]
+                int count
+                while ((count = input.read(buffer)) > 0) digest.update(buffer, 0, count)
+            }
+            def actual = digest.digest().encodeHex().toString()
+            if (!expected.contains(actual)) throw new GradleException("Unapproved mod binary: ${artifact.name} ${actual}")
+            logger.lifecycle("Audited mod SHA-256 OK: ${artifact.name} ${actual}")
+        }
+    }
+}
+
+def nestedCompileDir = layout.buildDirectory.dir('audited-compile-libs')
+def extractAuditedCompileLibs = tasks.register('extractAuditedCompileLibs', Sync) {
+    dependsOn verifyAuditedMods
+    from({ configurations.auditedMods.collect { zipTree(it) } }) {
+        include 'META-INF/jarjar/*.jar'
+        eachFile { details -> details.path = details.name }
+        includeEmptyDirs = false
+    }
+    into nestedCompileDir
+}
+dependencies {
+    compileOnly files(provider { fileTree(nestedCompileDir) { include '*.jar' } }).builtBy(extractAuditedCompileLibs)
+}
+
+tasks.named('test', Test) { useJUnitPlatform() }
+tasks.named('check') { dependsOn verifyAuditedMods }
+
+sourceSets { testmod; acceptancemod }
+configurations {
+    testmodImplementation.extendsFrom implementation
+    testmodCompileOnly.extendsFrom compileOnly
+    testmodRuntimeOnly.extendsFrom runtimeOnly
+    testCompileOnly.extendsFrom compileOnly
+    acceptancemodImplementation.extendsFrom implementation
+    acceptancemodCompileOnly.extendsFrom compileOnly
+    acceptancemodRuntimeOnly.extendsFrom runtimeOnly
+}
+dependencies {
+    acceptancemodImplementation sourceSets.main.output
+    // Pure refresh selections expose Create's native frequency/Couple types.
+    // Unit tests need the already-audited nested class libraries, not another
+    // copy installed in any client/server runtime.
+    testRuntimeOnly files(provider { fileTree(nestedCompileDir) { include '*.jar' } }).builtBy(extractAuditedCompileLibs)
+}
+
+neoForge {
+    version = neo_version
+    addModdingDependenciesTo sourceSets.testmod
+    addModdingDependenciesTo sourceSets.acceptancemod
+
+    mods {
+        "${mod_id}" {
+            sourceSet sourceSets.main
+        }
+        fieldwork_probe { sourceSet sourceSets.testmod }
+        fieldwork_acceptance { sourceSet sourceSets.acceptancemod }
+    }
+
+    unitTest {
+        enable()
+        testedMod = mods."${mod_id}"
+    }
+
+    runs {
+        client {
+            client()
+            loadedMods = [mods."${mod_id}"]
+            gameDirectory = project.file('run-client')
+        }
+        server {
+            server()
+            loadedMods = [mods."${mod_id}"]
+            gameDirectory = project.file('run-server')
+            programArgument '--nogui'
+        }
+        scopeProbeServer {
+            server()
+            sourceSet = sourceSets.testmod
+            // Historical prototype baseline must not stack its behavior mixins
+            // on the now-functional main implementation. Main acceptance is a
+            // separate run below and explicitly excludes this research mod.
+            loadedMods = [mods.fieldwork_probe]
+            gameDirectory = project.file('run-scope-probe')
+            programArgument '--nogui'
+            systemProperty 'mixin.debug.export', 'true'
+            systemProperty 'mixin.debug.countInjections', 'true'
+            systemProperty 'fieldwork.probe.phase', providers.gradleProperty('probePhase').getOrElse('suite')
+        }
+        fieldworkAcceptanceServer {
+            server()
+            sourceSet = sourceSets.acceptancemod
+            loadedMods = [mods."${mod_id}", mods.fieldwork_acceptance]
+            gameDirectory = project.file('run-fieldwork-acceptance')
+            programArgument '--nogui'
+            systemProperty 'mixin.debug.export', 'true'
+            systemProperty 'mixin.debug.countInjections', 'true'
+            systemProperty 'fieldwork.acceptance.phase', providers.gradleProperty('acceptancePhase').getOrElse('core')
+        }
+    }
+}
+
+tasks.register('verifyFieldworkAcceptance') {
+    dependsOn 'runFieldworkAcceptanceServer'
+    doLast {
+        def report = new groovy.json.JsonSlurper().parse(file('run-fieldwork-acceptance/result.json'))
+        if (report.status != 'passed') throw new GradleException("Main acceptance failed: ${report.failure}")
+        if (report.phase != providers.gradleProperty('acceptancePhase').getOrElse('core')) throw new GradleException('Acceptance phase mismatch')
+        def log = file('run-fieldwork-acceptance/logs/latest.log').text
+        if (!log.contains('All dimensions are saved') || log.contains('Exception stopping the server')) {
+            throw new GradleException('Main acceptance shutdown/save failed')
+        }
+        if (!file('run-fieldwork-acceptance/state-closed.txt').isFile()) throw new GradleException('Server-owned state close was not observed')
+        logger.lifecycle("Main-only acceptance passed: ${report.assertions.size()} assertions")
+    }
+}
+tasks.matching { it.name == 'runFieldworkAcceptanceServer' }.configureEach {
+    doFirst {
+        def phase = providers.gradleProperty('acceptancePhase').getOrElse('core')
+        if (!(phase in ['core', 'network', 'refresh', 'movement', 'lifecycle', 'packed', 'seed', 'reload'])) throw new GradleException('Unknown acceptance phase')
+        if (phase == 'reload' && !providers.gradleProperty('acceptanceKeepWorld').isPresent()) {
+            throw new GradleException('Acceptance reload requires -PacceptanceKeepWorld')
+        }
+        delete file('run-fieldwork-acceptance/result.json')
+        delete file('run-fieldwork-acceptance/state-closed.txt')
+        if (!providers.gradleProperty('acceptanceKeepWorld').isPresent()) delete file('run-fieldwork-acceptance/acceptance-world')
+        copy { from 'src/acceptancemod/server.properties'; into 'run-fieldwork-acceptance' }
+    }
+}
+
+tasks.register('verifyScopeProbe') {
+    dependsOn 'runScopeProbeServer'
+    doLast {
+        def result = file('run-scope-probe/scope-probe-result.json')
+        if (!result.isFile()) throw new GradleException('Probe exited without a result')
+        def report = new groovy.json.JsonSlurper().parse(result)
+        if (report.status != 'passed') throw new GradleException("Scope probe failed: ${report.failure}")
+        if (report.mainImplementationLoaded != false) throw new GradleException('Research probe must not load the main implementation; use verifyFieldworkAcceptance for main behavior')
+        if (report.phase != providers.gradleProperty('probePhase').getOrElse('suite')) {
+            throw new GradleException('Probe result phase does not match requested run')
+        }
+        def log = file('run-scope-probe/logs/latest.log').text
+        if (log.contains('Exception stopping the server') || !log.contains('All dimensions are saved')) {
+            throw new GradleException('Probe assertions ran, but server shutdown/save failed; inspect latest.log')
+        }
+        if (report.expectedUnsafeObservation == true) {
+            logger.warn('EXPECTED UNSAFE negative control reproduced; this is not a safety acceptance.')
+        }
+        logger.lifecycle("Scope probe passed: ${report.assertions.size()} assertions")
+    }
+}
+tasks.matching { it.name == 'runScopeProbeServer' }.configureEach {
+    doFirst {
+        def phase = providers.gradleProperty('probePhase').getOrElse('suite')
+        if (!(phase in ['suite', 'seed', 'reload', 'seed-multi', 'reload-multi', 'seed-failure', 'reload-failure', 'controller', 'controller-motion', 'edges', 'recovery', 'train', 'train-player'])) {
+            throw new GradleException("Unknown probe phase: ${phase}")
+        }
+        if (phase.startsWith('reload') && !providers.gradleProperty('probeKeepWorld').isPresent()) {
+            throw new GradleException('Reload requires -PprobeKeepWorld; refusing to delete its fixture world')
+        }
+        delete file('run-scope-probe/scope-probe-result.json')
+        if (!providers.gradleProperty('probeKeepWorld').isPresent()) delete file('run-scope-probe/probe-world')
+        copy { from 'src/testmod/server.properties'; into 'run-scope-probe' }
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = 21
+}
+
+var generateModMetadata = tasks.register('generateModMetadata', ProcessResources) {
+    var replaceProperties = [
+            minecraft_version: minecraft_version,
+            neo_version: neo_version,
+            mod_id: mod_id,
+            mod_name: mod_name,
+            mod_version: mod_version,
+            mod_authors: mod_authors,
+            mod_description: mod_description
+    ]
+    inputs.properties replaceProperties
+    expand replaceProperties
+    from 'src/main/templates'
+    into 'build/generated/sources/modMetadata'
+}
+
+sourceSets.main.resources.srcDir generateModMetadata
+neoForge.ideSyncTask generateModMetadata
+
+tasks.withType(AbstractArchiveTask).configureEach {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}

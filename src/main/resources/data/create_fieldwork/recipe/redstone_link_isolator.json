@@ -1,0 +1,13 @@
+{
+  "type":"minecraft:crafting_shaped",
+  "category":"redstone",
+  "pattern":["OBO","ELE","BPB"],
+  "key":{
+    "O":{"item":"minecraft:obsidian"},
+    "B":{"tag":"c:plates/brass"},
+    "E":{"item":"create:electron_tube"},
+    "L":{"item":"create:redstone_link"},
+    "P":{"item":"create:precision_mechanism"}
+  },
+  "result":{"id":"create_fieldwork:redstone_link_isolator","count":1}
+}
