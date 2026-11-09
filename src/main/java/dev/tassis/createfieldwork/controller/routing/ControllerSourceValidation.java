@@ -48,6 +48,7 @@ final class ControllerSourceValidation {
         boolean managed = source.device() != null;
         boolean ordinaryHand = !managed && source.lectern() == null;
         boolean historyRestricted = endpoint.fieldwork$published() instanceof Scope.Private;
+
         // Ordinary handheld inputs are public sources even while their operator is
         // aboard a private craft. Only a physical lectern or a managed binding may
         // select a private scope.
@@ -76,12 +77,15 @@ final class ControllerSourceValidation {
         if (pendingReset(level, actor, source)) {
             return Scope.PENDING;
         }
+
         if (!managed && becameManaged(level, actor, source)) {
             return Scope.PENDING;
         }
+
         if (managed) {
             return managedScope(level, actor, source, view);
         }
+
         if (ordinaryHand) {
             return Scope.WORLD;
         }
@@ -91,6 +95,7 @@ final class ControllerSourceValidation {
             || block != source.lecternEntity().get()) {
             return restricted ? Scope.PENDING : Scope.WORLD;
         }
+
         // A known native stop is authoritative. Invalid actor compatibility above
         // remains WORLD-only until Create's native timeout.
         if (block.isRemoved() || !lectern.isUsedBy(actor)) {
@@ -149,11 +154,13 @@ final class ControllerSourceValidation {
             AllDataComponents.LINKED_CONTROLLER_ITEMS,
             ItemContainerContents.EMPTY
         );
+
         if (!actual.is(AllItems.LINKED_CONTROLLER.get())
             || !sameDevice
             || !source.program().equals(actualProgram)) {
             return Scope.PENDING;
         }
+
         return state.bindings().scope(source.device(), level, view);
     }
 }

@@ -60,13 +60,16 @@ public final class ControllerSources {
             this.dirty = dirty;
         }
     }
+
     private final FieldworkServerState state;
     private final ControllerSourceValidation validation;
     private final ControllerSourceIndex index;
     private final ControllerSourceSafetySweep safetySweep;
     private final ControllerInputSessions inputSessions;
     private final ControllerReconciliation reconciliation;
+
     RefreshScope reconcileRetry = RefreshScope.none();
+
     final IdentityHashMap<IRedstoneLinkable, Association> endpoints = new IdentityHashMap<>();
     final Map<UUID, Set<IRedstoneLinkable>> byPlayer = new java.util.HashMap<>();
     final Map<UUID, Set<IRedstoneLinkable>> byDevice = new java.util.HashMap<>();
@@ -93,6 +96,7 @@ public final class ControllerSources {
         state.checkThread();
         return inputSessions.begin(actor, lectern, controller);
     }
+
     public void end(Source previous) {
         state.checkThread();
         inputSessions.end(previous);
@@ -108,14 +112,17 @@ public final class ControllerSources {
         if (!(endpoint instanceof ControllerEndpoint tagged)) {
             return;
         }
+
         tagged.fieldwork$source(inputSessions.current());
         Scope scope = scope(level, tagged, null);
+
         // Keep an existing entry's last published scope until reconciliation
         // after updatePosition; that upstream method itself does not refresh.
         if (tagged.fieldwork$published() == null) {
             tagged.fieldwork$published(scope);
             tagged.fieldwork$publishedNetwork(RefreshScope.frequency(level.dimension(), endpoint.getNetworkKey()));
         }
+
         tagged.fieldwork$restricted(scope != Scope.WORLD);
         if (scope instanceof Scope.Private privateScope) {
             tagged.fieldwork$lastPrivate(privateScope.craft());
@@ -144,6 +151,7 @@ public final class ControllerSources {
         state.checkThread();
         var endpoint = snapshot.endpoint;
         var currentAssociation = endpoints.get(endpoint);
+
         if (currentAssociation != snapshot.association) {
             if (currentAssociation != null) {
                 index.removeAssociation(endpoint, currentAssociation);
@@ -154,6 +162,7 @@ public final class ControllerSources {
                 endpoints.put(endpoint, snapshot.association);
             }
         }
+
         if (endpoint instanceof ControllerEndpoint tagged) {
             tagged.fieldwork$source(snapshot.source);
             tagged.fieldwork$published(snapshot.published);
@@ -161,6 +170,7 @@ public final class ControllerSources {
             tagged.fieldwork$lastPrivate(snapshot.lastPrivate);
             tagged.fieldwork$publishedNetwork(snapshot.publishedNetwork);
         }
+
         if (snapshot.dirty && endpoints.containsKey(endpoint)) {
             dirty.add(endpoint);
         } else {
@@ -225,6 +235,7 @@ public final class ControllerSources {
                 unregister(level, endpoint);
             }
         }
+
         byLevel.remove(level);
         reconciliation.levelUnloaded(level);
     }
@@ -240,22 +251,26 @@ public final class ControllerSources {
             mark(byDevice.get(device));
         }
     }
+
     public void markLectern(ResourceKey<Level> dimension, BlockPos position) {
         state.checkThread();
         mark(byLectern.get(new LecternKey(dimension, position)));
     }
+
     public void markCrafts(Set<CraftKey> crafts) {
         state.checkThread();
         for (var craft : crafts) {
             mark(byCraft.get(craft));
         }
     }
+
     public void markEndpoint(IRedstoneLinkable endpoint) {
         state.checkThread();
         if (endpoints.containsKey(endpoint)) {
             dirty.add(endpoint);
         }
     }
+
     private void mark(Set<IRedstoneLinkable> selected) {
         if (selected != null) {
             dirty.addAll(selected);
@@ -358,6 +373,7 @@ public final class ControllerSources {
         state.checkThread();
         return inputSessions.acceptInput(actor, press);
     }
+
     /** Reprogramming/hand/session changes can create a different native frequency
      * entry. Withdraw invalid old entries first, but never publish a new scope
      * using their old position before native updatePosition has run. */
@@ -365,6 +381,7 @@ public final class ControllerSources {
         state.checkThread();
         inputSessions.withdrawInvalidForInput(actor);
     }
+
     /** Native release sets TTL0 but retains the entry until tick. A synchronous
      * refresh would prune its radio membership first; remove both indexes together
      * so a subsequent press cannot reuse an unregistered entry. */
@@ -372,23 +389,28 @@ public final class ControllerSources {
         state.checkThread();
         inputSessions.releaseDeadManaged(actor);
     }
+
     public void requireRelease(ServerPlayer actor) {
         state.checkThread();
         inputSessions.requireRelease(actor);
     }
+
     public void invalidatePlayer(ServerPlayer actor) {
         state.checkThread();
         inputSessions.invalidatePlayer(actor);
     }
+
     public void playerRemoved(ServerPlayer actor) {
         state.checkThread();
         inputSessions.playerRemoved(actor);
     }
+
     /** Cold mutation footprint, captured BEFORE revocation/source invalidation. */
     public BindingChange bindingChange(UUID player, Set<UUID> devices) {
         state.checkThread();
         return index.bindingChange(player, devices);
     }
+
     public void changedDevices(Set<UUID> devices) {
         reconcile(select(devices, Set.of(), Set.of()));
     }
@@ -408,6 +430,7 @@ public final class ControllerSources {
     private void safetySweep() {
         refreshReconciled(safetySweep.run());
     }
+
     public void clear() {
         state.checkThread();
         inputSessions.clear();
