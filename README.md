@@ -85,7 +85,7 @@ There is no Gradle Wrapper. Desktop development with Java 21 and Gradle 9.2.1 ca
 - [Documentation index](docs/README.md): design, verification and historical research.
 - [Behavior contract](docs/design/behavior-contract.md), [V1 technical design](docs/design/redstone-link-isolator-v1.md), and [architecture policy](docs/design/project-architecture-policy.md).
 - [Main-only acceptance evidence](docs/testing/redstone-link-isolator-acceptance.md): tested behavior and remaining checks.
-- [CI and tag releases](docs/testing/github-actions.md): build artifacts and automated GitHub Releases.
+- [CI-managed releases](docs/testing/github-actions.md): build artifacts and the manual, guarded GitHub Release workflow.
 
 Current phase counts, artifact hashes and installer evidence are maintained in the
 [production acceptance record](docs/testing/redstone-link-isolator-acceptance.md).
