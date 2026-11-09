@@ -21,7 +21,8 @@ ownership, dependency, integration, and documentation boundaries.
 | D02 | Every train condition is a public WORLD observer; private train consumers are deferred |
 | D03 | Ordinary shaped 3×3 recipe, `OBO/ELE/BPB`, output one |
 
-D01 supersedes an earlier journal-as-prerequisite direction. D02 supersedes an earlier private-train-consumer requirement after ownership research and player-scenario investigation. Neither decision removes responsibility for Fieldwork's own correctness or train source visibility/cache behavior.
+D01 and D02 do not remove responsibility for Fieldwork's own registry,
+initialization, refresh correctness, or train source visibility/cache behavior.
 
 ## 2. Supported scope
 
@@ -34,6 +35,8 @@ Included:
 - One isolator feature family with ordinary and smart blocks/BEs, position-set
   handling for multiple isolators, assembly/disassembly/split,
   load/unload/restart, and ordinary block mutations.
+- Bounded client-side offhand schematic comparison, outlines and native-preview
+  masking. These hints are never server ownership or authorization inputs.
 - Protocol-compatible endpoints with correct location/liveness and audited source semantics; this is not blanket support for arbitrary custom wireless implementations.
 
 Excluded:
@@ -41,7 +44,7 @@ Excluded:
 - Vanilla redstone, Redstone Contacts, Flight Control direct proxies, seats and unrelated controls.
 - ComputerCraft/other wireless systems, gateways, frequency lists, and unmanaged
   or ad-hoc controller boundary exceptions. The server-owned smart-isolator
-  binding route defined in section6 is explicitly supported.
+  binding route defined in section 6 is explicitly supported.
 - General Sable block/BE transfer repair, whole-batch rollback, disk/OS power-loss recovery and the deferred D01 journal.
 - Private train-consumer membership, carriage cross-scope ownership, offline carrier provenance and anchor-UUID recovery.
 
@@ -159,12 +162,14 @@ affected endpoints. Production does not hook vanilla movement acceptance or use
 movement proposals as controller authority; historical movement-hook findings
 remain research evidence only.
 
-Known movement, teleport, inventory/program, lectern-user, binding and lifecycle
-events reconcile affected endpoints. A fixed 200-server-tick complete safety
-sweep is a backstop; no extra all-controller Fieldwork pass runs every Create
-tick. Preserve upstream release and 30-tick timeout and do not impose managed
-item/program rules on ordinary WORLD timeout behavior. Create's native TTL loop
-is unchanged.
+Inventory/program, lectern-user, binding, lifecycle, logout/session replacement
+and dimension-travel events reconcile affected endpoints. Ordinary movement and
+same-dimension teleport/ack schedule no Fieldwork controller work; the next native
+controller packet observes the current server position. A fixed 200-server-tick
+complete safety sweep is a backstop; no extra all-controller Fieldwork pass runs
+every Create tick. Preserve upstream release and 30-tick timeout and do not impose
+managed item/program rules on ordinary WORLD timeout behavior. Create's native TTL
+loop is unchanged.
 
 ## 7. Narrow integration boundaries
 
@@ -219,7 +224,9 @@ Never compute power under INITIALIZING(private) and then switch an empty craft t
 
 A server-owned one-shot permit grants candidate access to one precisely targeted updater entry. It ignores only its own token's overlay; all other pending tokens still deny. Candidate results use the same pair policy and upstream range, never unconditional allow.
 
-The permit is consumed into an update frame. Reentrant callbacks open their own ordinary frames and cannot inherit candidate access. A global boolean or broadly inherited ThreadLocal would be unsafe. Production implements this boundary in refresh/update-frame machinery; the early proposed standalone `RefreshReadView.java` name was not a required final file layout.
+The permit is consumed into an update frame. Reentrant callbacks open their own
+ordinary frames and cannot inherit candidate access. A global boolean or broadly
+inherited ThreadLocal would be unsafe.
 
 Required tests include: candidate refresh gets final values; callbacks cannot borrow permissions; refresh failure retains the token; failed BEGIN withdrawal prevents writes. No general redstone/mechanical rollback is promised.
 
@@ -244,7 +251,11 @@ The same rule applies to BEGIN: unresolved output prevents destructive writes. N
 - Refresh Simulated direct consumers at the same boundary; “next tick” is insufficient.
 - Merge dirty work, iterate snapshots and bound reentry. Failure to stabilize retains the affected barrier and output status, without freezing unrelated craft.
 
-The 2026-11-07 scoped revision uses immutable `RefreshScope` selections: dimension → frequency set or all-in-that-dimension fallback. Collect old keys **before touch**, add destination/final keys and retain the union through repair, including related controller old dimensions. Unknown load/publication frequencies expand only involved dimensions.
+Immutable `RefreshScope` selections use dimension → frequency set or
+all-in-that-dimension fallback. Collect old keys **before touch**, add
+destination/final keys and retain the union through repair, including related
+controller old dimensions. Unknown load/publication frequencies expand only
+involved dimensions.
 
 Ordinary callbacks cannot borrow candidate views; nested requests merge into subsequent synchronous passes (8-pass bound). Controller device/lectern/lifecycle events target indexed endpoints; ordinary movement and same-dimension teleport/ack schedule no Fieldwork controller work. Pure WORLD position notifications retain Create's existing semantics.
 
@@ -252,7 +263,15 @@ A READY PRIVATE→PRIVATE marker mutation can skip receiver recomputation only w
 
 Simulated has no permanent frequency reverse index here: selected-dimension position indexes are still linearly filtered. Same-frequency dense networks may approach receivers × endpoints work. Counters demonstrate reduced updater calls, not an MSPT improvement percentage. See [scoped-refresh evidence](../testing/scoped-refresh.md).
 
-The subsequent stable-private controller position path adds per-frequency receiver filters. Only four matching old/new actual/published PRIVATE(A) observations, unchanged structural source/session/lectern identity/key/level and alive input qualify. Other transitions use unrestricted old/new networks even at unchanged positions. Filter union distinguishes absent keys, ALL and NONE, and reentrant unrestricted work widens later synchronous passes. Invocation filtering never grants source visibility or skips discovery/cleanup. Sources, native range/strength and the exact candidate permit remain upstream/fenced; see [controller movement evidence](../testing/controller-movement-refresh.md).
+Stable-private controller position updates use per-frequency receiver filters. Only
+four matching old/new actual/published PRIVATE(A) observations, unchanged
+structural source/session/lectern identity/key/level and alive input qualify.
+Other transitions use unrestricted old/new networks even at unchanged positions.
+Filter union distinguishes absent keys, ALL and NONE, and reentrant unrestricted
+work widens later synchronous passes. Invocation filtering never grants source
+visibility or skips discovery/cleanup. Sources, native range/strength and the
+exact candidate permit remain upstream/fenced; see
+[controller movement evidence](../testing/controller-movement-refresh.md).
 
 ## 10. Failure responsibility and D01
 
@@ -281,29 +300,36 @@ A future exceptional journal needs a separate design and interruption/I/O tests.
 
 Tooltip intent: aboard an assembled craft, standard links communicate only within that craft, retaining frequency/range limits; ordinary redstone and other wireless systems are unaffected.
 
-**D03:** ordinary shaped 3×3, `OBO/ELE/BPB`, output one: 2 Obsidian, 3 Andesite Alloy, 2 Electron Tubes, 1 Redstone Link and 1 Precision Mechanism. Unlock on obtaining a Link. The mechanism already supplies the five-round sequenced-assembly gate; no extra nine-Mechanical-Crafter requirement is added. Recipe matching/output/unlock-resource loading are headlessly tested; real client crafting remains pending. See [recipe rationale](2026-11-06-isolator-recipe.md).
+**D03:** ordinary shaped 3×3, `OBO/ELE/BPB`, output one. Exact ingredients,
+unlock behavior, smart upgrade and rationale are maintained in the
+[recipe contract](2026-11-06-isolator-recipe.md). Real client crafting remains
+part of player acceptance.
 
-## 12. Implementation and verification stages
+## 12. Client schematic assistance
 
-| Stage | Deliverable/gate |
-|---|---|
-| Scope decisions | D01 deferred, D02 fixed WORLD, D03 approved |
-| Pure core/server holder | CraftKey, Scope/PairPolicy, registry, thread/server/session and cleanup tests |
-| Actual lifecycle | Real isolator events and load/assembly/disassembly/split/restart; no obsidian oracle |
-| Network integration | Both main filters; begin withdrawal, candidate refresh, callback isolation, legal7/forbidden15, range/frequency |
-| Controller/train integration | Server/session provenance, event-driven reconciliation, fixed-WORLD visibility and cache |
-| Player content/acceptance | Resources/recipe, packaged installer, client synchronization and full matrix |
+- Assistance activates only for the selected offhand schematic when no valid
+  main-hand schematic takes precedence. Main-hand Create behavior remains native.
+- Comparison reuses Create's loaded template and native transform. It does not
+  parse a second schematic, place a virtual structure or force-load chunks.
+- Wrong block type and a bounded set of construction-state differences are hints.
+  Unsupported properties, block-entity data, expected air, unloaded positions and
+  uncertain/excluded craft regions remain neutral.
+- Loaded craft metadata may suppress hints near reserved/projected regions, but it
+  never supplies server ownership or authorization.
+- Correctly placed ordinary ghost blocks may be masked through the native preview.
+  Stale, ambiguous, unsupported or over-budget state restores the ghost.
+- Tick work, cache size, outlines, masks and captured craft metadata are bounded.
+  No FPS or MSPT improvement is claimed.
 
-The production implementation has reached player-test delivery; the final client/full-matrix gate remains incomplete. Historical task ordering is not a current missing-feature list.
+Exact limits, comparison properties and player checks are maintained in the
+[schematic evidence record](../testing/schematic-client-v02.md).
 
-The 2026-11-09 feature-organization server/headless matrix passed JUnit106;
-network174, refresh69, movement74, lifecycle23, packed24, schematic347; binding177,
-binding-reset57, binding-faults134, controller-index43, controller-work15; and
-independent-JVM seed/reload24/25 plus binding-seed/reload30/27. Packaged hash:
-`c69b8bb59e098f96027a8d3a8050d7be77cbaa9812d2d88183e382733340886c`.
-The installed copy reached `Done`, returned an empty Fieldwork status, completed
-console saves for every dimension and Sable sub-level, and exited0. This is
-dedicated-server evidence, not client transformation or visual acceptance.
+## 13. Verification boundaries
+
+The production implementation has reached player-test delivery; client/GUI,
+multiplayer and complete visual acceptance remain incomplete. Current phase
+counts, artifact hashes and installer observations live only in the
+[production acceptance record](../testing/redstone-link-isolator-acceptance.md).
 
 Verification layers:
 
@@ -315,11 +341,16 @@ Verification layers:
 4. Installer smoke uses the packaged JAR, not ModDev class output. A future driver JAR needs an explicit acceptance profile, not a bypass of ordinary smoke's foreign-JAR rejection.
 5. Record exact hashes, input/output, saves and close; clients separately verify visuals, translation, ACTIVE and actual input flow.
 
-Required scenarios include world/same-craft/two-craft traffic, both controller paths, rotation/range, legal7/forbidden15, marker0↔1/multiple markers, ordinary events, multi-chunk/packed startup, real JVM restart, rejected movement/teleport pending, new sessions, unrelated-failure isolation and excluded-system regression.
+Required scenarios include world/same-craft/two-craft traffic, both controller
+paths, rotation/range, legal7/forbidden15, marker0↔1/multiple markers, ordinary
+events, multi-chunk/packed startup, real JVM restart, zero Fieldwork work for
+ordinary movement and same-dimension teleport/ack, next-packet position/range
+observation, withdrawal on dimension travel/session replacement,
+unrelated-failure isolation and excluded-system regression.
 
 D02 independently requires high/low, PRIVATE-only, PENDING-only, WORLD+PENDING, cross-dimension/no-range, scope-only and server-session cache invalidation, root expansion, last-member removal and late publication. Old private-train research is not acceptance of the fixed-WORLD adapter.
 
-## 13. References and version boundary
+## 14. References and version boundary
 
 Pinned: Minecraft 1.21.1, NeoForge 21.1.257, Create 6.0.10, Sable 2.0.5, Aeronautics bundled/Simulated 1.3.2, Java 21. Observed Mixin 0.8.7 / MixinExtras 0.5.5 are part of the composition baseline; do not add duplicate runtimes or upgrade implicitly.
 

@@ -7,6 +7,10 @@ requirements; the [V1 technical design](redstone-link-isolator-v1.md) defines th
 current implementation model; this policy defines how changes must preserve those
 requirements.
 
+Authority precedence is: behavior contract, V1 technical design, mandatory
+policies, then supporting feature contracts. Dated research and design history
+provide context only and cannot override current requirements.
+
 ## Architectural principles
 
 1. **Server authority:** all isolation, binding, publication, and controller
@@ -100,6 +104,8 @@ post-commit and must not turn a committed authoritative transition into rollback
   presented as current acceptance.
 - Current runtime evidence belongs in the production acceptance record; README and
   developer guidance should link to it instead of duplicating a second ledger.
+- Superseded plans must be removed or explicitly fenced as history; imperative
+  backlog wording must not remain in canonical documents after implementation.
 
 ## Change gates
 

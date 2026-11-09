@@ -10,16 +10,31 @@
 | [Behavior contract](design/behavior-contract.md) | Scope, invariants, required matrix |
 | [V1 technical design](design/redstone-link-isolator-v1.md) | Architecture, lifecycle protocol, decisions |
 | [Project architecture policy](design/project-architecture-policy.md) | Mandatory ownership, dependency, integration, and documentation boundaries |
+| [Code organization policy](design/code-organization-policy.md) | Mandatory package, class-shape, formatting, and refactor rules |
 
 ## Design and architecture
 
+Authority is ordered as follows: the behavior contract defines product behavior;
+the V1 technical design defines the current implementation model; mandatory
+policies constrain changes; supporting contracts refine one feature. Historical
+notes never override those documents.
+
+### Canonical authority
+
 - [Behavior contract](design/behavior-contract.md)
 - [V1 technical design](design/redstone-link-isolator-v1.md)
-- [Controller binding contract](design/controller-binding-v02.md)
-- [Controller requirements](design/2026-11-06-controller-scope.md)
-- [D03 recipe and cost comparison](design/2026-11-06-isolator-recipe.md)
 - [Project architecture policy](design/project-architecture-policy.md)
 - [Code organization and readability policy](design/code-organization-policy.md)
+
+### Supporting current contracts
+
+- [Managed-controller binding contract](design/controller-binding-v02.md)
+- [D03 recipe and cost rationale](design/2026-11-06-isolator-recipe.md)
+
+### Superseded design history
+
+- [Original controller-scope requirements](design/2026-11-06-controller-scope.md)
+  records the investigation that preceded the current two-tier controller model.
 
 **Decisions:** D01 defers stronger upstream data-loss recovery; D02 makes every train condition a public WORLD observer and defers private train consumers; D03 uses ordinary shaped 3×3 crafting. See the technical design for full boundaries.
 
