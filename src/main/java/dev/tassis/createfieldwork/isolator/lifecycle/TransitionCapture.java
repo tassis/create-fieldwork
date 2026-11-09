@@ -40,6 +40,7 @@ final class TransitionCapture {
     void capture(TransitionCoordinator.Transaction transaction, ServerLevel level,
                  Collection<BlockPos> input) {
         Footprint footprint = footprint(transaction, level, input);
+
         transaction.levels.addAll(footprint.levels());
         transaction.refreshScope = transaction.refreshScope.union(footprint.refreshScope());
     }
@@ -48,6 +49,7 @@ final class TransitionCapture {
                  ControllerSources.BindingChange change) {
         transaction.devices.addAll(change.devices());
         transaction.refreshScope = transaction.refreshScope.union(change.networks());
+
         for (var key : change.crafts()) {
             var level = state.server().getLevel(key.dimension());
             if (level != null
@@ -64,6 +66,7 @@ final class TransitionCapture {
             transaction.crafts,
             transaction.positions
         );
+
         transaction.controllerEndpoints.addAll(selection.endpoints());
         transaction.refreshScope = transaction.refreshScope.union(selection.networks());
     }
@@ -81,8 +84,10 @@ final class TransitionCapture {
                                 ServerLevel level, Collection<BlockPos> input) {
         Set<ResourceKey<Level>> levels = new HashSet<>(transaction.levels);
         levels.add(level.dimension());
+
         Set<CraftKey> crafts = new HashSet<>(transaction.crafts);
         Set<TransitionCoordinator.Position> positions = new HashSet<>(transaction.positions);
+
         for (var pos : input) {
             positions.add(new TransitionCoordinator.Position(level.dimension(), pos));
             var owner = Sable.HELPER.getContaining(level, pos);
@@ -97,6 +102,7 @@ final class TransitionCapture {
                 refreshScope = refreshScope.union(RefreshScope.level(dimension));
             }
         }
+
         return new Footprint(levels, crafts, positions, refreshScope);
     }
 

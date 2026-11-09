@@ -30,12 +30,14 @@ final class ControllerReconciliation {
     RefreshScope stage(ControllerSources.Selection selection, TransitionCoordinator.View view) {
         RefreshScope changed = selection.networks();
         var work = selection.endpoints();
+
         for (int index = 0; index < work.size(); index++) {
             var link = work.get(index);
             var association = sources.endpoints.get(link);
             if (association == null) {
                 continue;
             }
+
             try {
                 changed = changed.union(sources.reconcileOneView(association.level(), link, view));
             } catch (RuntimeException | Error error) {
@@ -48,6 +50,7 @@ final class ControllerReconciliation {
                 throw error;
             }
         }
+
         return changed;
     }
 
@@ -55,12 +58,14 @@ final class ControllerReconciliation {
         RefreshScope changed = RefreshScope.none();
         var work = new ArrayList<>(sources.dirty);
         sources.dirty.removeAll(work);
+
         for (int index = 0; index < work.size(); index++) {
             var endpoint = work.get(index);
             var association = sources.endpoints.get(endpoint);
             if (association == null) {
                 continue;
             }
+
             try {
                 boolean radio = containsIdentity(
                     Create.REDSTONE_LINK_NETWORK_HANDLER
@@ -74,6 +79,7 @@ final class ControllerReconciliation {
                         .get(association.level())
                         .get(association.player());
                 boolean collection = containsIdentity(playerEntries, endpoint);
+
                 changed = changed.union(
                     !radio || !collection
                         ? sources.unregister(association.level(), endpoint)
@@ -93,6 +99,7 @@ final class ControllerReconciliation {
                 throw error;
             }
         }
+
         refreshReconciled(changed);
     }
 
@@ -116,6 +123,7 @@ final class ControllerReconciliation {
         if (!(endpoint instanceof ControllerEndpoint tagged)) {
             return RefreshScope.none();
         }
+
         Scope next = sources.scope(level, tagged, view);
         var previous = tagged.fieldwork$publishedNetwork();
         boolean sameNetwork = previous != null
@@ -128,12 +136,14 @@ final class ControllerReconciliation {
         var oldNetwork = tagged.fieldwork$publishedNetwork();
         var oldPrivate = tagged.fieldwork$lastPrivate();
         boolean oldRestricted = tagged.fieldwork$restricted();
+
         tagged.fieldwork$lastPrivate(
             next instanceof Scope.Private privateScope ? privateScope.craft() : null
         );
         tagged.fieldwork$restricted(next != Scope.WORLD);
         tagged.fieldwork$published(next);
         tagged.fieldwork$publishedNetwork(network);
+
         try {
             sources.registerOrUpdate(level, endpoint, tagged, next);
         } catch (RuntimeException | Error error) {
@@ -143,6 +153,7 @@ final class ControllerReconciliation {
             tagged.fieldwork$restricted(oldRestricted);
             throw error;
         }
+
         if (Objects.equals(next, oldPublished) && sameNetwork) {
             return RefreshScope.none();
         }
@@ -154,6 +165,7 @@ final class ControllerReconciliation {
         if (association == null || association.level() != level) {
             return;
         }
+
         sources.dirty.add(endpoint);
         sources.reconcileRetry = sources.reconcileRetry.union(
             RefreshScope.frequency(level.dimension(), endpoint.getNetworkKey())
@@ -173,7 +185,9 @@ final class ControllerReconciliation {
         if (scope.isEmpty()) {
             return;
         }
+
         sources.reconcileRetry = RefreshScope.none();
+
         try {
             state.invalidateVisibility();
             state.refresh().refresh(null, scope);
@@ -192,12 +206,14 @@ final class ControllerReconciliation {
         if (selected == null) {
             return changed;
         }
+
         for (var endpoint : new ArrayList<>(selected)) {
             var association = sources.endpoints.get(endpoint);
             if (association != null) {
                 changed = changed.union(sources.reconcileOneView(association.level(), endpoint, null));
             }
         }
+
         return changed;
     }
 
@@ -205,11 +221,13 @@ final class ControllerReconciliation {
         if (values == null) {
             return false;
         }
+
         for (var value : values) {
             if (value == expected) {
                 return true;
             }
         }
+
         return false;
     }
 }

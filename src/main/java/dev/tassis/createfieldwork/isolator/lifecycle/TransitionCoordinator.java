@@ -25,6 +25,7 @@ public final class TransitionCoordinator {
     public record Position(ResourceKey<Level> dimension, BlockPos pos) {
         public Position { pos = pos.immutable(); }
     }
+
     public record View(long token, Map<CraftKey, Set<BlockPos>> candidates,
                        Map<UUID, BindingAuthority.Grant> grants) {
         public View(long token, Map<CraftKey, Set<BlockPos>> candidates) { this(token, candidates, Map.of()); }
@@ -35,24 +36,31 @@ public final class TransitionCoordinator {
             grants = Map.copyOf(grants);
         }
     }
+
     record MarkerMove(Position from, Position to) {}
+
     private record Frame(String kind, Transaction transaction, boolean root) {}
+
     static final class Transaction {
         final long id;
+
         final Set<Position> positions = new HashSet<>();
         final Set<CraftKey> crafts = new HashSet<>();
         final Set<UUID> devices = new HashSet<>();
         final Set<CraftKey> initialized = new HashSet<>();
         final Set<com.simibubi.create.content.redstone.link.IRedstoneLinkable> controllerEndpoints =
             Collections.newSetFromMap(new IdentityHashMap<>());
+
         final List<MarkerMove> ledger = new ArrayList<>();
         final Map<Position, Boolean> markerIntent = new HashMap<>();
         final Map<CraftKey, Set<BlockPos>> before = new HashMap<>();
         final Set<ResourceKey<Level>> levels = new HashSet<>();
+
         RefreshScope refreshScope = RefreshScope.none();
         boolean mutated;
         boolean unknownSources;
         boolean failed;
+
         Transaction(long id) { this.id = id; }
     }
 
@@ -98,17 +106,21 @@ public final class TransitionCoordinator {
     public void begin(String kind, ServerLevel level, Iterable<BlockPos> input) {
         begin(kind, level, input, null);
     }
+
     public void beginBinding(ServerLevel level, Iterable<BlockPos> input, ControllerSources.BindingChange change) {
         begin("binding", level, input, change);
     }
+
     private void begin(String kind, ServerLevel level, Iterable<BlockPos> input, ControllerSources.BindingChange binding) {
         state.checkThread();
+
         var copy = copy(input);
         boolean join = !stack.isEmpty() && (kind.equals("move") || kind.equals("marker")
             || (kind.equals("assemble") && stack.peek().kind.equals("split")
                 && copy.stream().anyMatch(pos -> stack.peek().transaction.positions.contains(new Position(level.dimension(), pos)))));
         var tx = join ? stack.peek().transaction : new Transaction(++nextToken);
         tx.unknownSources |= kind.equals("load");
+
         try {
             capture(tx, level, copy); // BEFORE touch/registry.begin and any upstream callback/write
             for (var pos : copy) {
@@ -117,12 +129,15 @@ public final class TransitionCoordinator {
             if (binding != null) {
                 captureBinding(tx, binding);
             }
+
             captureControllers(tx);
             tx.refreshScope = tx.refreshScope.union(stageControllers(tx, null));
+
             state.invalidateVisibility();
             if (!join) {
                 state.refresh().refresh(null, tx.refreshScope);
             }
+
             beginRegistry(tx);
             stack.push(new Frame(kind, tx, !join));
         } catch (RuntimeException | Error error) {
@@ -241,19 +256,23 @@ public final class TransitionCoordinator {
 
     public void end(String kind, boolean success) {
         state.checkThread();
+
         var frame = stack.pop();
         if (!frame.kind.equals(kind)) {
             throw new IllegalStateException("Unbalanced Fieldwork transaction");
         }
+
         var tx = frame.transaction;
         tx.failed |= !success;
         if (!frame.root) {
             return;
         }
+
         if (tx.positions.isEmpty() && tx.crafts.isEmpty()) {
             state.invalidateVisibility();
             return;
         }
+
         // Sable force-loaded plots may deserialize inside ServerLevel's constructor,
         // before MinecraftServer installs that level in its map. Retain all barriers
         // and finish the real load after level registration, never publish empty.
@@ -261,6 +280,7 @@ public final class TransitionCoordinator {
             initializing.put(tx.id, tx);
             return;
         }
+
         Set<Position> visuals;
         try {
             if (tx.failed || !validLedger(tx)) {
@@ -272,6 +292,7 @@ public final class TransitionCoordinator {
             fail(tx, error);
             throw error;
         }
+
         synchronizeVisuals(visuals); // never feed post-commit visual errors back into fail(tx)
     }
 
@@ -396,13 +417,16 @@ public final class TransitionCoordinator {
                 candidate.put(key, IsolationRuntime.markers(loaded));
             }
         }
+
         Set<Position> mutableUpdates = new HashSet<>(tx.positions);
         candidate.forEach((key, markers) -> markers.forEach(pos -> mutableUpdates.add(new Position(key.dimension(), pos))));
         Set<Position> updates = Set.copyOf(mutableUpdates);
+
         var bindingCandidate = state.bindings().candidate(candidate, tx.positions);
         tx.devices.addAll(bindingCandidate.changedDevices());
         captureControllers(tx);
         var view = new View(tx.id, candidate, bindingCandidate.grants());
+
         // New endpoints/keys may appear after move/load or old keys disappear;
         // retain the pre-write union and add the post-reconstruction footprint.
         tx.refreshScope = tx.refreshScope.union(state.refresh().affected(tx.levels, tx.crafts, tx.positions));
@@ -412,11 +436,13 @@ public final class TransitionCoordinator {
             }
         }
         tx.refreshScope = tx.refreshScope.union(stageControllers(tx, view));
+
         long epoch = state.visibilityEpoch();
         state.refresh().refresh(view, tx.refreshScope);
         if (state.visibilityEpoch() != epoch) {
             throw new IllegalStateException("Authoritative state changed during final refresh");
         }
+
         for (var key : tx.crafts) {
             if (candidate.containsKey(key)) {
                 state.registry().publish(key, candidate.get(key));
@@ -424,11 +450,13 @@ public final class TransitionCoordinator {
                 state.registry().forget(key);
             }
         }
+
         // This is the last throwable authoritative stage. Prepare the final
         // publication classification while all position/craft barriers remain
         // indexed; a failure can still safely retain the complete quarantine.
         state.publications().reclassify(view);
         state.publicationCommitted();
+
         release(tx);
         return updates;
     }
@@ -445,6 +473,7 @@ public final class TransitionCoordinator {
     private void fail(Transaction tx, Throwable error) {
         tx.failed = true;
         withheld.put(tx.id, tx);
+
         for (var key : tx.crafts) {
             try {
                 state.registry().fail(key);
@@ -452,11 +481,13 @@ public final class TransitionCoordinator {
                 LogUtils.getLogger().error("Fieldwork failure publication errored for quarantined transaction {} craft {}", tx.id, key, publication);
             }
         }
+
         try {
             state.invalidateVisibility();
         } catch (RuntimeException | Error publication) {
             LogUtils.getLogger().error("Fieldwork failure classification errored for quarantined transaction {}", tx.id, publication);
         }
+
         try {
             captureControllers(tx);
             tx.refreshScope = tx.refreshScope.union(stageControllers(tx, null));
@@ -465,6 +496,7 @@ public final class TransitionCoordinator {
             state.controllers().retainRefresh(tx.refreshScope);
             LogUtils.getLogger().error("Fieldwork withdrawal retry failed for quarantined transaction {}", tx.id, withdrawal);
         }
+
         LogUtils.getLogger().error("Fieldwork withheld transaction {} ({} crafts / {} positions); output withdrawal may be incomplete",
             tx.id, tx.crafts.size(), tx.positions.size(), error);
     }
@@ -476,6 +508,7 @@ public final class TransitionCoordinator {
         for (var key : tx.crafts) {
             remove(crafts, key, tx.id);
         }
+
         withheld.remove(tx.id);
         initializing.remove(tx.id);
     }

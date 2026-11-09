@@ -37,10 +37,13 @@ public final class WirelessRefresh {
     private boolean dirty;
     private RefreshScope pending = RefreshScope.none();
 
-    public WirelessRefresh(FieldworkServerState state) { this.state = state; }
+    public WirelessRefresh(FieldworkServerState state) {
+        this.state = state;
+    }
 
     public void enter(ServerLevel level, Object endpoint) {
         state.checkThread();
+
         boolean targeted = permit != null && permit.endpoint == endpoint;
         var granted = targeted ? permit.view : null;
         if (targeted) {
@@ -49,8 +52,10 @@ public final class WirelessRefresh {
             dirty = true; // a callback may overwrite an already refreshed receiver
             pending = pending.union(network(level, endpoint));
         }
+
         calls.push(new Frame(granted, targeted));
     }
+
     public void exit() {
         state.checkThread();
         calls.pop();
@@ -72,17 +77,20 @@ public final class WirelessRefresh {
             simulatedPositions.computeIfAbsent(level.dimension(), ignored -> new HashSet<>()).add(receiver.getBlockPos().immutable());
         }
     }
+
     public void unloaded(ServerLevel level, net.minecraft.world.level.ChunkPos chunk) {
         state.checkThread();
         var indexed = simulatedPositions.get(level.dimension());
         if (indexed == null) {
             return;
         }
+
         indexed.removeIf(pos -> (pos.getX() >> 4) == chunk.x && (pos.getZ() >> 4) == chunk.z);
         if (indexed.isEmpty()) {
             simulatedPositions.remove(level.dimension());
         }
     }
+
     /** Packed Simulated receivers may not enter any native radio bucket until a
      * later tick. Materialize/index their exact IBE types on cold chunk paths. */
     public void trackChunk(ServerLevel level, net.minecraft.world.level.chunk.LevelChunk chunk) {
@@ -108,6 +116,7 @@ public final class WirelessRefresh {
             }
         }
     }
+
     private static boolean simulatedBlock(net.minecraft.world.level.block.state.BlockState state) {
         return state.getBlock() instanceof com.simibubi.create.foundation.block.IBE<?> block &&
             AbstractLinkedReceiverBlockEntity.class.isAssignableFrom(block.getBlockEntityClass());
@@ -118,11 +127,13 @@ public final class WirelessRefresh {
         for (var level : state.server().getAllLevels()) {
             all = all.union(RefreshScope.level(level.dimension()));
         }
+
         refresh(view, all); // explicit full refresh for callers without an affected footprint (e.g. test setup)
     }
 
     public void refresh(TransitionCoordinator.View view, RefreshScope scope) {
         state.checkThread();
+
         if (refreshing) {
             if (view != null) {
                 throw new IllegalStateException("Cannot commit a reentrant final refresh");
@@ -133,16 +144,20 @@ public final class WirelessRefresh {
             }
             return;
         }
+
         if (scope.isEmpty()) {
             return;
         }
+
         refreshing = true;
         RefreshScope work = scope;
+
         try {
             for (int pass = 0; pass < 8; pass++) {
                 work = work.union(pending);
                 pending = RefreshScope.none();
                 dirty = false;
+
                 for (var selected : work.levels().entrySet()) {
                     ServerLevel level = state.server().getLevel(selected.getKey());
                     if (level == null) {
@@ -158,10 +173,12 @@ public final class WirelessRefresh {
                         this
                     );
                 }
+
                 if (!dirty) {
                     return;
                 }
             }
+
             throw new IllegalStateException("Fieldwork refresh did not stabilize after 8 passes");
         } finally {
             refreshing = false;
@@ -187,16 +204,19 @@ public final class WirelessRefresh {
     public RefreshScope affected(Set<ResourceKey<Level>> levels, Set<CraftKey> crafts,
                                   Set<TransitionCoordinator.Position> positions) {
         state.checkThread();
+
         RefreshScope result = state.controllers().affectedNetworks(crafts);
         for (var dimension : levels) {
             ServerLevel level = state.server().getLevel(dimension);
             if (level == null) {
                 continue;
             }
+
             if (state.publications().unresolvedIn(level, crafts, positions)) {
                 result = result.union(RefreshScope.level(dimension));
                 continue;
             }
+
             for (var bucket : new ArrayList<>(Create.REDSTONE_LINK_NETWORK_HANDLER.networksIn(level).entrySet())) {
                 for (var endpoint : new ArrayList<>(bucket.getValue())) {
                     boolean associated = endpoint instanceof ControllerEndpoint controller
@@ -207,6 +227,7 @@ public final class WirelessRefresh {
                     }
                 }
             }
+
             var indexed = simulatedPositions.get(dimension);
             if (indexed != null) {
                 for (var pos : Set.copyOf(indexed)) {
@@ -229,6 +250,7 @@ public final class WirelessRefresh {
         if (positions.contains(new TransitionCoordinator.Position(level.dimension(), pos))) {
             return true;
         }
+
         var owner = Sable.HELPER.getContaining(level, pos);
         return owner != null && crafts.contains(IsolationRuntime.key(owner));
     }
@@ -237,6 +259,7 @@ public final class WirelessRefresh {
         if (permit != null) {
             throw new IllegalStateException("Unconsumed final-view permission");
         }
+
         permit = new Permit(endpoint, view);
         try {
             operation.run();
