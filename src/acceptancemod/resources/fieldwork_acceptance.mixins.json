@@ -3,6 +3,6 @@
   "minVersion": "0.8",
   "package": "dev.tassis.createfieldwork.acceptance.mixin",
   "compatibilityLevel": "JAVA_21",
-  "mixins": ["PublicationFaultMixin", "VisualFaultMixin", "RefreshCounterMixin", "SimulatedCounterMixin", "MarkerWriteFaultMixin"],
+  "mixins": ["PublicationFaultMixin", "VisualFaultMixin", "RefreshCounterMixin", "SimulatedCounterMixin", "ControllerWorkCounterMixin", "MarkerWriteFaultMixin", "BindingLedgerFaultMixin", "BindingGrantFaultMixin", "BindingWithdrawalFaultMixin", "BindingRefreshFaultMixin", "LecternAssignmentFaultMixin", "NetworkLifecycleFaultMixin", "DimensionTravelFaultMixin"],
   "injectors": {"defaultRequire": 1}
 }

@@ -1,7 +1,7 @@
 package dev.tassis.createfieldwork.acceptance.mixin;
 
 import dev.tassis.createfieldwork.acceptance.AcceptanceFaults;
-import dev.tassis.createfieldwork.isolation.IsolationRuntime;
+import dev.tassis.createfieldwork.isolator.lifecycle.IsolationRuntime;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import org.spongepowered.asm.mixin.Mixin;

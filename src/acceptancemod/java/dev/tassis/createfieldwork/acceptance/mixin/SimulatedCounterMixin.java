@@ -3,7 +3,7 @@ package dev.tassis.createfieldwork.acceptance.mixin;
 import com.simibubi.create.content.redstone.link.LinkBehaviour;
 import dev.simulated_team.simulated.content.blocks.redstone.AbstractLinkedReceiverBlockEntity;
 import dev.tassis.createfieldwork.acceptance.RefreshMetrics;
-import dev.tassis.createfieldwork.server.FieldworkStateAccess;
+import dev.tassis.createfieldwork.platform.FieldworkStateAccess;
 import net.minecraft.server.level.ServerLevel;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;

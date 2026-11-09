@@ -1,6 +1,6 @@
-# D03 — Initial Isolator Recipe
+# D03 — Isolator Recipe
 
-Approved under owner delegation on 2026-11-06, based on actual Create 6.0.10 / Minecraft 1.21.1 resources rather than an older wiki. The recipe is now implemented and headlessly tested. Client crafting/unlock interaction and balance feedback remain player acceptance work.
+Initially approved under owner delegation on 2026-11-06, based on actual Create 6.0.10 / Minecraft 1.21.1 resources rather than an older wiki. The owner later revised the three sheet slots to Andesite Alloy. The current recipe is implemented and headlessly tested. Client crafting/unlock interaction and balance feedback remain player acceptance work.
 
 ## Upstream comparison
 
@@ -36,18 +36,19 @@ B P B
 | Symbol | Ingredient | Quantity/ID |
 |---|---|---|
 | O | Obsidian | 2, `minecraft:obsidian` |
-| B | Brass Sheet | 3, tag `c:plates/brass` |
+| B | Andesite Alloy | 3, `create:andesite_alloy` |
 | E | Electron Tube | 2, `create:electron_tube` |
 | L | Redstone Link | 1, `create:redstone_link` |
 | P | Precision Mechanism | 1, `create:precision_mechanism` |
 
-The pinned Create JAR includes `create:brass_sheet` in `c:plates/brass`; no new material dependency is introduced.
+The current production recipe uses exact `create:andesite_alloy` items in all
+three B slots. The older Brass Sheet choice is historical.
 
 Production resource: `src/main/resources/data/create_fieldwork/recipe/redstone_link_isolator.json`; type `minecraft:crafting_shaped`, category `redstone`, result count 1. Obtaining a Redstone Link unlocks it through the accompanying advancement.
 
 ## Balance rationale
 
-- Retain the original ingredient quantities rather than adding arbitrary Diamond/Netherite requirements. Link represents wireless control, Obsidian isolation, Brass/Tube control components.
+- Retain the original ingredient quantities rather than adding arbitrary Diamond/Netherite requirements. Link represents wireless control, Obsidian isolation, and Alloy/Tube control components.
 - Usually one isolator per craft is enough. Precision Mechanism supplies the mid-game manufacturing gate; requiring nine Mechanical Crafters merely to combine the component adds unnecessary machinery.
 - The earlier Mechanical Crafting proposal became ordinary shaped crafting. No duplicate recipe or extra sequenced assembly is needed.
 - Output is one, unlike the Link's output of two, because an isolator is not needed in pairs per channel. Multiple markers are supported, not encouraged as a throughput mechanic.

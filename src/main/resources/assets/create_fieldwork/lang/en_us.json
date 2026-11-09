@@ -1,5 +1,19 @@
 {
+  "itemGroup.create_fieldwork": "Create: Fieldwork",
+  "gui.create_fieldwork.schematic.offhand": "Offhand schematic",
+  "gui.create_fieldwork.schematic.partial": "Partial comparison: %s cached / %s template cells",
+  "gui.create_fieldwork.schematic.moving": "Comparison paused while the preview moves",
+  "gui.create_fieldwork.schematic.unsupported": "Comparison unavailable for this schematic",
+  "gui.create_fieldwork.schematic.world_unavailable": "Comparison paused: craft bounds unavailable or over budget",
+  "gui.create_fieldwork.schematic.hide_budget": "Ghost hiding paused: volume (32,768) or candidate cache (4,096) budget exceeded",
+  "gui.create_fieldwork.schematic.inactive": "Comparison waiting for deployed preview",
+  "message.create_fieldwork.binding.bound": "Controller bound. Release the controls before using it.",
+  "message.create_fieldwork.binding.unbound": "Controller unbound. Channels kept.",
+  "message.create_fieldwork.binding.unbind_first": "Craft this controller by itself to unbind it before binding another structure.",
+  "message.create_fieldwork.binding.unavailable": "Binding unavailable: the craft or authorization state is not ready.",
+  "block.create_fieldwork.brass_redstone_link_isolator": "Smart Redstone Link Isolator",
+  "block.create_fieldwork.brass_redstone_link_isolator.binding_tooltip": "Bind Linked Controllers to operate the craft from outside.",
+  "message.create_fieldwork.binding.capacity": "This smart isolator's controller list is full.",
   "block.create_fieldwork.redstone_link_isolator": "Redstone Link Isolator",
-  "block.create_fieldwork.redstone_link_isolator.tooltip": "On an assembled craft, Redstone Links communicate only within that craft. Frequency and range still apply.",
-  "block.create_fieldwork.redstone_link_isolator.train_tooltip": "Train schedule conditions observe public signals only, not private craft networks."
+  "block.create_fieldwork.redstone_link_isolator.tooltip": "Isolates an assembled craft's Redstone Link network."
 }

@@ -1,5 +1,19 @@
 {
+  "itemGroup.create_fieldwork": "Create: Fieldwork",
+  "gui.create_fieldwork.schematic.offhand": "副手藍圖",
+  "gui.create_fieldwork.schematic.partial": "局部比對：快取 %s 格／圖紙 %s 格",
+  "gui.create_fieldwork.schematic.moving": "預覽移動中，比對暫停",
+  "gui.create_fieldwork.schematic.unsupported": "目前無法比對這份藍圖",
+  "gui.create_fieldwork.schematic.world_unavailable": "物理結構邊界未就緒或超出預算，比對暫停",
+  "gui.create_fieldwork.schematic.hide_budget": "超出體積（32,768 格）或快取（4,096 格）預算，暫不隱藏已完成投影",
+  "gui.create_fieldwork.schematic.inactive": "等待已部署的藍圖預覽",
+  "message.create_fieldwork.binding.bound": "已綁定控制器，請先放開按鍵再操作。",
+  "message.create_fieldwork.binding.unbound": "已解除控制器綁定，頻道已保留。",
+  "message.create_fieldwork.binding.unbind_first": "請先將控制器單獨合成以解除綁定，再綁定其他物理結構。",
+  "message.create_fieldwork.binding.unavailable": "目前無法綁定：物理結構或授權狀態尚未就緒。",
+  "block.create_fieldwork.brass_redstone_link_isolator": "智慧紅石鏈路隔離器",
+  "block.create_fieldwork.brass_redstone_link_isolator.binding_tooltip": "可綁定控制器，從外部操作物理結構。",
+  "message.create_fieldwork.binding.capacity": "這個智慧隔離器的控制器名單已滿。",
   "block.create_fieldwork.redstone_link_isolator": "紅石連結隔離器",
-  "block.create_fieldwork.redstone_link_isolator.tooltip": "裝在已組裝的航空實體內時，紅石連結只與同一實體通訊，仍受原本頻率與距離限制。",
-  "block.create_fieldwork.redstone_link_isolator.train_tooltip": "火車時刻表條件只觀察公開訊號，不讀取私人航空實體網路。"
+  "block.create_fieldwork.redstone_link_isolator.tooltip": "組裝後，紅石連結僅在同一物理結構內通訊。"
 }

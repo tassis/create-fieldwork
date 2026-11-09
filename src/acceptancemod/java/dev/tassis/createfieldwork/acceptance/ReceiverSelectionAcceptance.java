@@ -1,9 +1,9 @@
 package dev.tassis.createfieldwork.acceptance;
 
 import com.simibubi.create.content.redstone.link.RedstoneLinkNetworkHandler.Frequency;
-import dev.tassis.createfieldwork.isolation.CraftKey;
-import dev.tassis.createfieldwork.wireless.RefreshScope;
-import dev.tassis.createfieldwork.wireless.Scope;
+import dev.tassis.createfieldwork.isolator.state.CraftKey;
+import dev.tassis.createfieldwork.wireless.refresh.RefreshScope;
+import dev.tassis.createfieldwork.wireless.scope.Scope;
 import net.createmod.catnip.data.Couple;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
