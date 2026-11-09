@@ -6,7 +6,7 @@ for this experiment. Existing unrelated worktree changes were retained.
 
 ## What was implemented
 
-`src/bindingmod/` is a separate non-shipping mod/run. It loads production main,
+`src/tools/binding-probe/` is a separate non-shipping experimental tool. It loads production main,
 but neither `fieldwork_acceptance` nor the historical `fieldwork_probe`.
 Normal client/server and main acceptance do not load it.
 

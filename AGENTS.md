@@ -116,7 +116,10 @@ Smoke uses the real NeoForge installer, Java21 JRE and `.smoke/server/`, separat
 ./scripts/gradle-docker.sh verifyFieldworkAcceptance -PacceptancePhase=binding-reload -PacceptanceKeepWorld
 ```
 
-`src/acceptancemod/` supplies fixtures and fault/work-counter mixins. It supplies no scope/registry answers and is absent from shipping JARs and ordinary runs. Scratch: `run-fieldwork-acceptance/`. The verifier checks phase/results, complete saves and state close.
+`src/tools/acceptance/` is the production acceptance tool source set. It supplies
+fixtures and fault/work-counter mixins, but no scope/registry answers, and is absent
+from shipping JARs and ordinary runs. Scratch: `run-fieldwork-acceptance/`. The
+verifier checks phase/results, complete saves and state close.
 
 The 2026-11-09 feature-organization matrix recorded JUnit **106**, network **174**,
 refresh **69**, movement **74**, lifecycle **23**, packed **24**, schematic
@@ -137,7 +140,8 @@ The texture-only revision retained identical bytes for all 58 Java classes and r
 
 ### Non-shipping v0.2 identity experiment
 
-`src/bindingmod/` is a separate **experimental** run, not production acceptance:
+`src/tools/binding-probe/` is a separate **experimental binding probe tool**, not
+production acceptance:
 `verifyBindingProbe -PbindingPhase=seed`, then `verifyBindingProbe -PbindingPhase=reload -PbindingKeepWorld`.
 It uses `run-binding-probe/` and real persisted Sable force-load tickets. It
 proves device-ID/lectern persistence and a fixture-driven UUID-stamped block
@@ -173,7 +177,9 @@ See [probe history](docs/testing/scope-hook-probe.md) and the [research index](d
 | `src/main/resources/` | Mixins, assets, localization, data |
 | `src/main/templates/META-INF/neoforge.mods.toml` | Metadata source |
 | `src/test/` | JUnit |
-| `src/acceptancemod/`, `src/testmod/` | Separate main acceptance and research drivers |
+| `src/tools/acceptance/` | Production-main acceptance tooling and fault/counter fixtures |
+| `src/tools/binding-probe/` | Historical experimental binding persistence probe |
+| `src/testmod/` | Historical scope research driver without production main |
 | `build/generated/sources/modMetadata/` | Generated metadata; do not edit |
 | `Dockerfile`, `compose.yaml`, `scripts/` | Containers, smoke, texture tools |
 

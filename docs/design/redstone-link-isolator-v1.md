@@ -308,7 +308,9 @@ dedicated-server evidence, not client transformation or visual acceptance.
 Verification layers:
 
 1. JUnit loads main only and checks pure policy/state; research auto-shutdown drivers must not enter unit tests.
-2. `src/acceptancemod/` uses real main registry/isolators. Fault/counter mixins do not supply authorization answers. Research scope/controller/lifecycle mixins are excluded.
+2. `src/tools/acceptance/` uses the real main registry/isolators. Its
+   fault/counter fixtures do not supply authorization answers. Research
+   scope/controller/lifecycle mixins are excluded.
 3. Exported transformations establish Sable/main composition; dynamic assertions establish actual behavior.
 4. Installer smoke uses the packaged JAR, not ModDev class output. A future driver JAR needs an explicit acceptance profile, not a bypass of ordinary smoke's foreign-JAR rejection.
 5. Record exact hashes, input/output, saves and close; clients separately verify visuals, translation, ACTIVE and actual input flow.

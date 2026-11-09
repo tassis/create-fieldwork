@@ -48,7 +48,7 @@ Refresh-phase counters observe main's targeted cold refresh and do not change au
 - Pending fallback expands only involved dimensions; controller-only frequencies and live-tracking-only provenance are included.
 - Old controller entries in another dimension are withdrawn/restored on first/last marker changes. Ordinary callbacks still see PENDING during candidate restoration.
 
-Network additionally tests restricted movement updates only its frequency and pure WORLD movement retains position/timeout with zero added cold calls. Fault/counter mixins live only in `src/acceptancemod/`, never the shipping JAR.
+Network additionally tests restricted movement updates only its frequency and pure WORLD movement retains position/timeout with zero added cold calls. Fault/counter mixins live only in the `src/tools/acceptance/` tooling source set, never the shipping JAR.
 
 Read-only review passed before-touch collection, fast-path rollback, old/new scopes and cross-dimension reverse candidate restrictions. A proposed WORLD-position change was withdrawn after checking upstream semantics; linear Simulated filtering is explicitly retained.
 

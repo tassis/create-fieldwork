@@ -47,7 +47,7 @@ validated against unstable live plot block states; active UUID absence is the
 removal postcondition. Incomplete removal or exceptions retain quarantine. This
 does not expand D01 into recovery of already-lost serialized content.
 
-**Player-test candidate preparation/delivery is complete; full client/release acceptance is not.** Main acceptance excludes `fieldwork_probe`. `acceptancemod` supplies fixtures, faults and counters, not scope/registry answers. Historical train95 and other prototype counts are not evidence for this implementation.
+**Player-test candidate preparation/delivery is complete; full client/release acceptance is not.** Main acceptance excludes `fieldwork_probe`. The `src/tools/acceptance/` source set supplies fixtures, faults and counters, not scope/registry answers. Historical train95 and other prototype counts are not evidence for this implementation.
 
 The logic revision's full regression recorded JUnit85, network148, refresh69, lifecycle23, packed24 and independent-JVM seed24/reload25, with complete save/state close checked per phase. Its historical `0.1.0-dev` hash is `765e89e884d8118369825b084ae4e3acfd6048266e39b4ab86e0947dca012266`; see [scoped refresh](scoped-refresh.md).
 

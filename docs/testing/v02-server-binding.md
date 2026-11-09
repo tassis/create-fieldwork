@@ -177,8 +177,9 @@ New phase commands, using the normal wrapper:
 
 Seed/reload must be consecutive. Scratch reports live in
 `run-fieldwork-acceptance/`; keep summaries rather than treating ignored logs as
-distributed evidence. Production acceptance excludes the historical bindingmod and
-testmod. Acceptance supplies nine fault/counter mixins, no scope/registry answers;
+distributed evidence. Production acceptance excludes the historical binding-probe
+tool and testmod. Acceptance tooling supplies nine fault/counter mixins, no
+scope/registry answers;
 none ship or load in ordinary client/server runs.
 
 ## Important fixture distinctions and limitations
