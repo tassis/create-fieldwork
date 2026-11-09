@@ -2,6 +2,9 @@
 
 Initially approved under owner delegation on 2026-11-06, based on actual Create 6.0.10 / Minecraft 1.21.1 resources rather than an older wiki. The owner later revised the three sheet slots to Andesite Alloy. The current recipe is implemented and headlessly tested. Client crafting/unlock interaction and balance feedback remain player acceptance work.
 
+This document is the detailed D03 recipe contract and rationale. The
+[behavior contract](behavior-contract.md) remains authoritative for product scope.
+
 ## Upstream comparison
 
 Create source: `create-1.21.1-6.0.10.jar`; checksum in [`smoke/artifacts.lock`](../../smoke/artifacts.lock). Paths below are relative to `data/create/recipe/`.
@@ -45,6 +48,15 @@ The current production recipe uses exact `create:andesite_alloy` items in all
 three B slots. The older Brass Sheet choice is historical.
 
 Production resource: `src/main/resources/data/create_fieldwork/recipe/redstone_link_isolator.json`; type `minecraft:crafting_shaped`, category `redstone`, result count 1. Obtaining a Redstone Link unlocks it through the accompanying advancement.
+
+## Smart upgrade
+
+The Smart Redstone Link Isolator uses a shapeless recipe:
+
+- one Redstone Link Isolator;
+- three Brass Sheets; and
+- output one Smart Redstone Link Isolator
+  (`create_fieldwork:brass_redstone_link_isolator`).
 
 ## Balance rationale
 

@@ -121,20 +121,17 @@ fixtures and fault/work-counter mixins, but no scope/registry answers, and is ab
 from shipping JARs and ordinary runs. Scratch: `run-fieldwork-acceptance/`. The
 verifier checks phase/results, complete saves and state close.
 
-The 2026-11-09 feature-organization matrix recorded JUnit **106**, network **174**,
-refresh **69**, movement **74**, lifecycle **23**, packed **24**, schematic
-**347**, binding **177**, binding-reset **57**, binding-faults **134**,
-controller-index **43**, controller-work **15**, seed/reload **24/25**, and
-binding-seed/reload **30/27**. Packaged hash
-`c69b8bb59e098f96027a8d3a8050d7be77cbaa9812d2d88183e382733340886c`
-reached installer `Done`, empty `/fieldwork status`, complete console save, and
-exit 0. These are separate phase counts, not a summed score or client acceptance.
+Current phase counts, artifact hashes and installer evidence live only in the
+[production acceptance record](docs/testing/redstone-link-isolator-acceptance.md).
+Performance boundaries are documented in [scoped refresh](docs/testing/scoped-refresh.md)
+and [controller movement](docs/testing/controller-movement-refresh.md); do not claim
+measured speedups or remove Simulated bookkeeping/source iteration.
 
-The scoped-refresh revision recorded JUnit **85**, network **148**, refresh **69**, lifecycle **23**, packed **24**, seed/reload **24/25**, checked separately. Simulated still linearly filters selected-dimension indexes; no MSPT benchmark exists. See [scoped refresh](docs/testing/scoped-refresh.md).
-
-The later private-controller worktree revision newly reran those phases plus **movement81**. Stable four-scope/provenance/session/key/alive position updates filter targets to PRIVATE(A); source/session/liveness changes retain full old/new network fallback. Per-position counters prove same-frequency B/WORLD zero cold updates and A range entry/exit. See [movement evidence](docs/testing/controller-movement-refresh.md); it identifies a local0.1.0 hash after version preparation, not a replacement tag/Release. Do not claim measured speedups or remove Simulated bookkeeping/source iteration.
-
-The texture-only revision retained identical bytes for all 58 Java classes and repeated clean build/JUnit85/network148/installer checks. Edit game PNGs in `src/main/resources/assets/create_fieldwork/textures/block/redstone_link_isolator/`. `python3 scripts/export-isolator-textures.py --check-installed` checks main; `--install --force` explicitly overwrites main from art. See [texture integration](docs/testing/placeholder-textures.md).
+Edit game PNGs in
+`src/main/resources/assets/create_fieldwork/textures/block/redstone_link_isolator/`.
+`python3 scripts/export-isolator-textures.py --check-installed` checks main;
+`--install --force` explicitly overwrites main from art. See
+[texture integration](docs/testing/placeholder-textures.md).
 
 ### Historical research probes
 

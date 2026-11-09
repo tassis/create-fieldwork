@@ -1,11 +1,11 @@
-# Production controller binding v0.2 contract
+# Managed Controller Binding Contract
 
 Status: implemented server/headless contract; client/GUI acceptance remains incomplete.
 The [behavior contract](behavior-contract.md) is the product authority, and the
 [V1 technical design](redstone-link-isolator-v1.md) defines the current two-tier
 controller routing model.
-Latest owner correction: native crouch-air edits channels; standalone crafting
-unbinds only and preserves channels/name. The earlier air-unbind gesture is removed.
+Native crouch-air use edits channels. Standalone crafting unbinds a managed
+controller while preserving channels and name.
 
 ## Identity and authority
 
@@ -13,6 +13,10 @@ unbinds only and preserves channels/name. The earlier air-unbind gesture is remo
   WORLD; a physical lectern resolves from its own WORLD/PRIVATE location.
 - Managed controller: typed persistent UUID component, never a target UUID.
 - Brass/smart BE owns an instance UUID stamp and device→grant-generation list.
+- One smart isolator may grant multiple controller devices. A managed controller
+  resolves to at most one craft; multiple grants for the same device on the same
+  craft are redundant witnesses, while grants across different crafts conflict
+  and deny.
 - A server-owned Loaded authority indexes valid records only. Target resolution
   requires matching actual containing Sable UUID, READY private registry, loaded
   exact BE, no active/failed transaction and matching revocation generation.
@@ -91,10 +95,10 @@ publication precedes barrier release. Last smart entry removal refreshes managed
 sources even if an ordinary marker keeps the craft private. Chunk unload/load,
 Sable transactions and packed BE load drive index changes automatically.
 
-## Pinned event-hook audit for event-driven reconciliation
+## Pinned event-hook constraints
 
-The 2026-11-08 audit used the named NeoForge-compiled Minecraft1.21.1 artifact
-and Create6.0.10 bytecode. Durable conclusions:
+The exact NeoForge-compiled Minecraft 1.21.1 and Create 6.0.10 bytecode establish
+these durable constraints:
 
 - Create `LinkedControllerServerHandler.tick(LevelAccessor)` decrements each
   `ManualFrequencyEntry`, calls `isAlive`, then invokes the single
@@ -131,19 +135,11 @@ before upstream mutation. Once detached, marker blocks live in Sable serialized 
 holding data, so live plot block state is not a valid postcondition. Publication
 requires active-container UUID absence; incomplete removal retains the barrier.
 
-## Current verification — 2026-11-09
+## Content and acceptance boundaries
 
-Clean build/JUnit **106** and production phases binding **177**, binding-reset
-**57**, binding-faults **134**, controller-index **43**, controller-work **15**,
-and independent-JVM binding-seed/reload **30/27** passed with complete saves and
-state close. The packaged candidate hash is
-`c69b8bb59e098f96027a8d3a8050d7be77cbaa9812d2d88183e382733340886c`.
-
-## Content / tests
-
-- Ordinary display name and ID retained; recipe replaces3 brass sheets with3
-  Create andesite alloy. Smart display name: Smart Redstone Link Isolator; internal ID
-  `brass_redstone_link_isolator`. Shapeless ordinary1+brass sheets3→smart1.
+- Smart display name: Smart Redstone Link Isolator; internal ID:
+  `brass_redstone_link_isolator`. The exact ordinary and smart recipes are defined
+  by the [recipe contract](2026-11-06-isolator-recipe.md).
 - Selected gray/brass rim textures only; original full top textures retained.
 - Main-only tests must observe actual Create/Simulated receiver outputs; direct
   ledger tests are not interaction or routing acceptance. Native lectern and
@@ -151,3 +147,7 @@ state close. The packaged candidate hash is
 - Exclude all experimental mixins from ordinary/main acceptance/shipping.
 - True client interaction and client schematic work have separate gates; no GUI
   or complete copy protection claim follows from a headless build.
+
+Current phase counts, persistence results, artifact hashes and installer evidence
+are maintained only in the
+[production acceptance record](../testing/redstone-link-isolator-acceptance.md).

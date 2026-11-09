@@ -3,6 +3,8 @@
 This policy governs production Java under `dev.tassis.createfieldwork`. Its goal
 is to make behavior discoverable by feature while preserving Fieldwork's
 server-owned authority, fail-closed transitions and strict mixin auditability.
+The [project architecture policy](project-architecture-policy.md) remains the
+higher-level authority for ownership and integration boundaries.
 
 ## Package direction
 
