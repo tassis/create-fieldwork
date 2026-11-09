@@ -48,7 +48,7 @@ notes never override those documents.
 - [Private-controller movement](testing/controller-movement-refresh.md): same-frequency receiver selection, range/session/reentry controls and the later local0.1.0 worktree build.
 - [Production mixin audit](testing/main-mixin-audit.md): exact hooks and transformed bytecode.
 - [Texture integration history](testing/placeholder-textures.md).
-- [GitHub Actions and tag releases](testing/github-actions.md).
+- [GitHub Actions and CI-managed releases](testing/github-actions.md).
 - [First pure-core slice](testing/pure-core.md): historical policy milestone.
 - [Controller binding experiment](testing/controller-binding-spike.md): non-shipping device-ID/lectern persistence and block-owned UUID-stamped authorization model; not remote-routing acceptance.
 

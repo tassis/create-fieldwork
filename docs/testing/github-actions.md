@@ -1,49 +1,76 @@
-# GitHub Actions and Tag Releases
+# GitHub Actions and CI-Managed Releases
 
-Workflow: [`.github/workflows/build.yml`](../../.github/workflows/build.yml). It follows the build-artifact → tag-Release pattern used by the neighboring `emotecraft-compat` project.
+Workflows:
 
-## Workflow behavior
+- [`.github/workflows/build.yml`](../../.github/workflows/build.yml): continuous integration only.
+- [`.github/workflows/release.yml`](../../.github/workflows/release.yml): guarded manual publication.
 
-- Branch pushes, pull requests and `workflow_dispatch`: Java21/Gradle9.2.1, installed texture/model validation, `gradle --no-daemon clean test build`, then JAR artifact upload. Failed builds attempt to upload JUnit reports.
-- `v*` tag pushes: tag must exactly equal `v` + `gradle.properties`'s `mod_version`. After build success, a separate release job downloads the same artifact and runs `gh release create --verify-tag --generate-notes` with the JAR attached.
-- Hyphenated versions add `--prerelease` (for example `v0.1.0-dev`). `mod_version=0.1.0` requires `v0.1.0` and produces a regular GitHub Release. Release classification does not imply complete player acceptance.
-- Artifact name: `${mod_id}-neoforge-${minecraft_version}-${mod_version}`, matching the NeoForge-only `archivesName` in build.gradle. Version/game/mod ID are validated; the workflow does not rewrite them.
-- Global build permission is `contents: read`; only release has `contents: write`. Checkout does not persist credentials, and all action references use 40-character SHA pins. PRs do not publish.
+## Continuous integration
 
-This workflow does not run the full headless-server/client matrix or publish to Modrinth/CurseForge. A green build is one verification layer.
+Branch pushes, pull requests and manual CI runs use Java 21 and Gradle 9.2.1 to
+run `gradle --no-daemon clean test build`. They upload the resulting JAR and, on
+failure, attempt to upload the test report.
 
-## Version/tag workflow
+CI has only `contents: read`. It never creates tags or GitHub Releases. Tag pushes
+do not trigger this workflow.
 
-For a future version, update `mod_version`, run clean build/resource checks, commit the release preparation, then create an annotated matching tag. Push the branch and tag when publishing is intended:
+## Release workflow
 
-```sh
-git push origin main
-git push origin v0.1.0
-```
+Publication starts only through `workflow_dispatch` on the `main` branch. The
+operator must enter the exact `mod_version` from `gradle.properties` as
+`confirm_version`.
 
-`v0.1.0` was created during version preparation. Check actual local/remote tag and Actions state before repeating publication steps. The earlier implementation-stage notes saying no commits/tags existed are historical. No hosted result is inferred from local validation or a tag alone; inspect the GitHub run/Release directly.
+The workflow then:
 
-The repository must allow Actions and the release job's contents-write permission. If a Release already exists for a tag, `gh release create` does not overwrite it. Use a new version/tag or let the owner manage the existing release; this workflow does not force-push tags or replace attachments automatically.
+1. validates the selected branch, version, Minecraft version and mod ID;
+2. detects an existing draft or published GitHub Release for `v<mod_version>`;
+3. rejects an existing lightweight tag, malformed tag or annotated tag that
+   resolves to a different commit;
+4. runs a fresh `gradle --no-daemon clean test build`;
+5. copies the exact JAR and writes a SHA-256 checksum file;
+6. uploads both files as workflow artifacts;
+7. creates an annotated `v<mod_version>` tag on the dispatched commit if needed;
+8. creates or recovers a draft GitHub Release and normalizes its title/prerelease
+   metadata;
+9. uploads and downloads both assets to verify their exact bytes;
+10. publishes the Release only after that verification succeeds; or
+11. for an already-published Release, rebuilds and verifies matching metadata and
+    asset bytes without modifying it.
 
-## Historical local validation: 2026-11-07
+If an earlier attempt created the tag or draft but stopped before publication, a
+rerun is allowed only when the annotated tag still resolves to the same commit.
+Draft assets are replaced and verified. A published Release is accepted as an
+idempotent success only when its tag, title, prerelease state and both asset bytes
+match the rebuilt output; otherwise the run fails without overwriting it.
+Hyphenated versions are marked prerelease.
 
-- actionlint1.7.7 passed.
-- Read-only `gh api` verified all five action commits. The reference project's Gradle pin `0b6dd653ba04f4f93bf581ec31e66cbd7dcb644d` returned422 in the official repository; this project uses verified v4 `ed408507eac070d1f99cc633dbcf757c94c7933a` with `setup-gradle/action.yml` present. The reference project was not modified.
-- Actual YAML version Bash was extracted and executed with temporary fixtures: branch, dev tag and stable tag passed; mismatch/invalid version/game version/mod ID failed without outputs.
-- Actual release Bash was extracted and its final publishing call replaced **in memory** with argv printing. Stable/dev tag, path, repo, title, verify-tag/generate-notes/prerelease flags passed; no real Release command was executed by that test.
-- Texture validation and Docker `clean test build` passed (some Gradle tasks restored from cache). At that slice the JAR hash remained `c6536ce872e8acf97b1253f6304c09c7a1fa7b305ef1afb9912077477381ab4a`; this is a historical dev-candidate hash.
-- Read-only workflow review found no blockers. Hosted execution was not established by these local tests.
+The release job alone receives `contents: write`. Checkout does not persist Git
+credentials, action references are full commit SHA pins, release runs are
+serialized, and an in-progress release is never cancelled by a newer dispatch.
+The job uses the `release` GitHub Environment; repository settings may require an
+owner approval there.
 
-## Dependency-verification repair: 2026-11-07
+## Publishing a version
 
-The GPL-licensed `v0.1.0` tag build failed in `createMinecraftArtifacts`: the verification metadata pinned JUnit BOM POMs but lacked their Gradle `.module` metadata. Refreshing local dependency resolution reproduced the same three compile-classpath failures (5.10.0, 5.10.1 and 5.9.3). After those were supplied, the runtime classpath exposed the same omission for 5.7.2.
+1. Update `mod_version` and release-facing documentation.
+2. Run the required local build and acceptance checks.
+3. Commit and push the release preparation to `main`.
+4. Confirm ordinary CI succeeds for that commit.
+5. Open **Actions → Release → Run workflow**, select `main`, and enter the exact
+   version.
+6. Inspect the completed run, generated tag, attached checksum and GitHub Release.
 
-All four `.module` files were fetched separately from Maven Central and NeoForged Releases, compared byte-for-byte, and checked against Central's published `.sha256` values before adding exact artifact entries to `gradle/verification-metadata.xml`. Existing checksums and strict metadata verification remain enabled; no wildcard trust or verification bypass was added.
+Do not create or push the release tag manually. The tag is a publication result,
+not a build trigger. A local build or local tag does not establish hosted
+publication.
 
-The repaired dependency resolution and full build passed with:
+## Scope and limitations
 
-```sh
-./scripts/gradle-docker.sh clean test build --refresh-dependencies
-```
+The hosted workflows run the Gradle build and unit checks. They do not run the
+full headless-server acceptance matrix, start a GUI client, or publish to
+Modrinth/CurseForge. A green workflow is one verification layer and does not imply
+complete player acceptance.
 
-Compilation/test outputs can still come from Gradle's build cache; `--refresh-dependencies` specifically rechecks dependency metadata resolution. The successful local run restored the 85-test JUnit result from cache. When auditing verification metadata, include a refreshed-dependency run: an ordinary warm-cache build alone did not expose these missing artifacts.
+Dependency verification remains strict. When changing
+`gradle/verification-metadata.xml`, include a refreshed-dependency build because a
+warm Gradle cache may not expose missing module metadata.

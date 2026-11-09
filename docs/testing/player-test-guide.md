@@ -7,7 +7,9 @@ Current version: **0.1.0**. Client/GUI, multiplayer, real explosions and the com
 - Local build: `build/libs/create_fieldwork-neoforge-1.21.1-0.1.0.jar`.
 - Mod ID: `create_fieldwork`.
 - Block/item ID: `create_fieldwork:redstone_link_isolator`.
-- CI uploads the JAR as an artifact; a successful matching tag workflow attaches it to the GitHub Release. See [CI/release documentation](github-actions.md).
+- CI uploads JAR artifacts. A manually dispatched Release workflow builds again,
+  then creates the matching tag and GitHub Release from that exact commit and JAR.
+  See [CI/release documentation](github-actions.md).
 
 Record the hash of the exact JAR you install. **Fully close the game/server before replacing a mod JAR**; leaving a world does not reload mod code.
 
