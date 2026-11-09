@@ -69,9 +69,6 @@ jobs:
           # Matches build.gradle's archivesName; this project is NeoForge-only.
           echo "artifact_name=${mod_id}-neoforge-${minecraft_version}-${version}" >> "$GITHUB_OUTPUT"
 
-      - name: Validate installed textures and models
-        run: python3 scripts/export-isolator-textures.py --check-installed
-
       - name: Test and build
         run: gradle --no-daemon clean test build
 

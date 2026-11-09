@@ -127,11 +127,9 @@ Performance boundaries are documented in [scoped refresh](docs/testing/scoped-re
 and [controller movement](docs/testing/controller-movement-refresh.md); do not claim
 measured speedups or remove Simulated bookkeeping/source iteration.
 
-Edit game PNGs in
+Edit game PNGs directly in
 `src/main/resources/assets/create_fieldwork/textures/block/redstone_link_isolator/`.
-`python3 scripts/export-isolator-textures.py --check-installed` checks main;
-`--install --force` explicitly overwrites main from art. See
-[texture integration](docs/testing/placeholder-textures.md).
+See [texture integration history](docs/testing/placeholder-textures.md).
 
 ### Historical research probes
 
