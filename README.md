@@ -75,7 +75,6 @@ For a clean build and checks:
 
 ```sh
 ./scripts/gradle-docker.sh clean build
-python3 scripts/export-isolator-textures.py --check-installed
 ```
 
 There is no Gradle Wrapper. Desktop development with Java 21 and Gradle 9.2.1 can use `gradle --no-daemon build` and `gradle runClient`.
@@ -86,10 +85,10 @@ There is no Gradle Wrapper. Desktop development with Java 21 and Gradle 9.2.1 ca
 - [Documentation index](docs/README.md): design, verification and historical research.
 - [Behavior contract](docs/design/behavior-contract.md), [V1 technical design](docs/design/redstone-link-isolator-v1.md), and [architecture policy](docs/design/project-architecture-policy.md).
 - [Main-only acceptance evidence](docs/testing/redstone-link-isolator-acceptance.md): tested behavior and remaining checks.
-- [Texture editing](art/redstone_link_isolator/README.md): seven editable PNGs and the active-top model.
 - [CI and tag releases](docs/testing/github-actions.md): build artifacts and automated GitHub Releases.
 
-The scoped-refresh revision recorded 85 JUnit tests, network 148, refresh 69, lifecycle 23, packed 24 and independent-JVM seed/reload 24/25 assertions. Each phase has separate save/close checks; these counts are not a completed release matrix. The subsequent texture-only candidate repeated build/JUnit/network and installer checks. The `0.1.0` preparation also passed clean build, 85 JUnit tests and texture/model validation. Earlier `0.1.0-dev` hashes identify historical candidates, not the versioned `0.1.0` artifact.
+Current phase counts, artifact hashes and installer evidence are maintained in the
+[production acceptance record](docs/testing/redstone-link-isolator-acceptance.md).
 
 `verifyScopeProbe` runs historical prototypes **without production main**. Use `verifyFieldworkAcceptance` to verify the actual implementation.
 

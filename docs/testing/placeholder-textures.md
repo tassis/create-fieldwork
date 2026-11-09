@@ -5,21 +5,12 @@
 Production now uses the [selected gray/brass rim pair](../../art/isolator_variants/SELECTED.md)
 for ordinary and smart isolators. Their 14 face PNGs are all model-referenced;
 the inner 12×12 pixels and both complete top states retain the original design.
-Install **selected**, not historical original art, with:
-
-```sh
-python3 scripts/export-isolator-textures.py --install-selected --force
-python3 scripts/export-isolator-textures.py --check-installed
-python3 scripts/export-isolator-variants.py --style rim --check
-```
 
 At the owner's request the unused instrument, casing and wood-rim drafts, previews
-and ZIPs were removed. The variants exporter now defaults to rim and rejects those
-obsolete styles. Original editable `art/redstone_link_isolator/` is retained as
-the source/reference for unchanged patterns, not as the current full rim texture.
-Both selected checks and the default variants check passed after cleanup. The
-shipping JAR SHA-256 remained unchanged; see [current server evidence](v02-server-binding.md).
-Real client display remains pending.
+and ZIPs were removed. Original art snapshots remain references only; production
+reads the PNGs under `src/main/resources`. The shipping JAR SHA-256 remained
+unchanged during the recorded selection; see
+[current server evidence](v02-server-binding.md). Real client display remains pending.
 
 ## Historical original-texture integration
 
@@ -34,17 +25,14 @@ The game reads `src/main/resources/assets/create_fieldwork/textures/block/redsto
 - Inactive model: `minecraft:block/cube`, individual face references, north particle texture.
 - Active model: inherits inactive and overrides only `up`; item model and active blockstate variants remain unchanged.
 
-Edit main PNGs directly, rebuild and replace the JAR after fully closing the game/server. Art and ZIP preserve original template/unfolded-preview snapshots and do not synchronize automatically. To overwrite main from art explicitly:
-
-```sh
-python3 scripts/export-isolator-textures.py --install --force
-```
-
-The exporter protects existing files by default and does not rewrite model JSON. See the [art guide](../../art/redstone_link_isolator/README.md).
+Edit main PNGs directly, rebuild and replace the JAR after fully closing the
+game/server. Art and ZIP files preserve historical template/unfolded-preview
+snapshots and do not synchronize with production resources.
 
 ## Recorded verification
 
-- `python3 scripts/export-isolator-textures.py --check-installed`: all seven main PNG dimensions/CRC/pixel data and six-face/ACTIVE references passed. Read-only; allows main and art to differ.
+- The recorded resource check verified all seven main PNG dimensions/pixel data
+  and six-face/ACTIVE model references.
 - Clean build/JUnit85 and main-only network148 passed with complete save/state close: `.audit/placeholder-textures-{build,network}.log`.
 - Build versus prior installed scoped-refresh JAR: **all 58 Java class paths and bytes identical**, `.audit/placeholder-textures-class-check.log`.
 - Archive included seven PNGs/new models and excluded drivers/faults/counters: `.audit/placeholder-textures-archive.log`.
