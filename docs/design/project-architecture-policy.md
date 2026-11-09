@@ -53,8 +53,10 @@ formatting rules are in the [code organization policy](code-organization-policy.
   loaded-craft references.
 - Schematic client code may consume synchronized or local presentation state but
   must not decide server authorization.
-- Research and acceptance drivers remain in separate source sets and must not be
-  packaged in the shipping JAR.
+- Non-shipping executable tooling lives under `src/tools/`: production acceptance
+  fixtures under `acceptance`, and the historical binding experiment under
+  `binding-probe`. Research and acceptance tools remain separate source sets and
+  must not be packaged in the shipping JAR.
 
 ## Lifecycle and publication ordering
 

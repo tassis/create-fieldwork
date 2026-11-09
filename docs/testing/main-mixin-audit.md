@@ -104,7 +104,7 @@ Line numbers identify that export only. Bytecode proves composition; dynamic mai
 
 ## Driver isolation
 
-`acceptancemod` has publication, visual, marker-write, binding-ledger/grant/
+The `src/tools/acceptance/` tool has publication, visual, marker-write, binding-ledger/grant/
 withdrawal/refresh and lectern-assignment faults plus two counters. Driver-only
 flags never supply authorization/registry answers or ship. Fault injections
 supply no-op/throw/nested inputs; counters observe work without changing behavior.

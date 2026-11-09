@@ -96,22 +96,32 @@ tasks.register('verifyShippingIsolation') {
 }
 tasks.named('check') { dependsOn 'verifyShippingIsolation' }
 
-sourceSets { testmod; acceptancemod; bindingmod }
+sourceSets {
+    testmod
+    acceptanceTool {
+        java.srcDirs = ['src/tools/acceptance/java']
+        resources.srcDirs = ['src/tools/acceptance/resources']
+    }
+    bindingProbeTool {
+        java.srcDirs = ['src/tools/binding-probe/java']
+        resources.srcDirs = ['src/tools/binding-probe/resources']
+    }
+}
 configurations {
     testmodImplementation.extendsFrom implementation
     testmodCompileOnly.extendsFrom compileOnly
     testmodRuntimeOnly.extendsFrom runtimeOnly
     testCompileOnly.extendsFrom compileOnly
-    acceptancemodImplementation.extendsFrom implementation
-    acceptancemodCompileOnly.extendsFrom compileOnly
-    acceptancemodRuntimeOnly.extendsFrom runtimeOnly
-    bindingmodImplementation.extendsFrom implementation
-    bindingmodCompileOnly.extendsFrom compileOnly
-    bindingmodRuntimeOnly.extendsFrom runtimeOnly
+    acceptanceToolImplementation.extendsFrom implementation
+    acceptanceToolCompileOnly.extendsFrom compileOnly
+    acceptanceToolRuntimeOnly.extendsFrom runtimeOnly
+    bindingProbeToolImplementation.extendsFrom implementation
+    bindingProbeToolCompileOnly.extendsFrom compileOnly
+    bindingProbeToolRuntimeOnly.extendsFrom runtimeOnly
 }
 dependencies {
-    acceptancemodImplementation sourceSets.main.output
-    bindingmodImplementation sourceSets.main.output
+    acceptanceToolImplementation sourceSets.main.output
+    bindingProbeToolImplementation sourceSets.main.output
     // Pure refresh selections expose Create's native frequency/Couple types.
     // Unit tests need the already-audited nested class libraries, not another
     // copy installed in any client/server runtime.
@@ -121,16 +131,16 @@ dependencies {
 neoForge {
     version = neo_version
     addModdingDependenciesTo sourceSets.testmod
-    addModdingDependenciesTo sourceSets.acceptancemod
-    addModdingDependenciesTo sourceSets.bindingmod
+    addModdingDependenciesTo sourceSets.acceptanceTool
+    addModdingDependenciesTo sourceSets.bindingProbeTool
 
     mods {
         "${mod_id}" {
             sourceSet sourceSets.main
         }
         fieldwork_probe { sourceSet sourceSets.testmod }
-        fieldwork_acceptance { sourceSet sourceSets.acceptancemod }
-        fieldwork_binding_probe { sourceSet sourceSets.bindingmod }
+        fieldwork_acceptance { sourceSet sourceSets.acceptanceTool }
+        fieldwork_binding_probe { sourceSet sourceSets.bindingProbeTool }
     }
 
     unitTest {
@@ -165,7 +175,7 @@ neoForge {
         }
         fieldworkAcceptanceServer {
             server()
-            sourceSet = sourceSets.acceptancemod
+            sourceSet = sourceSets.acceptanceTool
             loadedMods = [mods."${mod_id}", mods.fieldwork_acceptance]
             gameDirectory = project.file('run-fieldwork-acceptance')
             programArgument '--nogui'
@@ -175,7 +185,7 @@ neoForge {
         }
         bindingProbeServer {
             server()
-            sourceSet = sourceSets.bindingmod
+            sourceSet = sourceSets.bindingProbeTool
             loadedMods = [mods."${mod_id}", mods.fieldwork_binding_probe]
             gameDirectory = project.file('run-binding-probe')
             programArgument '--nogui'
@@ -212,7 +222,7 @@ tasks.matching { it.name == 'runBindingProbeServer' }.configureEach {
         delete file('run-binding-probe/result.json')
         delete file('run-binding-probe/state-closed.txt')
         if (!providers.gradleProperty('bindingKeepWorld').isPresent()) delete file('run-binding-probe/binding-world')
-        copy { from 'src/bindingmod/server.properties'; into 'run-binding-probe' }
+        copy { from 'src/tools/binding-probe/server.properties'; into 'run-binding-probe' }
     }
 }
 
@@ -240,7 +250,7 @@ tasks.matching { it.name == 'runFieldworkAcceptanceServer' }.configureEach {
         delete file('run-fieldwork-acceptance/result.json')
         delete file('run-fieldwork-acceptance/state-closed.txt')
         if (!providers.gradleProperty('acceptanceKeepWorld').isPresent()) delete file('run-fieldwork-acceptance/acceptance-world')
-        copy { from 'src/acceptancemod/server.properties'; into 'run-fieldwork-acceptance' }
+        copy { from 'src/tools/acceptance/server.properties'; into 'run-fieldwork-acceptance' }
     }
 }
 
