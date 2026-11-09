@@ -11,9 +11,38 @@ Current version: **0.1.0**. Client/GUI, multiplayer, real explosions and the com
 
 Record the hash of the exact JAR you install. **Fully close the game/server before replacing a mod JAR**; leaving a world does not reload mod code.
 
-### Latest local controller optimization
+### Current local controller/schematic candidate
 
-The later private-controller movement optimization is available in the local0.1.0 JAR above, SHA-256 `a7769b40ca8a7f1bee15a6c21929f724e1748eb009e614ab34d312c6408e0000`. It limits stable private position updates to that craft's receivers while preserving range and full transition handling. See [movement refresh evidence](controller-movement-refresh.md).
+Use the current hash below; the controller player-fix record preserves an older
+historical candidate. Client and server must both use this same candidate.
+
+Current SHA-256: `c69b8bb59e098f96027a8d3a8050d7be77cbaa9812d2d88183e382733340886c`.
+
+This exact build also passed packaged dedicated-server startup/status/save with
+exit0. That does not replace the client interaction checks below.
+
+- Main-hand controller, crouch-use the smart isolator to bind.
+- Crouch-use air opens the native channel menu and keeps the binding.
+- Craft one bound controller alone in2x2 or3x3 to unbind it; channels and custom
+  name stay unchanged. An ordinary unbound controller has no unbind recipe.
+- Right-click activation and native lectern use take priority over an active
+  offhand blueprint. Test with the blueprint present and absent.
+- Verify outside control on ground and while flying/leaving the structure, then
+  put the controller in a lectern on that structure and check its real output.
+- Fresh input is required after binding/unbinding. Passive unavailability keeps
+  the device managed/blocked, never silently turns it into a public controller.
+
+Those actual client interactions remain player-retest items; headless native
+menu/packet/receiver tests do not establish every GUI/input path. Offhand visual
+assistance and its limits are documented [separately](schematic-client-v02.md).
+
+### Historical local controller optimization
+
+An earlier private-controller movement optimization used local0.1.0 SHA-256
+`a7769b40ca8a7f1bee15a6c21929f724e1748eb009e614ab34d312c6408e0000`.
+It limited stable private position updates to that craft's receivers while
+preserving range and full transition handling. It is historical, not the current
+JAR above; see [movement refresh evidence](controller-movement-refresh.md).
 
 This is a **local worktree build after version preparation**, not proof that the existing `v0.1.0` tag or GitHub Release includes these uncommitted changes. No tag/Release was replaced. Use the hash to identify the installed build, not the shared version string alone.
 
@@ -75,7 +104,7 @@ To save and stop:
 
 ### 1. Item and recipe
 
-- Find **Redstone Link Isolator** in the creative Redstone tab, or use `/give @s create_fieldwork:redstone_link_isolator`.
+- Find **Redstone Link Isolator** in the dedicated **Create: Fieldwork** creative tab (isolator icon), the vanilla Redstone tab or creative search. You can also use `/give @s create_fieldwork:redstone_link_isolator`.
 - Check block/item models, English and Traditional Chinese names, and both tooltip sections. Original placeholder art has black/purple sides, a gold inactive top and a red ACTIVE top.
 - The game reads the seven PNGs under `src/main/resources/assets/create_fieldwork/textures/block/redstone_link_isolator/`; ACTIVE changes only `up_active.png`.
 - Craft one with the ordinary shaped 3×3 recipe:
@@ -86,7 +115,7 @@ E L E
 B P B
 ```
 
-O = Obsidian, B = Brass Sheet, E = Electron Tube, L = Redstone Link, P = Precision Mechanism. Obtaining a Link unlocks the recipe. In survival, use a diamond-tier or better pickaxe for the drop.
+O = Obsidian, B = Andesite Alloy, E = Electron Tube, L = Redstone Link, P = Precision Mechanism. Obtaining a Link unlocks the recipe. In survival, use a diamond-tier or better pickaxe for the drop. Upgrade one ordinary isolator plus three Brass Sheets shapelessly to obtain one Smart Redstone Link Isolator.
 
 ### 2. Minimal isolation scene
 

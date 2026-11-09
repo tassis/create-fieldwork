@@ -4,7 +4,7 @@
   "pattern":["OBO","ELE","BPB"],
   "key":{
     "O":{"item":"minecraft:obsidian"},
-    "B":{"tag":"c:plates/brass"},
+    "B":{"item":"create:andesite_alloy"},
     "E":{"item":"create:electron_tube"},
     "L":{"item":"create:redstone_link"},
     "P":{"item":"create:precision_mechanism"}

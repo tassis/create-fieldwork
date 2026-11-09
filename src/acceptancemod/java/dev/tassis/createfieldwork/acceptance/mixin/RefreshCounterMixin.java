@@ -3,7 +3,7 @@ package dev.tassis.createfieldwork.acceptance.mixin;
 import com.simibubi.create.content.redstone.link.IRedstoneLinkable;
 import com.simibubi.create.content.redstone.link.RedstoneLinkNetworkHandler;
 import dev.tassis.createfieldwork.acceptance.RefreshMetrics;
-import dev.tassis.createfieldwork.server.FieldworkStateAccess;
+import dev.tassis.createfieldwork.platform.FieldworkStateAccess;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.LevelAccessor;
 import org.spongepowered.asm.mixin.Mixin;

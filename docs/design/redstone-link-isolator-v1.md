@@ -1,10 +1,12 @@
 # Redstone Link Isolator V1 — Technical Design
 
-Design established 2026-11-06; implementation and verification updated through 2026-11-07.
+Design established 2026-11-06; implementation and verification updated through 2026-11-09.
 
 **Status:** production main is implemented and available as `0.1.0` for player testing. Headless and installer evidence exists; client and full release acceptance are incomplete. This document describes the intended architecture and guarantees. The [acceptance record](../testing/redstone-link-isolator-acceptance.md) defines what has actually been tested.
 
-The [product contract](../../plan.md) remains authoritative for behavior. The internal [implementation plan](../../.ramblings/plans/2026-11-06-redstone-link-isolator.md) and [checklist](../../.ramblings/checklists/2026-11-06-redstone-link-isolator.yaml) preserve execution history.
+The [product contract](behavior-contract.md) remains authoritative for behavior.
+The [project architecture policy](project-architecture-policy.md) defines mandatory
+ownership, dependency, integration, and documentation boundaries.
 
 ## 1. Approved decisions
 
@@ -12,7 +14,7 @@ The [product contract](../../plan.md) remains authoritative for behavior. The in
 |---|---|
 | A: isolation | Same isolated SubLevel can communicate internally; world/other craft are blocked in both directions |
 | Membership | Compare logical server, dimension and SubLevel UUID; never infer membership from a craft AABB |
-| Controllers | Handheld operation aboard a craft must control that craft; lectern provenance is separate from operator position |
+| Controllers | Ordinary handheld is always WORLD; ordinary private control requires a lectern physically on that craft; managed controllers use their loaded smart binding target |
 | Upstream behavior | Preserve Create frequency/range/power and Sable projection |
 | Uncertain transitions | PENDING denies authorization; null tracking does not prove WORLD membership |
 | D01 | Strong recovery of upstream-lost blocks/data and an exceptional journal are optional/deferred |
@@ -29,13 +31,17 @@ Included:
 - Handheld Linked Controller and Lectern Controller standard-network input.
 - Directional and Modulating Linked Receivers in the pinned Aeronautics bundled/Simulated artifact.
 - Train-schedule Redstone Link global conditions through a separate D02 adapter.
-- One isolator block/BE, position-set handling for multiple isolators, assembly/disassembly/split, load/unload/restart and ordinary block mutations.
+- One isolator feature family with ordinary and smart blocks/BEs, position-set
+  handling for multiple isolators, assembly/disassembly/split,
+  load/unload/restart, and ordinary block mutations.
 - Protocol-compatible endpoints with correct location/liveness and audited source semantics; this is not blanket support for arbitrary custom wireless implementations.
 
 Excluded:
 
 - Vanilla redstone, Redstone Contacts, Flight Control direct proxies, seats and unrelated controls.
-- ComputerCraft/other wireless systems, gateways, frequency lists and controller boundary exceptions.
+- ComputerCraft/other wireless systems, gateways, frequency lists, and unmanaged
+  or ad-hoc controller boundary exceptions. The server-owned smart-isolator
+  binding route defined in section6 is explicitly supported.
 - General Sable block/BE transfer repair, whole-batch rollback, disk/OS power-loss recovery and the deferred D01 journal.
 - Private train-consumer membership, carriage cross-scope ownership, offline carrier provenance and anchor-UUID recovery.
 
@@ -83,23 +89,23 @@ MinecraftServer instance
    ├─ IsolationRegistry       CraftKey → lifecycle + immutable marker positions
    ├─ TransitionCoordinator   token → affected craft/positions + runtime state
    ├─ ControllerSources       server provenance and published entry scope
-   ├─ PlayerMemberships       player UUID/session → confirmed membership/PENDING
+   ├─ PlayerSessions          player UUID/session → validated controller input provenance and lifecycle
    ├─ WirelessRefresh         dirty dimension/frequency work and update frames
    └─ SourcePublications      source publication/visibility state
 ```
 
 | Component | Responsibility |
 |---|---|
-| `server/FieldworkServerState`, `FieldworkStateAccess`, `mixin/MinecraftServerMixin` | Server-instance holder, thread checks, cleanup |
-| `isolation/CraftKey` | Dimension ResourceKey + SubLevel UUID; enclosing state supplies server identity |
-| `isolation/IsolationRegistry` | Initialization, atomic marker-set publication, idempotent mutation, teardown |
-| `wireless/Scope`, `PairPolicy`, `ScopeResolver` | WORLD/PRIVATE/PENDING, pure policy, server-context/ownership/provenance resolution |
-| `wireless/TrainConditionQuery`, `SourcePublications` | D02 visibility, epoch/session, publication windows |
-| `isolation/TransitionCoordinator` | Batch boundaries, affected-only overlays, publication and failure handling |
-| `wireless/WirelessRefresh`, `RefreshScope` | Scoped receiver recomputation, cleanup, update frames and one-shot permissions |
-| `controller/ControllerSources`, `PlayerMemberships` | Server input provenance and accepted movement/session handling |
-| `content/IsolatorBlock`, `IsolatorBlockEntity`, `VisualUpdates` | Actual block/BE and derived visuals |
-| `registry/FieldworkContent` | Block, item, BE type and creative entry registration |
+| `platform/FieldworkServerState`, `FieldworkStateAccess`, `mixin/platform/MinecraftServerMixin` | Server-instance holder, thread checks, cleanup |
+| `isolator/state/CraftKey`, `IsolationRegistry` | Craft identity, initialization, atomic marker-set publication and teardown |
+| `wireless/scope/Scope`, `PairPolicy`, `ScopeResolver` | WORLD/PRIVATE/PENDING and pure ownership/provenance policy |
+| `wireless/train/TrainConditionQuery`, `wireless/publication/SourcePublications` | D02 visibility, epoch/session and publication windows |
+| `isolator/lifecycle/TransitionCoordinator`, `TransitionCapture`, `TransitionPostconditions` | Batch/barrier ordering, immutable pre-mutation capture and ledger validation |
+| `wireless/refresh/WirelessRefresh`, `CreateReceiverRefreshPass`, `SimulatedReceiverRefreshPass` | Scoped recomputation, cleanup, update frames and one-shot permissions |
+| `controller/routing/ControllerSources` and package-private validation/index/reconciliation collaborators | Server input provenance, endpoint indexes and retained refresh obligations |
+| `controller/session/PlayerSessions` | Server-generated player session identity and transition handling |
+| `isolator/ordinary`, `isolator/smart`, `isolator/binding` | Actual blocks/BEs, smart binding authority and derived visuals |
+| `platform/registry/FieldworkContent` | Block, item, BE type and creative entry registration |
 
 All mutations run on the server thread; queries use immutable snapshots. Avoid long-lived strong references to SubLevels/players: store CraftKey, UUID and server-generated session identity. Endpoint metadata is a server-owned handle. Nested source contexts are restored with `try/finally`, not prototype static state/WeakHashMaps.
 
@@ -132,35 +138,33 @@ Use the network's server Level and `Sable.HELPER.getContaining(level,storedPos)`
 
 Both upstream controller paths use the **player's world BlockPos**. Preserve `getLocation()` and its range quantization:
 
-- Handheld scope follows server-confirmed player membership.
-- Lectern scope follows the validated source block, even if its operator stands in WORLD.
+- Ordinary handheld scope is always WORLD, even while its player stands on an
+  isolated craft. Player membership is not private authorization.
+- Ordinary lectern scope follows the validated source block, even if its operator
+  stands in WORLD. A lectern physically on PRIVATE(A) is the ordinary route to A.
+- Managed hand or lectern scope follows only its loaded smart binding target;
+  player and lectern craft do not retarget it.
 - Distance still uses upstream player coordinates and Sable projection of the other endpoints.
 - Capture provenance after upstream held-item/active-user validation. Frequencies come from the server ItemStack; no client-reported craft UUID protocol is added.
 - Attach metadata before `addToNetwork`. Refresh it on frequency-entry reuse/heartbeat and device changes, not only construction.
 
-### Accepted movement
+### Session and event reconciliation
 
-Sable can mutate tracking before vanilla accepts a packet. A rejected WORLD move, ignored private proposal or pending teleport acknowledgment must not authorize a new scope.
+Controller authority comes from server-validated item or lectern provenance and,
+for managed devices, the loaded smart binding target. Player position or craft
+membership never grants ordinary handheld private authorization. `PlayerSessions`
+tracks validated controller-input sessions so disconnect, dimension change,
+inventory/program changes, and replacement sessions revoke or reconcile only the
+affected endpoints. Production does not hook vanilla movement acceptance or use
+movement proposals as controller authority; historical movement-hook findings
+remain research evidence only.
 
-Store confirmed membership separately from effective radio scope. A confirmed CRAFT(B) with zero markers still retains B's identity, so adding its first marker can be handled correctly.
-
-| Event | Confirmed state | Effective radio behavior |
-|---|---|---|
-| WORLD→WORLD, no private proposal | Ordinary upstream state | No added pause/timeout policy |
-| Proposal could enter/leave private membership | Preserve last confirmed value; retain raw proposal separately | PENDING, retract old contribution |
-| Accepted CRAFT(B) | Record B and accepted evidence | Resolve B's registry; READY(empty) is WORLD |
-| Accepted WORLD with actual ordinary-world support | Confirm WORLD; clear protected private history | WORLD; refresh old/new boundary |
-| Accepted WORLD but unresolved airborne/support gap | Accepted position does not prove departure | PENDING(last confirmed key) |
-| Rejected/ignored movement or pending teleport ack | Do not overwrite confirmed membership | Private-related proposal remains PENDING until valid acceptance |
-| Current getter becomes null | Not a new confirmed value | PENDING if protected history exists |
-| Original craft becomes READY(empty) | Clear privacy restriction; retain any known craft identity | Restore WORLD semantics; recheck if first marker returns |
-| Logout, invalid connection/session, dimension mismatch | Revoke old session | UNAVAILABLE; retract/clean entries, never WORLD fallback |
-
-Normal membership compares Sable instance/CraftKey directly. Last tracking UUID is historical evidence for conservative denial, not positive authorization. Raw current tracking may be used only when not contradicted by unresolved speculative/rejected state. No-position packets do not erase accepted evidence.
-
-The audited successful acceptance point is the vanilla `lastGoodZ` PUTFIELD in `handleMovePlayer`, not a generic method RETURN or client `onGround`. Conservative departure requires accepted WORLD position plus vanilla-computed ordinary-world support. Uncertain airborne departure can pause control; it never times out into WORLD. A rejected private proposal can put an initially WORLD actor into PENDING too.
-
-Controller tick reconciles scope/session changes while held. Preserve upstream release and 30-tick timeout; do not impose new disconnect behavior on all ordinary WORLD sources. Complex support shapes and real client packet/key order remain player acceptance work.
+Known movement, teleport, inventory/program, lectern-user, binding and lifecycle
+events reconcile affected endpoints. A fixed 200-server-tick complete safety
+sweep is a backstop; no extra all-controller Fieldwork pass runs every Create
+tick. Preserve upstream release and 30-tick timeout and do not impose managed
+item/program rules on ordinary WORLD timeout behavior. Create's native TTL loop
+is unchanged.
 
 ## 7. Narrow integration boundaries
 
@@ -172,8 +176,7 @@ Keep full descriptors, strict match counts and `required=true/defaultRequire=1`.
 | Simulated `updateSignal()V`, first `getTransmittedStrength()I` call | Denied source becomes 0; preserve direction/modulation/range |
 | Train `tickCompletion(...)Z` and its single global-power call | Coordinate visibility, cache and PENDING only for that consumer |
 | Controller `handleItem` → `receivePressed` | Keep upstream call; capture validated server source context |
-| Controller reuse/tick | Reconcile position, published scope and validity; scoped refresh |
-| Vanilla `handleMovePlayer` | Capture raw source and exact accepted-movement evidence |
+| Controller reuse/events | Reconcile exact affected position, published scope and validity; low-frequency complete safety sweep only |
 | Sable/Simulated outer lifecycle methods | Exception-safe narrow wrappers; retain upstream transfer algorithm |
 
 Create cleans dead entries; Simulated's direct loop does not. Restricted/PENDING/overlay sources therefore need liveness checks to prevent dead cached endpoints being reauthorized after plot reuse. WORLD/WORLD preserves upstream behavior. Arbitrary third-party endpoints that falsely report `isAlive=true` are outside this guarantee.
@@ -190,6 +193,13 @@ Do not replace the network handler, add a competing ordinary Redirect, target de
 | Split | Whole `SubLevelHeatMapManager.split`; child assembly must not commit early |
 
 ContainerReady uses the **event's container** to install observers: it fires before the Level container field is assigned. onAdded establishes INITIALIZING only. afterMove is before source clearing and cannot commit a batch. Enumerate blocks only on explicit cold paths.
+
+Container removal preserves the complete old craft/position/controller footprint
+and barrier through withdrawal. A detached craft's marker blocks are represented
+by Sable's serialized/holding data, so live plot block state is not a stable
+postcondition. The active container must no longer contain the UUID before removal
+can publish; incomplete removal or exceptions remain quarantined. This does not
+claim recovery of already-lost serialized content under D01.
 
 Each root owns a token, affected craft and source/destination positions. Normal nested moves share their root; unrelated roots can complete independently. Overlapping operations cannot skip existing barriers.
 
@@ -236,7 +246,7 @@ The same rule applies to BEGIN: unresolved output prevents destructive writes. N
 
 The 2026-11-07 scoped revision uses immutable `RefreshScope` selections: dimension → frequency set or all-in-that-dimension fallback. Collect old keys **before touch**, add destination/final keys and retain the union through repair, including related controller old dimensions. Unknown load/publication frequencies expand only involved dimensions.
 
-Ordinary callbacks cannot borrow candidate views; nested requests merge into subsequent synchronous passes (8-pass bound). Controller tick targets its level, movement its player UUID, restricted position updates their own key. Pure WORLD position notifications retain Create's existing semantics.
+Ordinary callbacks cannot borrow candidate views; nested requests merge into subsequent synchronous passes (8-pass bound). Controller device/lectern/lifecycle events target indexed endpoints; ordinary movement and same-dimension teleport/ack schedule no Fieldwork controller work. Pure WORLD position notifications retain Create's existing semantics.
 
 A READY PRIVATE→PRIVATE marker mutation can skip receiver recomputation only with a real second-marker witness, consistent index/block state and no active/relevant barrier. Temporarily update the set, then reconcile actual block identity in `finally`; do not overwrite nested failures. First/last marker changes still use synchronous barriers/ledger.
 
@@ -271,7 +281,7 @@ A future exceptional journal needs a separate design and interruption/I/O tests.
 
 Tooltip intent: aboard an assembled craft, standard links communicate only within that craft, retaining frequency/range limits; ordinary redstone and other wireless systems are unaffected.
 
-**D03:** ordinary shaped 3×3, `OBO/ELE/BPB`, output one: 2 Obsidian, 3 Brass Sheets (`c:plates/brass`), 2 Electron Tubes, 1 Redstone Link and 1 Precision Mechanism. Unlock on obtaining a Link. The mechanism already supplies the five-round sequenced-assembly gate; no extra nine-Mechanical-Crafter requirement is added. Recipe matching/output/unlock-resource loading are headlessly tested; real client crafting remains pending. See [recipe rationale](2026-11-06-isolator-recipe.md).
+**D03:** ordinary shaped 3×3, `OBO/ELE/BPB`, output one: 2 Obsidian, 3 Andesite Alloy, 2 Electron Tubes, 1 Redstone Link and 1 Precision Mechanism. Unlock on obtaining a Link. The mechanism already supplies the five-round sequenced-assembly gate; no extra nine-Mechanical-Crafter requirement is added. Recipe matching/output/unlock-resource loading are headlessly tested; real client crafting remains pending. See [recipe rationale](2026-11-06-isolator-recipe.md).
 
 ## 12. Implementation and verification stages
 
@@ -281,10 +291,19 @@ Tooltip intent: aboard an assembled craft, standard links communicate only withi
 | Pure core/server holder | CraftKey, Scope/PairPolicy, registry, thread/server/session and cleanup tests |
 | Actual lifecycle | Real isolator events and load/assembly/disassembly/split/restart; no obsidian oracle |
 | Network integration | Both main filters; begin withdrawal, candidate refresh, callback isolation, legal7/forbidden15, range/frequency |
-| Controller/train integration | Server/session provenance, accepted movement/PENDING, fixed-WORLD visibility and cache |
+| Controller/train integration | Server/session provenance, event-driven reconciliation, fixed-WORLD visibility and cache |
 | Player content/acceptance | Resources/recipe, packaged installer, client synchronization and full matrix |
 
 The production implementation has reached player-test delivery; the final client/full-matrix gate remains incomplete. Historical task ordering is not a current missing-feature list.
+
+The 2026-11-09 feature-organization server/headless matrix passed JUnit106;
+network174, refresh69, movement74, lifecycle23, packed24, schematic347; binding177,
+binding-reset57, binding-faults134, controller-index43, controller-work15; and
+independent-JVM seed/reload24/25 plus binding-seed/reload30/27. Packaged hash:
+`c69b8bb59e098f96027a8d3a8050d7be77cbaa9812d2d88183e382733340886c`.
+The installed copy reached `Done`, returned an empty Fieldwork status, completed
+console saves for every dimension and Sable sub-level, and exited0. This is
+dedicated-server evidence, not client transformation or visual acceptance.
 
 Verification layers:
 

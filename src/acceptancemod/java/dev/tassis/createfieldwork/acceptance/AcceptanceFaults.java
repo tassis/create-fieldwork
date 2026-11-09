@@ -6,5 +6,9 @@ public final class AcceptanceFaults {
     public static boolean publicationReached;
     public static boolean throwVisual;
     public static boolean visualReached;
+    public static boolean throwLecternAssignment;
+    public static boolean throwNativeAdd;
+    public static boolean throwNativeRemove;
+    public static boolean throwNativeUnload;
     private AcceptanceFaults() {}
 }

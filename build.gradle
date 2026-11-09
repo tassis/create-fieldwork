@@ -74,7 +74,29 @@ dependencies {
 tasks.named('test', Test) { useJUnitPlatform() }
 tasks.named('check') { dependsOn verifyAuditedMods }
 
-sourceSets { testmod; acceptancemod }
+tasks.register('verifyShippingIsolation') {
+    dependsOn 'jar'
+    doLast {
+        def archive = tasks.named('jar', Jar).get().archiveFile.get().asFile
+        new java.util.zip.ZipFile(archive).withCloseable { zip ->
+            def forbidden = zip.entries().findAll { entry ->
+                entry.name.contains('/bindingprobe/') || entry.name.contains('/acceptance/') ||
+                    entry.name.contains('/probe/') || entry.name.startsWith('fieldwork_binding_probe') ||
+                    entry.name.startsWith('fieldwork_acceptance') || entry.name.startsWith('fieldwork_probe')
+            }
+            if (forbidden) throw new GradleException("Non-shipping drivers leaked into JAR: ${forbidden*.name}")
+            def metadata = zip.getInputStream(zip.getEntry('META-INF/neoforge.mods.toml')).getText('UTF-8')
+            if (metadata.contains('fieldwork_binding_probe') || metadata.contains('fieldwork_acceptance') || metadata.contains('fieldwork_probe')) {
+                throw new GradleException('Test-driver metadata leaked into shipping JAR')
+            }
+            if (zip.getEntry('LICENSE') == null) throw new GradleException('Shipping JAR must include LICENSE')
+        }
+        logger.lifecycle('Shipping isolation verified: no research, acceptance or binding-prototype driver/config/metadata')
+    }
+}
+tasks.named('check') { dependsOn 'verifyShippingIsolation' }
+
+sourceSets { testmod; acceptancemod; bindingmod }
 configurations {
     testmodImplementation.extendsFrom implementation
     testmodCompileOnly.extendsFrom compileOnly
@@ -83,9 +105,13 @@ configurations {
     acceptancemodImplementation.extendsFrom implementation
     acceptancemodCompileOnly.extendsFrom compileOnly
     acceptancemodRuntimeOnly.extendsFrom runtimeOnly
+    bindingmodImplementation.extendsFrom implementation
+    bindingmodCompileOnly.extendsFrom compileOnly
+    bindingmodRuntimeOnly.extendsFrom runtimeOnly
 }
 dependencies {
     acceptancemodImplementation sourceSets.main.output
+    bindingmodImplementation sourceSets.main.output
     // Pure refresh selections expose Create's native frequency/Couple types.
     // Unit tests need the already-audited nested class libraries, not another
     // copy installed in any client/server runtime.
@@ -96,6 +122,7 @@ neoForge {
     version = neo_version
     addModdingDependenciesTo sourceSets.testmod
     addModdingDependenciesTo sourceSets.acceptancemod
+    addModdingDependenciesTo sourceSets.bindingmod
 
     mods {
         "${mod_id}" {
@@ -103,6 +130,7 @@ neoForge {
         }
         fieldwork_probe { sourceSet sourceSets.testmod }
         fieldwork_acceptance { sourceSet sourceSets.acceptancemod }
+        fieldwork_binding_probe { sourceSet sourceSets.bindingmod }
     }
 
     unitTest {
@@ -145,6 +173,46 @@ neoForge {
             systemProperty 'mixin.debug.countInjections', 'true'
             systemProperty 'fieldwork.acceptance.phase', providers.gradleProperty('acceptancePhase').getOrElse('core')
         }
+        bindingProbeServer {
+            server()
+            sourceSet = sourceSets.bindingmod
+            loadedMods = [mods."${mod_id}", mods.fieldwork_binding_probe]
+            gameDirectory = project.file('run-binding-probe')
+            programArgument '--nogui'
+            systemProperty 'fieldwork.binding.phase', providers.gradleProperty('bindingPhase').getOrElse('seed')
+        }
+    }
+}
+
+tasks.register('verifyBindingProbe') {
+    dependsOn 'runBindingProbeServer'
+    doLast {
+        def report = new groovy.json.JsonSlurper().parse(file('run-binding-probe/result.json'))
+        if (report.kind != 'experimental-binding-prototype' || report.status != 'passed' ||
+                report.phase != providers.gradleProperty('bindingPhase').getOrElse('seed') ||
+                !report.assertions || report.assertions.size() != (report.phase == 'seed' ? 41 : 39) ||
+                report.assertions.any { it.passed != true }) {
+            throw new GradleException("Binding prototype failed or mismatched: ${report}")
+        }
+        def log = file('run-binding-probe/logs/latest.log').text
+        if (!log.contains('All dimensions are saved') || log.contains('Exception stopping the server') ||
+                !file('run-binding-probe/state-closed.txt').isFile()) {
+            throw new GradleException('Binding prototype save/state close not established')
+        }
+        logger.lifecycle("EXPERIMENTAL binding prototype passed: ${report.assertions.size()} assertions; NOT production acceptance")
+    }
+}
+tasks.matching { it.name == 'runBindingProbeServer' }.configureEach {
+    doFirst {
+        def phase = providers.gradleProperty('bindingPhase').getOrElse('seed')
+        if (!(phase in ['seed', 'reload'])) throw new GradleException('Unknown binding prototype phase')
+        if (phase == 'reload' && !providers.gradleProperty('bindingKeepWorld').isPresent()) {
+            throw new GradleException('Binding reload requires -PbindingKeepWorld')
+        }
+        delete file('run-binding-probe/result.json')
+        delete file('run-binding-probe/state-closed.txt')
+        if (!providers.gradleProperty('bindingKeepWorld').isPresent()) delete file('run-binding-probe/binding-world')
+        copy { from 'src/bindingmod/server.properties'; into 'run-binding-probe' }
     }
 }
 
@@ -165,8 +233,8 @@ tasks.register('verifyFieldworkAcceptance') {
 tasks.matching { it.name == 'runFieldworkAcceptanceServer' }.configureEach {
     doFirst {
         def phase = providers.gradleProperty('acceptancePhase').getOrElse('core')
-        if (!(phase in ['core', 'network', 'refresh', 'movement', 'lifecycle', 'packed', 'seed', 'reload'])) throw new GradleException('Unknown acceptance phase')
-        if (phase == 'reload' && !providers.gradleProperty('acceptanceKeepWorld').isPresent()) {
+        if (!(phase in ['core', 'network', 'refresh', 'movement', 'controller-work', 'controller-index', 'lifecycle', 'packed', 'seed', 'reload', 'binding', 'binding-faults', 'binding-reset', 'binding-seed', 'binding-reload', 'schematic'])) throw new GradleException('Unknown acceptance phase')
+        if (phase.endsWith('reload') && !providers.gradleProperty('acceptanceKeepWorld').isPresent()) {
             throw new GradleException('Acceptance reload requires -PacceptanceKeepWorld')
         }
         delete file('run-fieldwork-acceptance/result.json')

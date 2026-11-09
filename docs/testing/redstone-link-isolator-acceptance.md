@@ -2,9 +2,52 @@
 
 ## Status and evidence boundary
 
-Recorded through 2026-11-07. Production main implements server-owned state/registry, the actual isolator/BE and recipe, Create/Simulated filters, lifecycle/mutation barriers, per-receiver scoped refresh, controller provenance/accepted movement/sessions, fixed-WORLD train conditions and source-publication cache handling.
+Recorded through 2026-11-09. Production main implements server-owned state/registry, the actual isolator/BE and recipe, Create/Simulated filters, lifecycle/mutation barriers, per-receiver scoped refresh, two-tier controller routing with event-driven reconciliation, fixed-WORLD train conditions and source-publication cache handling.
 
-**Player-test delivery is complete; full client/release acceptance is not.** Main acceptance excludes `fieldwork_probe`. `acceptancemod` supplies fixtures, faults and counters, not scope/registry answers. Historical train95 and other prototype counts are not evidence for this implementation.
+**Current v0.2 worktree recheck (metadata still0.1.0, no publication):** JUnit106,
+network174, refresh69, movement74, lifecycle23, packed24, schematic347,
+binding177, binding-reset57, binding-faults134, controller-index43,
+controller-work15 and independent-JVM seed24/reload25 plus
+binding-seed30/binding-reload27 all passed. Runtime verifiers
+checked complete saves and state close. Current clean-build SHA-256:
+`c69b8bb59e098f96027a8d3a8050d7be77cbaa9812d2d88183e382733340886c`.
+The same installed JAR reached `Done (0.692s)` at04:59:45Z, reported no withheld
+transactions at05:00:09Z, then console-stopped with complete dimension and Sable
+sub-level saves at05:00:09Z and exit0. Latest client controller retest remains
+pending. See [integrated server evidence](v02-server-binding.md#final-integrated-recheck--2026-11-09)
+for times, reproduction and limits. This does not replace historical hashes below
+or establish every player check of later client builds. Final integration review
+and detailed [client matrix](schematic-client-v02.md#player-matrix--scoped-feedback-and-remaining-checks)
+remain partial; the later Iris/ghost follow-up has a scoped owner-reported pass.
+
+This recheck followed a behavior-preserving feature-package reorganization.
+`FieldworkServerState` remains the logical-server composition root; controller
+validation/index/input/reconciliation/safety work, transition capture and
+postconditions, and Create/Simulated refresh passes are package-private
+collaborators behind the existing façades. Strict mixin count/cardinality stayed
+25 common plus six client entries. Dedicated-server schematic acceptance proves
+common mixin loading and client-array server safety, not client transformation.
+
+The final lectern correction keeps Create's completed native lectern assignment
+when the subsequent exact wireless refresh throws a `RuntimeException` or
+`Error`, and retains that refresh scope for retry. The binding phase injects both failures,
+checks that the native lectern identity remains coherent and that retry withdraws
+the actual private output to0. Failure inside Create's native assignment still
+rolls identity/channel/pending state back and rethrows.
+
+The latest follow-up also removes Simulated indexes on chunk unload, clears player
+session state on logout, compacts revoked loaded-BE grants without deleting global
+revocation history, memoizes client comparability per tick and removes redundant
+controller/binding snapshots. Direct acceptance covers each lifecycle/capacity
+change. This is not an FPS/MSPT or measured speedup claim.
+
+Normal container removal keeps the old craft/position/controller footprint under
+barrier through withdrawal and publication. Detached serialized markers are not
+validated against unstable live plot block states; active UUID absence is the
+removal postcondition. Incomplete removal or exceptions retain quarantine. This
+does not expand D01 into recovery of already-lost serialized content.
+
+**Player-test candidate preparation/delivery is complete; full client/release acceptance is not.** Main acceptance excludes `fieldwork_probe`. `acceptancemod` supplies fixtures, faults and counters, not scope/registry answers. Historical train95 and other prototype counts are not evidence for this implementation.
 
 The logic revision's full regression recorded JUnit85, network148, refresh69, lifecycle23, packed24 and independent-JVM seed24/reload25, with complete save/state close checked per phase. Its historical `0.1.0-dev` hash is `765e89e884d8118369825b084ae4e3acfd6048266e39b4ab86e0947dca012266`; see [scoped refresh](scoped-refresh.md).
 
@@ -22,6 +65,14 @@ These reports preceded the scoped-refresh revision. The installed hash/controlle
 
 These support the observed single-player core flow. They do not establish every controller path, dedicated-server restart, multiplayer, explosion handling, performance, or a player retest of later hashes.
 
+## Dedicated creative-tab follow-up: 2026-11-07
+
+The earlier release exposed the isolator through the vanilla Redstone tab but did not register a dedicated Fieldwork tab. The follow-up registers `create_fieldwork:main`, titled **Create: Fieldwork** in both language resources, with the isolator icon and item. The vanilla Redstone entry remains available.
+
+`./scripts/gradle-docker.sh clean build` passed with 85 JUnit tests. The main-only `network` phase passed **152 assertions** with complete saving/state close, including four new checks: actual creative-tab registry identity, icon, visible contents for a non-operator and creative-search contents. Contents are built through the real NeoForge tab-build event, not a test-only item list. Scratch evidence: `run-fieldwork-acceptance/result-network.json` and `state-closed.txt`.
+
+This follow-up is a local build until separately committed/published; the earlier hosted `v0.1.0` artifact does not include it. Actual client tab layout, icon rendering and localized title display still need visual confirmation.
+
 ## Pinned environment
 
 Minecraft 1.21.1 / NeoForge 21.1.257 / Create 6.0.10 / Sable 2.0.5 / Aeronautics bundled 1.3.2 / Java 21. Every Gradle verification/extraction checks the three external mod hashes against [`smoke/artifacts.lock`](../../smoke/artifacts.lock).
@@ -36,22 +87,35 @@ Minecraft 1.21.1 / NeoForge 21.1.257 / Create 6.0.10 / Sable 2.0.5 / Aeronautics
 ./scripts/gradle-docker.sh verifyFieldworkAcceptance -PacceptancePhase=movement
 ./scripts/gradle-docker.sh verifyFieldworkAcceptance -PacceptancePhase=lifecycle
 ./scripts/gradle-docker.sh verifyFieldworkAcceptance -PacceptancePhase=packed
+./scripts/gradle-docker.sh verifyFieldworkAcceptance -PacceptancePhase=schematic
+./scripts/gradle-docker.sh verifyFieldworkAcceptance -PacceptancePhase=binding
+./scripts/gradle-docker.sh verifyFieldworkAcceptance -PacceptancePhase=binding-reset
+./scripts/gradle-docker.sh verifyFieldworkAcceptance -PacceptancePhase=binding-faults
+./scripts/gradle-docker.sh verifyFieldworkAcceptance -PacceptancePhase=controller-index
+./scripts/gradle-docker.sh verifyFieldworkAcceptance -PacceptancePhase=controller-work
 # Consecutive independent JVMs; do not run a world-resetting phase between them
 ./scripts/gradle-docker.sh verifyFieldworkAcceptance -PacceptancePhase=seed
 ./scripts/gradle-docker.sh verifyFieldworkAcceptance -PacceptancePhase=reload -PacceptanceKeepWorld
+# Consecutive independent JVMs; do not run a world-resetting phase between them
+./scripts/gradle-docker.sh verifyFieldworkAcceptance -PacceptancePhase=binding-seed
+./scripts/gradle-docker.sh verifyFieldworkAcceptance -PacceptancePhase=binding-reload -PacceptanceKeepWorld
 ```
 
 Scratch directory: `run-fieldwork-acceptance/`, separate from smoke. Runs reset `acceptance-world` unless explicitly preserved; reload refuses without `-PacceptanceKeepWorld`. Drivers are absent from shipping JARs/ordinary runs. The verifier requires matching phase/status, complete saving and `state-closed.txt`; exit code alone is insufficient. Results are also saved as `result-<phase>.json`; scratch/logs can be overwritten.
 
 | Layer/phase | Recorded result | Evidence and limits |
 |---|---|---|
-| JUnit | 75 policy +7 state +3 selection =85, zero failures | `build/test-results/test/`; initialization/failure, immutable positions, thread/server/session, close, selection containers; not game behavior |
+| JUnit | 106, zero failures/errors/skips | `build/test-results/test/`; pure policy/state/index/client helpers; not game behavior |
 | core | 8 assertions | `.audit/registry-main-acceptance-first.log`; real MinecraftServer holder, stop/close, research excluded |
-| network | 148 assertions, saved/closed | `.audit/scoped-refresh-release-network.log`; integration, targeted controller updates, WORLD position control |
+| network | 174 assertions, saved/closed | `run-fieldwork-acceptance/result-network.json`; integrated network, train, recipe and controller boundaries |
 | refresh | 69 assertions, saved/closed | `.audit/scoped-refresh-release-counters.log`; unrelated bucket/dimension zero updates, fast-path faults/nesting, cross-dimension provenance, candidate/reentry/fallback |
 | lifecycle | 23 assertions, saved/closed | `.audit/scoped-refresh-release-lifecycle.log`; real holding load, duplicate load, observer fault, partial deletion, retry, heatmap split, disassembly |
 | packed | 24 assertions, saved/closed | `.audit/scoped-refresh-release-packed.log`; real serializer with synthetic keepPacked flags, unregistered WORLD/private windows; not a claim about natural packed-state frequency |
 | seed/reload | 24/25 assertions, each saved/closed | `.audit/scoped-refresh-release-{seed,reload}.log`; two craft, each ≥3 plot chunks, two markers, saved UUIDs, startup reconstruction; after ticks A internal15/B internal0/WORLD0 |
+| movement / controller index / controller work | 74 / 43 / 15, saved/closed | zero movement/teleport Fieldwork work, targeted indexes/retries, 200-post safety cadence and native TTL removal |
+| binding / reset / faults | 177 / 57 / 134, saved/closed | ordinary/managed routing, real result extraction, named quarantine/repair |
+| binding seed/reload | 30/27, each saved/closed | consecutive independent JVMs; force-load, revocation tombstone, unloaded reset and authority reconstruction |
+| schematic | 347, saved/closed | native headless schematic regressions; not a GUI/player rendering pass |
 
 An earlier integration review found a P1 post-publication barrier-release ordering issue. It was fixed and the follow-up gate passed. The remediation regression is preserved in `.audit/main-phase2-remediation-{build,network,lifecycle,packed,seed,reload}.log`: JUnit82 and phase136/23/24/24/25, each checked independently. Do not combine counts across revisions/phases into a single acceptance claim.
 
@@ -95,6 +159,7 @@ The delivery review passed for “ready for player testing,” not full release 
 
 - **D02:** private train consumers deferred; every train condition reads public WORLD only, without Train ownership resolution.
 - **D01:** stronger recovery of upstream-lost marker/data is deferred; normal registry state is not persisted. Runtime uncertainty still withholds authorization.
+- A detached serialized craft is not checked through live plot block state. Its old footprint remains barred and removal publishes only after the active UUID is absent; this is lifecycle validation, not D01 data recovery.
 - **OUTPUT_UNCONFIRMED:** callback failures are not circuit rollback. Some receivers may already have observed authorized results; do not claim all outputs are zero.
 - `/fieldwork status` and `/fieldwork repair <token>` require permission2. Repair verifies original marker intent/unwritten baseline and saves; it refuses without proof, rather than force-clearing barriers.
 - Active loads/incomplete publications with unknown frequency are conservatively pending. Confirmed WORLD-positive can still complete High. Queries do not scan craft blocks; enumeration is cold-path work.

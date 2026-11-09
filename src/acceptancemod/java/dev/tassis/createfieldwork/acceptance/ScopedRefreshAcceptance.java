@@ -15,12 +15,13 @@ import dev.ryanhcode.sable.companion.math.BoundingBox3i;
 import dev.ryanhcode.sable.sublevel.ServerSubLevel;
 import dev.simulated_team.simulated.content.blocks.redstone.AbstractLinkedReceiverBlockEntity;
 import dev.simulated_team.simulated.index.SimBlocks;
-import dev.tassis.createfieldwork.isolation.IsolationRuntime;
-import dev.tassis.createfieldwork.registry.FieldworkContent;
-import dev.tassis.createfieldwork.server.FieldworkStateAccess;
-import dev.tassis.createfieldwork.wireless.RefreshScope;
-import dev.tassis.createfieldwork.wireless.Scope;
-import dev.tassis.createfieldwork.wireless.ScopeResolver;
+import dev.tassis.createfieldwork.isolator.lifecycle.IsolationRuntime;
+import dev.tassis.createfieldwork.platform.registry.FieldworkContent;
+import dev.tassis.createfieldwork.platform.FieldworkStateAccess;
+import dev.tassis.createfieldwork.platform.FieldworkServerState;
+import dev.tassis.createfieldwork.wireless.refresh.RefreshScope;
+import dev.tassis.createfieldwork.wireless.scope.Scope;
+import dev.tassis.createfieldwork.wireless.scope.ScopeResolver;
 import dev.ryanhcode.sable.mixinterface.entity.entity_sublevel_collision.EntityMovementExtension;
 import com.simibubi.create.content.redstone.link.controller.LinkedControllerInputPacket;
 import com.simibubi.create.content.redstone.link.controller.LinkedControllerServerHandler;
@@ -67,12 +68,13 @@ final class ScopedRefreshAcceptance {
         oldNewDimensionUnion();
         reentrantWorkMerge();
         pendingFallback();
+        simulatedUnloadCleanup();
         trackingOnlyProvenance();
         foreignControllerDependency();
         check.accept("scoped refresh suite leaves no failed transaction", state().transitions().failedTokens().isEmpty());
     }
 
-    private dev.tassis.createfieldwork.server.FieldworkServerState state() { return FieldworkStateAccess.get(level.getServer()); }
+    private FieldworkServerState state() { return FieldworkStateAccess.get(level.getServer()); }
     private void setup() {
         add(level, new Source(new BlockPos(0, 120, 0), a, 7));
         bSource = new Source(new BlockPos(0, 120, 32), b, 7); add(level, bSource);
@@ -243,7 +245,7 @@ final class ScopedRefreshAcceptance {
         var actor = FakePlayerFactory.get(level, new GameProfile(UUID.randomUUID(), "TrackingProbe"));
         actor.setPos(0.5, 120, 0.5);
         ((EntityMovementExtension) actor).sable$setTrackingSubLevel(null);
-        state().players().bind(actor); // confirmed WORLD, no private proposal/history
+        state().playerSessions().bind(actor);
         var item = AllItems.LINKED_CONTROLLER.asStack();
         item.set(AllDataComponents.LINKED_CONTROLLER_ITEMS, ItemContainerContents.fromItems(List.of(new ItemStack(Items.SLIME_BALL), new ItemStack(Items.BONE))));
         actor.setItemInHand(InteractionHand.MAIN_HAND, item);
@@ -251,12 +253,12 @@ final class ScopedRefreshAcceptance {
             new LinkedControllerInputPacket(List.of(0), true).handle(actor);
             state().refresh().refresh(null);
             check.accept("tracking-only fixture starts as public controller", receiver.getReceivedSignal() == 15);
-            // Controlled inconsistent producer state: no accepted/proposed craft
-            // evidence, only current tracking. This must not be missed by collection.
+            // Tracking-only player state is deliberately not controller authority.
+            // An ordinary handheld remains WORLD and must not enter the craft footprint.
             ((EntityMovementExtension) actor).sable$setTrackingSubLevel(craft);
             RefreshMetrics.measure(() -> level.setBlock(marker, FieldworkContent.ISOLATOR.get().defaultBlockState(), 3));
-            check.accept("scope collection includes live tracking-only controller provenance", count(level, trackingKey, false) > 0);
-            check.accept("tracking mismatch is withdrawn instead of leaking WORLD power", receiver.getReceivedSignal() == 0);
+            check.accept("scope collection excludes tracking-only ordinary controller provenance", count(level, trackingKey, false) == 0);
+            check.accept("tracking-only state does not retarget ordinary WORLD handheld", receiver.getReceivedSignal() == 15);
             excluded("tracking-only controller marker placement");
         } finally {
             new LinkedControllerInputPacket(List.of(0), false).handle(actor);
@@ -271,39 +273,45 @@ final class ScopedRefreshAcceptance {
         var actor = FakePlayerFactory.get(nether, new GameProfile(UUID.randomUUID(), "ForeignProbe"));
         actor.setPos(.5, 200, 80.5);
         ((EntityMovementExtension) actor).sable$setTrackingSubLevel(null);
-        state().players().bind(actor);
+        state().playerSessions().bind(actor);
         var item = AllItems.LINKED_CONTROLLER.asStack();
         item.set(AllDataComponents.LINKED_CONTROLLER_ITEMS, ItemContainerContents.fromItems(List.of(new ItemStack(Items.WHEAT), new ItemStack(Items.BEETROOT_SEEDS))));
         actor.setItemInHand(InteractionHand.MAIN_HAND, item);
         try {
             new LinkedControllerInputPacket(List.of(0), true).handle(actor);
             check.accept("foreign controller fixture starts as WORLD source", receiver.getReceivedSignal() == 15);
-            // Controlled producer/session mismatch, not a claim of normal
-            // player-transfer frequency. The old entry remains in the Nether.
+            // Controlled producer/session mismatch. Ordinary handheld routing
+            // remains WORLD until native timeout and player craft tracking is irrelevant.
             actor.setServerLevel(level);
             ((EntityMovementExtension) actor).sable$setTrackingSubLevel(craft);
             RefreshMetrics.measure(() -> level.setBlock(marker, FieldworkContent.ISOLATOR.get().defaultBlockState(), 3));
-            check.accept("craft change includes related controller's old dimension/key", count(nether, foreignKey, false) > 0 && receiver.getReceivedSignal() == 0);
-            excluded("foreign controller dependency");
-            var entry = (IRedstoneLinkable) LinkedControllerServerHandler.receivedInputs.get(nether).get(actor.getUUID()).iterator().next();
-            var callback = new Receiver(new BlockPos(12, 200, 80), foreignKey); add(nether, callback);
-            boolean[] observed = {false};
-            callback.callback = value -> {
-                if (value == 15 && !observed[0]) {
-                    observed[0] = true;
-                    check.accept("candidate provenance view is not inherited by ordinary callback", ScopeResolver.endpoint(nether, entry, null) == Scope.PENDING);
-                }
-            };
+            check.accept("craft change excludes unrelated foreign ordinary controller", count(nether, foreignKey, false) == 0 && receiver.getReceivedSignal() == 15);
+            excluded("foreign ordinary controller placement");
             RefreshMetrics.measure(() -> level.removeBlock(marker, false));
-            check.accept("last marker synchronously restores related foreign WORLD input", count(nether, foreignKey, false) > 0 && receiver.getReceivedSignal() == 15);
-            check.accept("foreign controller inverse candidate callback was exercised", observed[0]);
-            excluded("foreign controller inverse dependency");
+            check.accept("last marker excludes unrelated foreign ordinary controller", count(nether, foreignKey, false) == 0 && receiver.getReceivedSignal() == 15);
+            excluded("foreign ordinary controller removal");
             level.setBlock(marker, FieldworkContent.ISOLATOR.get().defaultBlockState(), 3);
-            remove(nether, callback);
         } finally {
             LinkedControllerServerHandler.receivePressed(nether, actor.blockPosition(), actor.getUUID(), List.of(foreignKey), false);
             LinkedControllerServerHandler.tick(nether); actor.discard();
         }
+    }
+
+    private void simulatedUnloadCleanup() {
+        var key = key(Items.BONE, Items.CLAY_BALL);
+        var pos = new BlockPos(80, 120, 0);
+        simulated(level, pos, key);
+        var receiver = (AbstractLinkedReceiverBlockEntity) level.getBlockEntity(pos);
+        var behaviour = receiver.getBehaviour(LinkBehaviour.TYPE);
+        Create.REDSTONE_LINK_NETWORK_HANDLER.removeFromNetwork(level, behaviour);
+        state().refresh().remember(receiver);
+        state().refresh().unloaded(level, new net.minecraft.world.level.ChunkPos(pos));
+        RefreshMetrics.measure(() -> state().refresh().refresh(null, RefreshScope.frequency(level.dimension(), key)));
+        check.accept("chunk unload removes Simulated receiver from Fieldwork index", count(level, key, true) == 0);
+        state().refresh().remember(receiver);
+        RefreshMetrics.measure(() -> state().refresh().refresh(null, RefreshScope.frequency(level.dimension(), key)));
+        check.accept("loaded Simulated receiver can be indexed again after unload cleanup", count(level, key, true) > 0);
+        level.removeBlock(pos, false); level.removeBlock(pos.below(), false);
     }
 
     private java.util.Set<BlockPos> positions() { return state().registry().snapshot(IsolationRuntime.key(craft)).positions(); }

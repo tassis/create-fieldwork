@@ -2,10 +2,10 @@ package dev.tassis.createfieldwork.acceptance;
 
 import com.google.gson.GsonBuilder;
 import com.mojang.logging.LogUtils;
-import dev.tassis.createfieldwork.isolation.CraftKey;
-import dev.tassis.createfieldwork.server.FieldworkServerState;
-import dev.tassis.createfieldwork.server.FieldworkStateAccess;
-import dev.tassis.createfieldwork.wireless.Scope;
+import dev.tassis.createfieldwork.isolator.state.CraftKey;
+import dev.tassis.createfieldwork.platform.FieldworkServerState;
+import dev.tassis.createfieldwork.platform.FieldworkStateAccess;
+import dev.tassis.createfieldwork.wireless.scope.Scope;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.Level;
@@ -34,6 +34,7 @@ public final class AcceptanceSuite {
     private boolean finished;
     private boolean coreDone;
     private RestartAcceptance restart;
+    private BindingPersistenceAcceptance bindingPersistence;
     private final List<Map<String, Object>> assertions = new ArrayList<>();
     private final String phase = System.getProperty("fieldwork.acceptance.phase", "core");
 
@@ -46,6 +47,7 @@ public final class AcceptanceSuite {
     private void started(ServerStartedEvent event) {
         server = event.getServer();
         if (phase.equals("seed") || phase.equals("reload")) restart = new RestartAcceptance(server.overworld(), this::check, phase);
+        if (phase.equals("binding-seed") || phase.equals("binding-reload")) bindingPersistence = new BindingPersistenceAcceptance(server.overworld(), this::check, phase);
     }
 
     private void tick(ServerTickEvent.Post event) {
@@ -54,14 +56,22 @@ public final class AcceptanceSuite {
         try {
             if (!coreDone) { core(); coreDone = true; }
             if (restart != null && !restart.tick(ticks)) return;
+            if (bindingPersistence != null && !bindingPersistence.tick(ticks)) return;
             if (phase.equals("network")) {
                 new NetworkAcceptance(server.overworld(), this::check).run();
                 new ControllerAcceptance(server.overworld(), this::check).run();
+                new DualMarkerAcceptance(server.overworld(), this::check).run();
             }
             if (phase.equals("lifecycle")) new LifecycleAcceptance(server.overworld(), this::check).run();
             if (phase.equals("packed")) new PackedAcceptance(server.overworld(), this::check).run();
             if (phase.equals("refresh")) new ScopedRefreshAcceptance(server.overworld(), this::check).run();
             if (phase.equals("movement")) new ControllerMovementAcceptance(server.overworld(), this::check).run();
+            if (phase.equals("controller-work")) new ControllerWorkAcceptance(server.overworld(), this::check).run();
+            if (phase.equals("controller-index")) new ControllerIndexAcceptance(server.overworld(), this::check).run();
+            if (phase.equals("binding")) new BindingAcceptance(server.overworld(), this::check).run();
+            if (phase.equals("binding-faults")) new BindingFaultAcceptance(server.overworld(), this::check).run();
+            if (phase.equals("binding-reset")) new ControllerResetAcceptance(server.overworld(), this::check).run();
+            if (phase.equals("schematic")) new SchematicAcceptance(server.overworld(), this::check).run();
         } catch (Throwable error) { failure = error; }
         finished = true;
         var result = new LinkedHashMap<String, Object>();

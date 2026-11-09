@@ -16,9 +16,8 @@ import dev.ryanhcode.sable.Sable;
 import dev.ryanhcode.sable.api.SubLevelAssemblyHelper;
 import dev.ryanhcode.sable.api.sublevel.SubLevelContainer;
 import dev.ryanhcode.sable.companion.math.BoundingBox3i;
-import dev.tassis.createfieldwork.controller.ConnectionStateAccess;
-import dev.tassis.createfieldwork.registry.FieldworkContent;
-import dev.tassis.createfieldwork.server.FieldworkStateAccess;
+import dev.tassis.createfieldwork.platform.registry.FieldworkContent;
+import dev.tassis.createfieldwork.platform.FieldworkStateAccess;
 import io.netty.channel.embedded.EmbeddedChannel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -92,19 +91,18 @@ final class ControllerAcceptance {
             plot(listener, stored);
             new LinkedControllerInputPacket(List.of(0), true).handle(actor);
             state.refresh().refresh(null);
-            signal("accepted boarding controls same private craft", inside, 15);
-            signal("accepted boarding controller does not reach WORLD", outside, 0);
+            signal("ordinary handheld boarding cannot control private craft", inside, 0);
+            signal("ordinary handheld boarding remains WORLD", outside, 15);
             listener.handleMovePlayer(new ServerboundMovePlayerPacket.Rot(90, 0, true));
             LinkedControllerServerHandler.tick(level);
-            signal("rotation-only player packet does not lose confirmed craft", inside, 15);
-            signal("rotation-only player packet cannot grant WORLD", outside, 0);
+            signal("rotation-only player packet cannot grant private handheld access", inside, 0);
+            signal("rotation-only player packet preserves ordinary WORLD input", outside, 15);
             var entries = LinkedControllerServerHandler.receivedInputs.get(level).get(actor.getUUID());
             check.accept("actual controller uses original player WORLD distance position", ((com.simibubi.create.content.redstone.link.IRedstoneLinkable) entries.iterator().next()).getLocation().equals(actor.blockPosition()));
 
-            // This frequency has only a controller associated with the craft,
-            // and WORLD receivers: no block endpoint aboard can select it.
+            // This frequency has only an ordinary WORLD controller and WORLD
+            // receivers. Craft marker changes must not reclassify it private.
             var provenanceReceiver = link(origin.offset(0, 0, 12));
-            var provenanceKey = Couple.create(Frequency.of(new ItemStack(Items.PAPER)), Frequency.of(new ItemStack(Items.INK_SAC)));
             provenanceReceiver.getBehaviour(LinkBehaviour.TYPE).setFrequency(true, new ItemStack(Items.PAPER));
             provenanceReceiver.getBehaviour(LinkBehaviour.TYPE).setFrequency(false, new ItemStack(Items.INK_SAC));
             new LinkedControllerInputPacket(List.of(0), false).handle(actor); LinkedControllerServerHandler.tick(level);
@@ -114,79 +112,95 @@ final class ControllerAcceptance {
             new LinkedControllerInputPacket(List.of(0), true).handle(actor);
             var currentActor = actor;
             RefreshMetrics.measure(() -> level.removeBlock(stored.offset(1, 0, 0), false));
-            check.accept("marker scope collector includes controller-only craft frequency", RefreshMetrics.count(level.dimension(), provenanceKey, false) > 0 && provenanceReceiver.getReceivedSignal() == 15);
+            check.accept("marker removal leaves ordinary handheld frequency WORLD", provenanceReceiver.getReceivedSignal() == 15);
             unrelatedRefreshCounts("controller-only marker removal");
             RefreshMetrics.measure(() -> level.setBlock(stored.offset(1, 0, 0), FieldworkContent.ISOLATOR.get().defaultBlockState(), 3));
-            check.accept("marker scope collector withdraws controller-only frequency", provenanceReceiver.getReceivedSignal() == 0);
+            check.accept("marker placement does not capture ordinary handheld frequency", provenanceReceiver.getReceivedSignal() == 15);
             unrelatedRefreshCounts("controller-only marker placement");
             new LinkedControllerInputPacket(List.of(0), false).handle(actor); LinkedControllerServerHandler.tick(level);
             actor.setItemInHand(InteractionHand.MAIN_HAND, item);
             new LinkedControllerInputPacket(List.of(0), true).handle(actor);
 
-            listener.handleMovePlayer(new ServerboundMovePlayerPacket.Pos(stored.getX() + 2.5, stored.getY() + 1.1, stored.getZ() + .5, false));
-            check.accept("position-only scoped refresh fixture accepts plot movement", ((ConnectionStateAccess) listener).fieldwork$awaitingPosition() == null);
+            var movementListener = listener;
+            var acceptedMoveWork = ControllerWorkMetrics.measure(() -> movementListener.handleMovePlayer(
+                new ServerboundMovePlayerPacket.Pos(stored.getX() + 2.5, stored.getY() + 1.1, stored.getZ() + .5, false)));
+            check.accept("position-only scoped refresh fixture accepts plot movement", awaitingPosition(listener) == null);
+            check.accept("accepted movement performs zero targeted Fieldwork controller work",
+                acceptedMoveWork.endpointReconciliations() == 0 && acceptedMoveWork.fullSweeps() == 0);
             RefreshMetrics.measure(() -> new LinkedControllerInputPacket(List.of(0), true).handle(currentActor));
             var controllerKey = Couple.create(Frequency.of(new ItemStack(Items.AMETHYST_SHARD)), Frequency.of(new ItemStack(Items.LAPIS_LAZULI)));
-            check.accept("restricted controller position refresh targets own frequency", RefreshMetrics.count(level.dimension(), controllerKey, false) > 0);
-            unrelatedRefreshCounts("restricted controller position update");
-            listener.teleport(world.x, world.y, world.z, 0, 0); acknowledge(listener); plot(listener, stored);
+            check.accept("ordinary WORLD controller position update preserves upstream without Fieldwork refresh",
+                RefreshMetrics.count(level.dimension(), controllerKey, false) == 0 && RefreshMetrics.total() == 0);
+            var teleportStartWork = ControllerWorkMetrics.measure(() -> movementListener.teleport(world.x, world.y, world.z, 0, 0));
+            check.accept("same-dimension teleport start performs zero targeted Fieldwork controller work",
+                teleportStartWork.endpointReconciliations() == 0 && teleportStartWork.fullSweeps() == 0);
+            var teleportAckWork = ControllerWorkMetrics.measure(() -> {
+                try { acknowledge(movementListener); }
+                catch (Exception error) { throw new RuntimeException(error); }
+            });
+            check.accept("same-dimension teleport acknowledgement performs zero targeted Fieldwork controller work",
+                teleportAckWork.endpointReconciliations() == 0 && teleportAckWork.fullSweeps() == 0);
+            plot(listener, stored);
             new LinkedControllerInputPacket(List.of(0), true).handle(actor);
 
             var before = actor.position();
-            listener.handleMovePlayer(new ServerboundMovePlayerPacket.Pos(before.x + 5000, before.y, before.z, true));
-            check.accept("vanilla rejects excessive WORLD movement", ((ConnectionStateAccess) listener).fieldwork$awaitingPosition() != null && actor.position().distanceToSqr(before) < .01);
-            signal("rejected movement immediately withdraws controller", inside, 0);
-            signal("rejected tracking loss never falls back to WORLD", outside, 0);
+            var rejectedMoveWork = ControllerWorkMetrics.measure(() -> movementListener.handleMovePlayer(
+                new ServerboundMovePlayerPacket.Pos(before.x + 5000, before.y, before.z, true)));
+            check.accept("vanilla rejects excessive WORLD movement", awaitingPosition(listener) != null && actor.position().distanceToSqr(before) < .01);
+            check.accept("rejected movement performs zero targeted Fieldwork controller work",
+                rejectedMoveWork.endpointReconciliations() == 0 && rejectedMoveWork.fullSweeps() == 0);
+            signal("rejected movement cannot grant private ordinary handheld access", inside, 0);
+            signal("rejected movement leaves ordinary handheld WORLD", outside, 15);
             acknowledge(listener);
             plot(listener, stored);
             new LinkedControllerInputPacket(List.of(0), true).handle(actor);
             state.refresh().refresh(null);
-            signal("accepted boarding after rejection resumes same craft", inside, 15);
+            signal("accepted boarding after rejection remains outside private craft", inside, 0);
             craft.logicalPose().orientation().rotateY(Math.PI / 2);
             craft.updateLastPose(); craft.forceUpdateGlobalBounds();
             SubLevelContainer.getContainer(level).physicsSystem().getPipeline().teleport(craft, craft.logicalPose().position(), craft.logicalPose().orientation());
             plot(listener, stored);
             new LinkedControllerInputPacket(List.of(0), true).handle(actor);
             state.refresh().refresh(null);
-            signal("rotated craft preserves projected same-instance controller", inside, 15);
-            signal("rotated craft still rejects WORLD controller path", outside, 0);
+            signal("rotated craft does not capture ordinary handheld", inside, 0);
+            signal("rotated craft preserves ordinary WORLD controller path", outside, 15);
             var airborne = actor.position();
             listener.handleMovePlayer(new ServerboundMovePlayerPacket.Pos(airborne.x, airborne.y + .3, airborne.z, false));
-            check.accept("airborne WORLD-space move was actually accepted", ((ConnectionStateAccess) listener).fieldwork$awaitingPosition() == null && Math.abs(actor.getY() - airborne.y - .3) < .01);
+            check.accept("airborne WORLD-space move was actually accepted", awaitingPosition(listener) == null && Math.abs(actor.getY() - airborne.y - .3) < .01);
             LinkedControllerServerHandler.tick(level);
-            signal("airborne tracking gap cannot authorize WORLD", outside, 0);
-            signal("airborne unconfirmed departure pauses old private input", inside, 0);
+            signal("airborne tracking gap leaves ordinary handheld WORLD", outside, 15);
+            signal("airborne tracking gap cannot authorize private input", inside, 0);
             plot(listener, stored);
             new LinkedControllerInputPacket(List.of(0), true).handle(actor);
-            signal("accepted plot movement recovers airborne gap", inside, 15);
+            signal("accepted plot movement still cannot capture ordinary handheld", inside, 0);
             var nether = level.getServer().getLevel(Level.NETHER);
             var transferred = actor.changeDimension(new DimensionTransition(nether, new Vec3(.5, 200, .5), Vec3.ZERO, 0, 0, DimensionTransition.DO_NOTHING));
             check.accept("real player transfers to another dimension", transferred instanceof ServerPlayer && transferred.level() == nether);
             actor = (ServerPlayer) transferred; listener = actor.connection;
-            LinkedControllerServerHandler.tick(level);
-            signal("dimension transfer withdraws original craft input", inside, 0);
-            signal("dimension transfer does not publicize old private input", outside, 0);
+            signal("dimension transfer withdraws original craft input before transfer returns", inside, 0);
+            signal("dimension transfer preserves upstream ordinary WORLD timeout", outside, 15);
             var back = craft.logicalPose().transformPosition(new Vector3d(stored.getX() + .5, stored.getY() + .1, stored.getZ() + .5));
             transferred = actor.changeDimension(new DimensionTransition(level, new Vec3(back.x, back.y, back.z), Vec3.ZERO, 0, 0, DimensionTransition.DO_NOTHING));
             check.accept("real player returns to original dimension", transferred instanceof ServerPlayer && transferred.level() == level);
             actor = (ServerPlayer) transferred; listener = actor.connection;
-            if (((ConnectionStateAccess) listener).fieldwork$awaitingPosition() != null) acknowledge(listener);
+            if (awaitingPosition(listener) != null) acknowledge(listener);
             plot(listener, stored);
             new LinkedControllerInputPacket(List.of(0), true).handle(actor);
             state.refresh().refresh(null);
-            signal("accepted return restores only same-craft control", inside, 15);
+            signal("accepted return restores ordinary WORLD control only", inside, 0);
+            signal("accepted return restores ordinary WORLD contribution", outside, 15);
             transport.connected = false;
             LinkedControllerServerHandler.tick(level);
-            signal("disconnect withdraws private input before player removal", inside, 0);
-            signal("disconnect does not convert private input to WORLD", outside, 0);
+            signal("disconnect cannot grant private ordinary handheld input", inside, 0);
+            signal("ordinary timeout compatibility retains WORLD input before removal", outside, 15);
             transport.connected = true;
             new LinkedControllerInputPacket(List.of(0), true).handle(actor);
             BlockPos ground = origin.offset(0, -1, 4);
             level.setBlock(ground, Blocks.STONE.defaultBlockState(), 3);
             listener.teleport(ground.getX() + .5, ground.getY() + 1.1, ground.getZ() + .5, 0, 0);
             LinkedControllerServerHandler.tick(level);
-            signal("teleport acknowledgement pending withdraws private controller", inside, 0);
-            signal("teleport acknowledgement pending does not grant WORLD", outside, 0);
+            signal("teleport acknowledgement pending cannot grant private ordinary input", inside, 0);
+            signal("teleport acknowledgement pending leaves ordinary handheld WORLD", outside, 15);
             acknowledge(listener);
             actor.move(MoverType.SELF, new Vec3(0, -.5, 0));
             listener.resetPosition();
@@ -210,10 +224,10 @@ final class ControllerAcceptance {
             new LinkedControllerInputPacket(List.of(0), true).handle(actor);
             listener.teleport(actor.getX(), actor.getY(), actor.getZ(), 0, 0);
             plot(listener, stored);
-            check.accept("private proposal while teleport acknowledgement is pending is rejected", ((ConnectionStateAccess) listener).fieldwork$awaitingPosition() != null);
+            check.accept("vanilla teleport acknowledgement is pending without becoming controller authority", awaitingPosition(listener) != null);
             LinkedControllerServerHandler.tick(level);
             signal("unaccepted private proposal cannot authorize craft", inside, 0);
-            signal("unaccepted private proposal also pauses WORLD input", outside, 0);
+            signal("unaccepted private proposal leaves ordinary handheld WORLD", outside, 15);
             acknowledge(listener);
             listener.handleMovePlayer(new ServerboundMovePlayerPacket.Pos(actor.getX(), actor.getY(), actor.getZ(), true));
             new LinkedControllerInputPacket(List.of(0), true).handle(actor);
@@ -240,6 +254,14 @@ final class ControllerAcceptance {
             state.refresh().refresh(null);
             signal("private lectern follows source block rather than WORLD operator", inside, 15);
             signal("private lectern does not leak through WORLD operator", outside, 0);
+            lectern.tryStopUsing(actor);
+            signal("ordinary lectern stop withdraws private output before stopUsing returns", inside, 0);
+            signal("stopped ordinary lectern cannot fall back WORLD", outside, 0);
+            lectern.tick(); // clear Create's one-tick native deactivation latch
+            lectern.tryStartUsing(actor);
+            new LinkedControllerInputPacket(List.of(0), false, lecternPos).handle(actor);
+            new LinkedControllerInputPacket(List.of(0), true, lecternPos).handle(actor);
+            signal("ordinary lectern fresh press recovers private output", inside, 15);
             var lecternEntries = LinkedControllerServerHandler.receivedInputs.get(level).get(actor.getUUID());
             check.accept("lectern entry still uses player WORLD distance coordinate", ((com.simibubi.create.content.redstone.link.IRedstoneLinkable) lecternEntries.iterator().next()).getLocation().equals(actor.blockPosition()));
             level.removeBlock(stored.offset(1, 0, 0), false);
@@ -256,17 +278,39 @@ final class ControllerAcceptance {
             new LinkedControllerInputPacket(List.of(0), true, lecternPos).handle(actor);
             for (int i = 0; i < 31; i++) LinkedControllerServerHandler.tick(level);
             signal("upstream 30-tick lectern timeout still expires", inside, 0);
-            lectern.tryStopUsing(actor);
+            lectern.tryStartUsing(actor);
+            new LinkedControllerInputPacket(List.of(0), false, lecternPos).handle(actor);
+            new LinkedControllerInputPacket(List.of(0), true, lecternPos).handle(actor);
+            signal("ordinary lectern fresh press prepares removal seam", inside, 15);
+            lectern.setRemoved();
+            signal("lectern removal callback withdraws indexed output before returning", inside, 0);
 
-            // A new real player/listener object with the same UUID must receive
-            // a new server session, never the old craft membership.
-            var board = craft.logicalPose().transformPosition(new Vector3d(stored.getX() + .5, stored.getY() + .25, stored.getZ() + .5));
-            listener.teleport(board.x, board.y, board.z, 0, 0);
-            acknowledge(listener); plot(listener, stored);
-            new LinkedControllerInputPacket(List.of(0), true).handle(actor);
-            signal("session fixture starts with private handheld contribution", inside, 15);
+            // Create's server tick calls stopUsing(null) when the recorded user
+            // entity disappears. That native stop must synchronously withdraw an
+            // ordinary WORLD lectern even though its Fieldwork actor is invalid.
+            new LinkedControllerInputPacket(List.of(0), false).handle(actor);
+            LinkedControllerServerHandler.tick(level);
+            BlockPos missingUserLecternPos = ground.offset(1, 1, 0);
+            level.setBlock(missingUserLecternPos.below(), Blocks.STONE.defaultBlockState(), 3);
+            level.setBlock(missingUserLecternPos, AllBlocks.LECTERN_CONTROLLER.getDefaultState(), 3);
+            var missingUserLectern = (LecternControllerBlockEntity) level.getBlockEntity(missingUserLecternPos);
+            missingUserLectern.setController(item.copy());
+            listener.teleport(ground.getX() + .5, ground.getY() + 1.1, ground.getZ() + .5, 0, 0);
+            acknowledge(listener);
+            actor.getPersistentData().remove("IsUsingLecternController");
+            missingUserLectern.tryStartUsing(actor);
+            check.accept("WORLD lectern accepts user before missing-player stop", missingUserLectern.isUsedBy(actor));
+            new LinkedControllerInputPacket(List.of(0), true, missingUserLecternPos).handle(actor);
+            signal("WORLD lectern fixture publishes before missing-player stop", outside, 15);
             UUID sameId = actor.getUUID();
             level.removePlayerImmediately(actor, Entity.RemovalReason.DISCARDED);
+            signal("missing actor retains ordinary WORLD lectern until native stop", outside, 15);
+            missingUserLectern.tick();
+            check.accept("native missing-player tick clears WORLD lectern user", !missingUserLectern.hasUser());
+            signal("native missing-player stop withdraws WORLD lectern before tick returns", outside, 0);
+
+            // A new real player/listener object with the same UUID must receive
+            // a new server session, never the old source authorization.
             transport.embedded.finishAndReleaseAll();
             actor = new ServerPlayer(level.getServer(), level, new GameProfile(sameId, "MainAcceptance"), ClientInformation.createDefault());
             transport = new Transport();
@@ -277,7 +321,7 @@ final class ControllerAcceptance {
             listener.handleMovePlayer(new ServerboundMovePlayerPacket.Pos(actor.getX(), actor.getY(), actor.getZ(), true));
             LinkedControllerServerHandler.tick(level);
             signal("same UUID new session cannot inherit private old input", inside, 0);
-            signal("same UUID new session does not convert old private input to WORLD", outside, 0);
+            signal("same UUID new session cannot inherit stopped WORLD lectern", outside, 0);
             new LinkedControllerInputPacket(List.of(0), true).handle(actor);
             signal("fresh input from new WORLD session can control WORLD", outside, 15);
             signal("fresh WORLD session still cannot control old private craft", inside, 0);
@@ -307,6 +351,11 @@ final class ControllerAcceptance {
         var field = ServerGamePacketListenerImpl.class.getDeclaredField("awaitingTeleport");
         field.setAccessible(true);
         listener.handleAcceptTeleportPacket(new ServerboundAcceptTeleportationPacket(field.getInt(listener)));
+    }
+    static Vec3 awaitingPosition(ServerGamePacketListenerImpl listener) throws Exception {
+        var field = ServerGamePacketListenerImpl.class.getDeclaredField("awaitingPositionFromClient");
+        field.setAccessible(true);
+        return (Vec3) field.get(listener);
     }
     private void signal(String name, RedstoneLinkBlockEntity receiver, int expected) {
         check.accept(name + " expected=" + expected + " actual=" + receiver.getReceivedSignal(), receiver.getReceivedSignal() == expected);

@@ -1,5 +1,28 @@
 # Six-Face Placeholder Texture Integration — 2026-11-07
 
+## Current selected resources (2026-11-08)
+
+Production now uses the [selected gray/brass rim pair](../../art/isolator_variants/SELECTED.md)
+for ordinary and smart isolators. Their 14 face PNGs are all model-referenced;
+the inner 12×12 pixels and both complete top states retain the original design.
+Install **selected**, not historical original art, with:
+
+```sh
+python3 scripts/export-isolator-textures.py --install-selected --force
+python3 scripts/export-isolator-textures.py --check-installed
+python3 scripts/export-isolator-variants.py --style rim --check
+```
+
+At the owner's request the unused instrument, casing and wood-rim drafts, previews
+and ZIPs were removed. The variants exporter now defaults to rim and rejects those
+obsolete styles. Original editable `art/redstone_link_isolator/` is retained as
+the source/reference for unchanged patterns, not as the current full rim texture.
+Both selected checks and the default variants check passed after cleanup. The
+shipping JAR SHA-256 remained unchanged; see [current server evidence](v02-server-binding.md).
+Real client display remains pending.
+
+## Historical original-texture integration
+
 The owner approved installing the original generated art from `art/redstone_link_isolator/` into main. This historical slice changed visual assets only, not Java, recipe, blockstate or isolation behavior. Its hash identifies a `0.1.0-dev` candidate, not `0.1.0` after version preparation.
 
 ## Editing and model layout

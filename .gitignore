@@ -13,6 +13,9 @@ crash-reports/
 .env
 .audit/
 .smoke/
+.ramblings/
 run-scope-probe/
 .slim/deepwork/
 run-fieldwork-acceptance/
+run-binding-probe/
+__pycache__/

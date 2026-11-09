@@ -1,4 +1,4 @@
-# Private-controller movement refresh (2026-11-07)
+# Controller routing and event-driven refresh (updated 2026-11-09)
 
 This revision reduces Fieldwork's additional work while using a controller on a moving craft. It adds no binding UI, permanent index or tick delay, and does not change Sable projection or native distance/strength calculations.
 
@@ -39,7 +39,20 @@ Nested ordinary updater calls request unrestricted network work; explicit full r
 ./scripts/gradle-docker.sh verifyFieldworkAcceptance -PacceptancePhase=reload -PacceptanceKeepWorld
 ```
 
-`.audit/controller-receivers-verified-*.log` records clean build/JUnit **85**, network **148**, refresh **69**, movement **81**, lifecycle **23**, packed **24**, independent-JVM seed/reload **24/25**. Each runtime phase checked complete saving and server-state closure. Counts belong to separate phases, not a summed release matrix.
+The final integrated rerun records clean build/JUnit **103**, network **174**,
+refresh **69**, movement **74**, lifecycle **23**, packed **24**,
+controller-index **43**, controller-work **15**, and independent-JVM
+seed/reload **24/25**. Each runtime verifier checked complete saving and
+server-state closure. Counts belong to separate phases, not a summed score.
+
+Movement and same-dimension teleport/ack now perform zero Fieldwork controller
+reconciliation. Ordinary handheld input remains WORLD; the next native packet
+uses the server player's current position. Endpoint/device/lectern/lifecycle
+events drain targeted dirty/retry work, while one complete diagnostic safety
+sweep runs every 200 server-post ticks. The index/work phases prove no ordinary
+per-Create-tick Fieldwork full scan, 199 sweep-free posts, exactly one sweep on
+post 200, native-only adoption, index-only purge, targeted heartbeat, and exact
+native TTL removal.
 
 The movement driver uses a real ServerPlayer/vanilla listener, actual controller packets and two Sable craft plus WORLD receivers on the **same frequency**:
 
@@ -56,10 +69,12 @@ Readonly integration review found no blocker. Remaining work is still linear in 
 
 ## Local artifact, not a tag publication
 
-Concurrent version preparation set `mod_version=0.1.0` and created `v0.1.0`; those changes were retained. This optimization is a later **local worktree build**, not evidence that the existing tag/hosted Release contains it. No commit, tag modification, push or release was performed for this slice.
+This remains a **local worktree build**, not evidence that the existing tag or
+hosted Release contains these changes. No commit, tag modification, push or
+release was performed.
 
 - JAR: `build/libs/create_fieldwork-neoforge-1.21.1-0.1.0.jar`.
-- SHA-256: `a7769b40ca8a7f1bee15a6c21929f724e1748eb009e614ab34d312c6408e0000`.
-- Build/install hashes match: `.audit/controller-receivers-artifacts.log`; archive excludes acceptance/fault/counter classes and retains all seven PNGs.
-- Formal installer ready **06:09:49Z**, console status empty, console `stop` saved all dimensions **06:10:47Z**; inspect exited/exit0/OOMfalse. Logs: `.audit/controller-receivers-smoke-{setup,launch,stop}.log`.
+- SHA-256: `1ca147fb51c416f1d28b0173cfee1e572d468942bef11042b675df1648913e26`.
+- Build/install hashes match; shipping isolation excludes acceptance/research drivers and the archive includes `LICENSE`.
+- Packaged installer reached `Done (0.741s)` at **02:59:47Z**; console status reported no withheld transactions and console `stop` saved all dimensions at **03:01:51Z**; the container exited 0.
 - Client/GUI/multiplayer and real-load performance remain unverified. Fully close the game/server before replacing JARs; use the [player guide](player-test-guide.md).

@@ -13,11 +13,12 @@ import dev.ryanhcode.sable.api.SubLevelAssemblyHelper;
 import dev.ryanhcode.sable.companion.math.BoundingBox3i;
 import dev.simulated_team.simulated.content.blocks.redstone.AbstractLinkedReceiverBlockEntity;
 import dev.simulated_team.simulated.index.SimBlocks;
-import dev.tassis.createfieldwork.content.IsolatorBlock;
-import dev.tassis.createfieldwork.isolation.IsolationRuntime;
-import dev.tassis.createfieldwork.registry.FieldworkContent;
-import dev.tassis.createfieldwork.server.FieldworkStateAccess;
-import dev.tassis.createfieldwork.wireless.Scope;
+import dev.tassis.createfieldwork.isolator.ordinary.IsolatorBlock;
+import dev.tassis.createfieldwork.isolator.lifecycle.IsolationRuntime;
+import dev.tassis.createfieldwork.platform.registry.FieldworkContent;
+import dev.tassis.createfieldwork.platform.FieldworkStateAccess;
+import dev.tassis.createfieldwork.isolator.ordinary.IsolatorBlockEntity;
+import dev.tassis.createfieldwork.wireless.scope.Scope;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
@@ -36,7 +37,7 @@ import java.util.function.BiConsumer;
 import java.util.function.IntConsumer;
 import net.createmod.catnip.data.Couple;
 import dev.ryanhcode.sable.sublevel.ServerSubLevel;
-import dev.tassis.createfieldwork.wireless.ScopeResolver;
+import dev.tassis.createfieldwork.wireless.scope.ScopeResolver;
 
 /** Actual main marker, resolver, lifecycle and radio hooks. No research behavior is loaded. */
 final class NetworkAcceptance {
@@ -285,14 +286,24 @@ final class NetworkAcceptance {
     }
 
     private void content() {
+        var tab = FieldworkContent.FIELDWORK_TAB.get();
+        check.accept("Fieldwork has a registered dedicated creative tab", ResourceLocation.fromNamespaceAndPath("create_fieldwork", "main")
+            .equals(net.minecraft.core.registries.BuiltInRegistries.CREATIVE_MODE_TAB.getKey(tab)));
+        check.accept("Fieldwork creative tab uses the isolator icon", tab.getIconItem().is(FieldworkContent.ISOLATOR_ITEM.get()));
+        tab.buildContents(new net.minecraft.world.item.CreativeModeTab.ItemDisplayParameters(level.enabledFeatures(), false, level.registryAccess()));
+        check.accept("Fieldwork tab is visible and contains both isolators without operator permissions", tab.shouldDisplay()
+            && tab.getDisplayItems().size() == 2 && tab.getDisplayItems().stream().anyMatch(stack -> stack.is(FieldworkContent.ISOLATOR_ITEM.get()))
+            && tab.getDisplayItems().stream().anyMatch(stack -> stack.is(FieldworkContent.BRASS_ISOLATOR_ITEM.get())));
+        check.accept("Fieldwork tab also exposes the isolator to creative search", tab.getSearchTabDisplayItems().stream()
+            .anyMatch(stack -> stack.is(FieldworkContent.ISOLATOR_ITEM.get())));
         var recipeId = ResourceLocation.fromNamespaceAndPath("create_fieldwork", "redstone_link_isolator");
         var holder = level.getRecipeManager().byKey(recipeId).orElseThrow();
         check.accept("isolator recipe is ordinary shaped crafting", holder.value() instanceof ShapedRecipe);
         var recipe = (ShapedRecipe) holder.value();
         var ingredients = new ArrayList<>(java.util.List.of(
-            new ItemStack(Items.OBSIDIAN), AllItems.BRASS_SHEET.asStack(), new ItemStack(Items.OBSIDIAN),
+            new ItemStack(Items.OBSIDIAN), AllItems.ANDESITE_ALLOY.asStack(), new ItemStack(Items.OBSIDIAN),
             AllItems.ELECTRON_TUBE.asStack(), AllBlocks.REDSTONE_LINK.asStack(), AllItems.ELECTRON_TUBE.asStack(),
-            AllItems.BRASS_SHEET.asStack(), AllItems.PRECISION_MECHANISM.asStack(), AllItems.BRASS_SHEET.asStack()));
+            AllItems.ANDESITE_ALLOY.asStack(), AllItems.PRECISION_MECHANISM.asStack(), AllItems.ANDESITE_ALLOY.asStack()));
         var input = CraftingInput.of(3, 3, ingredients);
         check.accept("approved OBO/ELE/BPB ingredients match actual recipe", recipe.matches(input, level));
         var output = recipe.assemble(input, level.registryAccess());
@@ -303,7 +314,7 @@ final class NetworkAcceptance {
         level.setBlock(pos, FieldworkContent.ISOLATOR.get().defaultBlockState().setValue(IsolatorBlock.ACTIVE, true), 3);
         var block = level.getBlockState(pos);
         check.accept("WORLD placement normalizes misleading saved ACTIVE", !block.getValue(IsolatorBlock.ACTIVE));
-        check.accept("actual isolator has registered block entity", level.getBlockEntity(pos) instanceof dev.tassis.createfieldwork.content.IsolatorBlockEntity);
+        check.accept("actual isolator has registered block entity", level.getBlockEntity(pos) instanceof IsolatorBlockEntity);
         boolean noSignal = true;
         for (var direction : Direction.values()) noSignal &= block.getSignal(level, pos, direction) == 0;
         check.accept("isolator emits no ordinary redstone", noSignal && !block.isSignalSource());

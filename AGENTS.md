@@ -3,12 +3,15 @@
 ## Project status and authority
 
 - Mod ID: `create_fieldwork`; Java package: `dev.tassis.createfieldwork`.
-- [`plan.md`](plan.md) is the behavior contract. Current technical design: [`docs/design/redstone-link-isolator-v1.md`](docs/design/redstone-link-isolator-v1.md).
-- Production main implements the isolator/BE, server-owned registry/holder, narrow Create/Simulated hooks, lifecycle barriers, per-receiver refresh, accepted-movement/session-aware controllers and the fixed-WORLD train adapter. Strict mixins are active.
+- [`docs/design/behavior-contract.md`](docs/design/behavior-contract.md) is the behavior contract. Current technical design: [`docs/design/redstone-link-isolator-v1.md`](docs/design/redstone-link-isolator-v1.md).
+- Production main implements the isolator/BE, server-owned registry/holder, narrow Create/Simulated hooks, lifecycle barriers, per-receiver refresh, session-aware event-driven controllers and the fixed-WORLD train adapter. Strict mixins are active.
 - **D01:** upstream block/data-loss recovery and an exceptional journal are optional/deferred. Fieldwork's registry, initialization and refresh correctness remain required.
 - **D02:** every train condition observes public WORLD sources only. Private train consumers and Train ownership research are deferred. Source visibility, high/low, PENDING and cache/session behavior remain required.
 - **D03:** ordinary shaped 3×3 crafting, `OBO/ELE/BPB`, output one. Implemented and headlessly tested; client crafting/unlock interaction remains part of player acceptance.
 - Version `0.1.0` is available for player testing. Client/GUI/multiplayer/explosion acceptance is incomplete. Use the [production acceptance record](docs/testing/redstone-link-isolator-acceptance.md), not historical prototype pass counts.
+- Normal container removal retains the old footprint/barrier and publishes only
+  after active UUID absence. Detached serialized markers are not validated through
+  live plot block state; this does not expand deferred D01 data recovery.
 - The project uses GNU GPL v3.0 only (`GPL-3.0-only`); see [LICENSE](LICENSE). Keep main and test-driver metadata consistent and include the license text in the packaged JAR.
 
 ## Pinned toolchain
@@ -99,12 +102,30 @@ Smoke uses the real NeoForge installer, Java21 JRE and `.smoke/server/`, separat
 ./scripts/gradle-docker.sh verifyFieldworkAcceptance -PacceptancePhase=movement
 ./scripts/gradle-docker.sh verifyFieldworkAcceptance -PacceptancePhase=lifecycle
 ./scripts/gradle-docker.sh verifyFieldworkAcceptance -PacceptancePhase=packed
+./scripts/gradle-docker.sh verifyFieldworkAcceptance -PacceptancePhase=schematic
+./scripts/gradle-docker.sh verifyFieldworkAcceptance -PacceptancePhase=binding
+./scripts/gradle-docker.sh verifyFieldworkAcceptance -PacceptancePhase=binding-reset
+./scripts/gradle-docker.sh verifyFieldworkAcceptance -PacceptancePhase=binding-faults
+./scripts/gradle-docker.sh verifyFieldworkAcceptance -PacceptancePhase=controller-index
+./scripts/gradle-docker.sh verifyFieldworkAcceptance -PacceptancePhase=controller-work
 # Consecutive independent JVMs; do not reset the world between them
 ./scripts/gradle-docker.sh verifyFieldworkAcceptance -PacceptancePhase=seed
 ./scripts/gradle-docker.sh verifyFieldworkAcceptance -PacceptancePhase=reload -PacceptanceKeepWorld
+# Consecutive independent JVMs; do not reset the world between them
+./scripts/gradle-docker.sh verifyFieldworkAcceptance -PacceptancePhase=binding-seed
+./scripts/gradle-docker.sh verifyFieldworkAcceptance -PacceptancePhase=binding-reload -PacceptanceKeepWorld
 ```
 
-`src/acceptancemod/` supplies fixtures, publication/visual/marker-write faults and two work-counter mixins (five total). It supplies no scope/registry answers and is absent from shipping JARs and ordinary runs. Scratch: `run-fieldwork-acceptance/`. The verifier checks phase/results, complete saves and state close.
+`src/acceptancemod/` supplies fixtures and fault/work-counter mixins. It supplies no scope/registry answers and is absent from shipping JARs and ordinary runs. Scratch: `run-fieldwork-acceptance/`. The verifier checks phase/results, complete saves and state close.
+
+The 2026-11-09 feature-organization matrix recorded JUnit **106**, network **174**,
+refresh **69**, movement **74**, lifecycle **23**, packed **24**, schematic
+**347**, binding **177**, binding-reset **57**, binding-faults **134**,
+controller-index **43**, controller-work **15**, seed/reload **24/25**, and
+binding-seed/reload **30/27**. Packaged hash
+`c69b8bb59e098f96027a8d3a8050d7be77cbaa9812d2d88183e382733340886c`
+reached installer `Done`, empty `/fieldwork status`, complete console save, and
+exit 0. These are separate phase counts, not a summed score or client acceptance.
 
 The scoped-refresh revision recorded JUnit **85**, network **148**, refresh **69**, lifecycle **23**, packed **24**, seed/reload **24/25**, checked separately. Simulated still linearly filters selected-dimension indexes; no MSPT benchmark exists. See [scoped refresh](docs/testing/scoped-refresh.md).
 
@@ -113,6 +134,18 @@ The later private-controller worktree revision newly reran those phases plus **m
 The texture-only revision retained identical bytes for all 58 Java classes and repeated clean build/JUnit85/network148/installer checks. Edit game PNGs in `src/main/resources/assets/create_fieldwork/textures/block/redstone_link_isolator/`. `python3 scripts/export-isolator-textures.py --check-installed` checks main; `--install --force` explicitly overwrites main from art. See [texture integration](docs/testing/placeholder-textures.md).
 
 ### Historical research probes
+
+### Non-shipping v0.2 identity experiment
+
+`src/bindingmod/` is a separate **experimental** run, not production acceptance:
+`verifyBindingProbe -PbindingPhase=seed`, then `verifyBindingProbe -PbindingPhase=reload -PbindingKeepWorld`.
+It uses `run-binding-probe/` and real persisted Sable force-load tickets. It
+proves device-ID/lectern persistence and a fixture-driven UUID-stamped block
+authorization model, **not** remote private-network routing or automatic source
+withdrawal. Normal runs/main acceptance exclude it; `check` verifies shipping
+archive isolation. See [binding experiment](docs/testing/controller-binding-spike.md).
+
+### Historical scope probes
 
 ```sh
 ./scripts/gradle-docker.sh verifyScopeProbe
@@ -143,6 +176,24 @@ See [probe history](docs/testing/scope-hook-probe.md) and the [research index](d
 | `src/acceptancemod/`, `src/testmod/` | Separate main acceptance and research drivers |
 | `build/generated/sources/modMetadata/` | Generated metadata; do not edit |
 | `Dockerfile`, `compose.yaml`, `scripts/` | Containers, smoke, texture tools |
+
+## Architecture and documentation policy
+
+- All agents and contributors **must follow** the
+  [project architecture policy](docs/design/project-architecture-policy.md) and
+  [code organization policy](docs/design/code-organization-policy.md).
+- Treat the behavior contract, V1 design, and architecture policies under
+  `docs/design/` as durable authority. Ignored workflow artifacts, scratch logs,
+  build outputs, and local run directories must not replace or override them.
+- Keep durable design, architecture, decision, and engineering-policy documents
+  under `docs/` and write their prose in English. Localization resources may
+  contain their target language, but durable documentation should describe those
+  values in English rather than embedding untranslated discussion.
+- Update `docs/README.md` whenever a canonical design or policy document is added,
+  moved, superseded, or removed. Production documentation must not link to
+  `.ramblings/`, `.slim/`, `.audit/`, or other ignored local artifacts as authority.
+- Architecture exceptions must be explicit in durable documentation, narrowly
+  scoped, and supported by verification evidence.
 
 CI uses native Java21/Gradle9.2.1 runners. Branch/PR/manual runs upload artifacts; a matching `v<mod_version>` tag push creates a Release after build success. Hyphenated versions are prereleases. See [CI](docs/testing/github-actions.md); a local tag does not prove hosted execution.
 
