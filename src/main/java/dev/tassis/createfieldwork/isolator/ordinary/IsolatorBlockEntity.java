@@ -1,6 +1,6 @@
 package dev.tassis.createfieldwork.isolator.ordinary;
 
-import dev.tassis.createfieldwork.isolator.lifecycle.IsolationRuntime;
+import dev.tassis.createfieldwork.platform.IsolatorIntegrationBridge;
 import dev.tassis.createfieldwork.platform.registry.FieldworkContent;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -12,6 +12,6 @@ public final class IsolatorBlockEntity extends BlockEntity {
 
     @Override public void onLoad() {
         super.onLoad();
-        if (level instanceof ServerLevel server) IsolationRuntime.markerChanged(server, worldPosition, true);
+        if (level instanceof ServerLevel server) IsolatorIntegrationBridge.markerChanged(server, worldPosition, true);
     }
 }

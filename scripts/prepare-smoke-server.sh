@@ -3,7 +3,8 @@
 set -eu
 
 ROOT=/workspace
-SERVER="$ROOT/.smoke/server"
+SERVER="${FIELDWORK_SMOKE_SERVER:-$ROOT/.smoke/server}"
+PROFILE="${FIELDWORK_SMOKE_PROFILE:-full}"
 DOWNLOADS="$ROOT/.smoke/downloads"
 NEO_VERSION=21.1.257
 
@@ -12,13 +13,17 @@ if [ "$(id -u)" -eq 0 ]; then
     exit 1
 fi
 
+case "$PROFILE" in full|base) ;; *) printf 'Unknown smoke profile: %s\n' "$PROFILE" >&2; exit 2 ;; esac
+
 mkdir -p "$DOWNLOADS" "$SERVER/mods" "$SERVER/.home"
 
 # Never silently test a different stack or delete operator-owned extra mods.
 for mod in "$SERVER"/mods/*.jar; do
     [ -f "$mod" ] || continue
     case "${mod##*/}" in
-        create-1.21.1-6.0.10.jar|sable-neoforge-1.21.1-2.0.5.jar|create-aeronautics-bundled-1.21.1-1.3.2.jar|create_fieldwork.jar) ;;
+        create-1.21.1-6.0.10.jar|create_fieldwork.jar) ;;
+        sable-neoforge-1.21.1-2.0.5.jar|create-aeronautics-bundled-1.21.1-1.3.2.jar)
+            [ "$PROFILE" = full ] || { printf 'Optional integration mod %s is not allowed in the base profile.\n' "$mod" >&2; exit 1; } ;;
         *) printf 'Unexpected mod %s; move it out before setup.\n' "$mod" >&2; exit 1 ;;
     esac
 done
@@ -53,8 +58,10 @@ for config in eula.txt server.properties fieldwork_jvm_args.txt; do
 done
 
 cp "$DOWNLOADS/create-1.21.1-6.0.10.jar" "$SERVER/mods/"
-cp "$DOWNLOADS/sable-neoforge-1.21.1-2.0.5.jar" "$SERVER/mods/"
-cp "$DOWNLOADS/create-aeronautics-bundled-1.21.1-1.3.2.jar" "$SERVER/mods/"
+if [ "$PROFILE" = full ]; then
+    cp "$DOWNLOADS/sable-neoforge-1.21.1-2.0.5.jar" "$SERVER/mods/"
+    cp "$DOWNLOADS/create-aeronautics-bundled-1.21.1-1.3.2.jar" "$SERVER/mods/"
+fi
 
 # setup runs clean build first, so exactly one current project artifact is expected.
 set -- "$ROOT"/build/libs/create_fieldwork-neoforge-1.21.1-*.jar
@@ -63,4 +70,4 @@ if [ "$#" -ne 1 ] || [ ! -f "$1" ]; then
     exit 1
 fi
 cp "$1" "$SERVER/mods/create_fieldwork.jar"
-printf '%s\n' 'Smoke server prepared. Read the EULA and edit .smoke/server/eula.txt before start.'
+printf 'Smoke server (%s) prepared at %s. Read the EULA and edit its eula.txt before start.\n' "$PROFILE" "$SERVER"

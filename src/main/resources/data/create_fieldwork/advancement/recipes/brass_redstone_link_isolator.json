@@ -1,1 +1,14 @@
-{"parent":"minecraft:recipes/root","criteria":{"has_isolator":{"trigger":"minecraft:inventory_changed","conditions":{"items":[{"items":"create_fieldwork:redstone_link_isolator"}]}},"has_the_recipe":{"trigger":"minecraft:recipe_unlocked","conditions":{"recipe":"create_fieldwork:brass_redstone_link_isolator"}}},"requirements":[["has_isolator","has_the_recipe"]],"rewards":{"recipes":["create_fieldwork:brass_redstone_link_isolator"]}}
+{
+  "neoforge:conditions":[
+    {"type":"neoforge:mod_loaded","modid":"sable"},
+    {"type":"neoforge:mod_loaded","modid":"aeronautics"},
+    {"type":"neoforge:mod_loaded","modid":"simulated"}
+  ],
+  "parent":"minecraft:recipes/root",
+  "criteria":{
+    "has_isolator":{"trigger":"minecraft:inventory_changed","conditions":{"items":[{"items":"create_fieldwork:redstone_link_isolator"}]}},
+    "has_the_recipe":{"trigger":"minecraft:recipe_unlocked","conditions":{"recipe":"create_fieldwork:brass_redstone_link_isolator"}}
+  },
+  "requirements":[["has_isolator","has_the_recipe"]],
+  "rewards":{"recipes":["create_fieldwork:brass_redstone_link_isolator"]}
+}

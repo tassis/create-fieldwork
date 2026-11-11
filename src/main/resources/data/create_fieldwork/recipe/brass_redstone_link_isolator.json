@@ -1,1 +1,16 @@
-{"type":"minecraft:crafting_shapeless","category":"redstone","ingredients":[{"item":"create_fieldwork:redstone_link_isolator"},{"tag":"c:plates/brass"},{"tag":"c:plates/brass"},{"tag":"c:plates/brass"}],"result":{"id":"create_fieldwork:brass_redstone_link_isolator","count":1}}
+{
+  "neoforge:conditions":[
+    {"type":"neoforge:mod_loaded","modid":"sable"},
+    {"type":"neoforge:mod_loaded","modid":"aeronautics"},
+    {"type":"neoforge:mod_loaded","modid":"simulated"}
+  ],
+  "type":"minecraft:crafting_shapeless",
+  "category":"redstone",
+  "ingredients":[
+    {"item":"create_fieldwork:redstone_link_isolator"},
+    {"tag":"c:plates/brass"},
+    {"tag":"c:plates/brass"},
+    {"tag":"c:plates/brass"}
+  ],
+  "result":{"id":"create_fieldwork:brass_redstone_link_isolator","count":1}
+}

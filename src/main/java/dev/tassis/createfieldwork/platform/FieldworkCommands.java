@@ -3,15 +3,11 @@ package dev.tassis.createfieldwork.platform;
 import com.mojang.brigadier.arguments.LongArgumentType;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 
-@EventBusSubscriber(modid = CreateFieldwork.MOD_ID)
 public final class FieldworkCommands {
     private FieldworkCommands() {}
 
-    @SubscribeEvent
     public static void commands(RegisterCommandsEvent event) {
         event.getDispatcher().register(Commands.literal("fieldwork").requires(source -> source.hasPermission(2))
             .then(Commands.literal("status").executes(context -> {

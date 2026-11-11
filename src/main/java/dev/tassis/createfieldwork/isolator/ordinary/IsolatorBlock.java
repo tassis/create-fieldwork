@@ -1,7 +1,7 @@
 package dev.tassis.createfieldwork.isolator.ordinary;
 
 import com.mojang.serialization.MapCodec;
-import dev.tassis.createfieldwork.isolator.lifecycle.IsolationRuntime;
+import dev.tassis.createfieldwork.platform.IsolatorIntegrationBridge;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -37,12 +37,12 @@ public class IsolatorBlock extends BaseEntityBlock {
     @Override
     protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState previous, boolean moved) {
         super.onPlace(state, level, pos, previous, moved);
-        if (level instanceof ServerLevel server && !previous.is(this)) IsolationRuntime.markerChanged(server, pos, true);
+        if (level instanceof ServerLevel server && !previous.is(this)) IsolatorIntegrationBridge.markerChanged(server, pos, true);
     }
 
     @Override
     protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState next, boolean moved) {
-        if (level instanceof ServerLevel server && !next.is(this)) IsolationRuntime.markerChanged(server, pos, false);
+        if (level instanceof ServerLevel server && !next.is(this)) IsolatorIntegrationBridge.markerChanged(server, pos, false);
         super.onRemove(state, level, pos, next, moved);
     }
 

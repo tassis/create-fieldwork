@@ -10,7 +10,11 @@ authors="${mod_authors}"
 description='''${mod_description}'''
 
 [[mixins]]
-config="create_fieldwork.mixins.json"
+config="create_fieldwork.base.mixins.json"
+
+[[mixins]]
+config="create_fieldwork.integration.mixins.json"
+requiredMods=["sable", "aeronautics", "simulated"]
 
 [[dependencies.${mod_id}]]
 modId="neoforge"
@@ -28,21 +32,21 @@ side="BOTH"
 
 [[dependencies.${mod_id}]]
 modId="sable"
-type="required"
+type="optional"
 versionRange="[2.0.5]"
 ordering="AFTER"
 side="BOTH"
 
 [[dependencies.${mod_id}]]
 modId="aeronautics"
-type="required"
+type="optional"
 versionRange="[1.3.2]"
 ordering="AFTER"
 side="BOTH"
 
 [[dependencies.${mod_id}]]
 modId="simulated"
-type="required"
+type="optional"
 versionRange="[1.3.2]"
 ordering="AFTER"
 side="BOTH"

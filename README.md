@@ -1,6 +1,7 @@
 # Create: Fieldwork
 
-A focused Create/Aeronautics addon for **Minecraft 1.21.1 / NeoForge**.
+A focused Create addon with optional Aeronautics integration for **Minecraft
+1.21.1 / NeoForge**.
 
 The **Redstone Link Isolator** gives an assembled Sable craft a private Create wireless-redstone network. Links on the same craft can communicate, while matching frequencies in the world or on another craft cannot cross the boundary. Create's frequency, range and power rules, including Sable's projected distances, still apply.
 
@@ -22,7 +23,8 @@ Train-schedule Redstone Link conditions observe **public WORLD sources only**, a
 
 ## Requirements
 
-Install the same stack on the client and server:
+Create is required. Install the complete optional integration bundle on both the
+client and server only when using the isolator:
 
 | Component | Version |
 |---|---|
@@ -30,10 +32,16 @@ Install the same stack on the client and server:
 | Minecraft | 1.21.1 |
 | NeoForge | 21.1.257 |
 | Create | 6.0.10 |
-| Sable | 2.0.5 |
-| Create Aeronautics bundled | 1.3.2 |
+| Sable | Optional bundle: 2.0.5 |
+| Create Aeronautics bundled | Optional bundle: 1.3.2, including Simulated |
 
-Use the bundled Aeronautics artifact; do not install duplicate copies of its nested mods. Download URLs and dependency checksums are pinned in [`smoke/artifacts.lock`](smoke/artifacts.lock). Other versions have not been verified.
+Sable, Aeronautics and Simulated activate as one indivisible bundle. Without all
+three, Fieldwork keeps Create offhand schematic assistance but does not expose
+isolator recipes, creative entries or behavior. Client and server activation must
+match. Use the bundled Aeronautics artifact; do not install duplicate copies of
+its nested mods. Download URLs and dependency checksums are pinned in
+[`smoke/artifacts.lock`](smoke/artifacts.lock). Other versions have not been
+verified.
 
 ## Using the isolator
 

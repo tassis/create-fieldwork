@@ -8,7 +8,9 @@
 
 ## Purpose
 
-Create: Fieldwork is a focused Create/Aeronautics addon. Its first block, the **Redstone Link Isolator**, gives an assembled Sable/Aeronautics craft a private Create wireless-redstone network.
+Create: Fieldwork is a focused Create addon with optional Aeronautics integration.
+Its first block, the **Redstone Link Isolator**, gives an assembled
+Sable/Aeronautics craft a private Create wireless-redstone network.
 
 The design exists to prevent Redstone Links aboard a craft from accidentally interacting with matching frequencies in the parent world or another craft, while preserving communication between links aboard the same craft.
 
@@ -37,6 +39,22 @@ The supported V1 stack is pinned to:
 
 Compatibility with other releases is not claimed. Dependency ranges remain exact;
 any upgrade requires a new artifact and transformed-bytecode audit.
+
+### Dependency modes
+
+- Create is the only required gameplay dependency.
+- Sable, Aeronautics and Simulated are one optional integration bundle. The
+  isolator integration activates only when all three exact supported versions are
+  present.
+- In Create-only mode, offhand schematic assistance remains available. Fieldwork
+  keeps its block/item/BE registry identities dormant for decoding safety, but
+  exposes no isolator recipe, loot, creative entry, command or behavior.
+- Client and server exchange the integration-active state during configuration and
+  reject either mismatch before player join.
+- An integrated world records a durable marker. If the bundle is later absent,
+  Fieldwork warns prominently but does not prevent the player from opening or
+  saving the world. Players should back up first because content owned by missing
+  optional mods may be lost; Fieldwork does not claim to recover that data.
 
 ## Version 1 Scope
 

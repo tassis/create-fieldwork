@@ -1,6 +1,7 @@
 package dev.tassis.createfieldwork.schematic.comparison;
 
-import dev.tassis.createfieldwork.isolator.ordinary.IsolatorBlock;
+import dev.tassis.createfieldwork.platform.CreateFieldwork;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.Property;
@@ -15,7 +16,7 @@ public final class BuildStatePolicy {
         BlockStateProperties.DOUBLE_BLOCK_HALF, BlockStateProperties.SLAB_TYPE);
     private static final Set<Property<?>> DYNAMIC = Set.of(BlockStateProperties.POWERED, BlockStateProperties.POWER,
         BlockStateProperties.LIT, BlockStateProperties.WATERLOGGED, BlockStateProperties.OPEN,
-        BlockStateProperties.ENABLED, IsolatorBlock.ACTIVE);
+        BlockStateProperties.ENABLED);
     private BuildStatePolicy() {}
     public static Result compare(BlockState expected, BlockState actual) {
         if (expected == null || actual == null || expected.isAir()) return Result.UNVERIFIED;
@@ -25,9 +26,16 @@ public final class BuildStatePolicy {
         for (var property : expected.getProperties()) {
             if (CONSTRUCTION.contains(property)) {
                 if (!expected.getValue(property).equals(actual.getValue(property))) return Result.WRONG_STATE;
-            } else if (!DYNAMIC.contains(property)) unknown = true;
+            } else if (!DYNAMIC.contains(property) && !fieldworkActive(expected, property)) unknown = true;
         }
         return unknown ? Result.UNVERIFIED : Result.MATCH;
     }
     public static boolean error(Result result) { return result == Result.WRONG_BLOCK || result == Result.WRONG_STATE; }
+
+    private static boolean fieldworkActive(BlockState state, Property<?> property) {
+        if (!property.getName().equals("active")) return false;
+        var id = BuiltInRegistries.BLOCK.getKey(state.getBlock());
+        return id.getNamespace().equals(CreateFieldwork.MOD_ID)
+            && (id.getPath().equals("redstone_link_isolator") || id.getPath().equals("brass_redstone_link_isolator"));
+    }
 }

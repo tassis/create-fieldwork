@@ -50,3 +50,43 @@ services:
       - "127.0.0.1:25565:25565/udp"
     volumes:
       - ./.smoke/server:/server
+
+  base-smoke-setup:
+    profiles: [smoke]
+    build:
+      context: .
+    user: "${LOCAL_UID:?Run ./scripts/base-smoke-server.sh}:${LOCAL_GID:?Run ./scripts/base-smoke-server.sh}"
+    working_dir: /workspace/.smoke/base-server
+    environment:
+      HOME: /workspace/.docker/home
+      FIELDWORK_SMOKE_PROFILE: base
+      FIELDWORK_SMOKE_SERVER: /workspace/.smoke/base-server
+    entrypoint: [sh, /workspace/scripts/prepare-smoke-server.sh]
+    volumes:
+      - .:/workspace
+
+  base-smoke-server:
+    profiles: [smoke]
+    image: eclipse-temurin:21-jre@sha256:0b99b3376fbb50dbf9c0af8535fdd5b8eb0d3fdfc8b1e4967f383b6919f6901a
+    user: "${LOCAL_UID:?Run ./scripts/base-smoke-server.sh}:${LOCAL_GID:?Run ./scripts/base-smoke-server.sh}"
+    working_dir: /server
+    environment:
+      HOME: /server/.home
+    command:
+      - java
+      - '@fieldwork_jvm_args.txt'
+      - '@libraries/net/neoforged/neoforge/21.1.257/unix_args.txt'
+      - nogui
+    stdin_open: true
+    tty: true
+    stop_grace_period: 60s
+    mem_limit: 5g
+    cpus: 4
+    pids_limit: 1024
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      - "127.0.0.1:25566:25565/tcp"
+    volumes:
+      - ./.smoke/base-server:/server

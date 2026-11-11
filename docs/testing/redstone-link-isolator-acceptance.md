@@ -2,9 +2,20 @@
 
 ## Status and evidence boundary
 
-Recorded through 2026-11-09. Production main implements server-owned state/registry, the actual isolator/BE and recipe, Create/Simulated filters, lifecycle/mutation barriers, per-receiver scoped refresh, two-tier controller routing with event-driven reconciliation, fixed-WORLD train conditions and source-publication cache handling.
+Recorded through 2026-11-11. Production main implements server-owned state/registry, the actual isolator/BE and recipe, Create/Simulated filters, lifecycle/mutation barriers, per-receiver scoped refresh, two-tier controller routing with event-driven reconciliation, fixed-WORLD train conditions and source-publication cache handling.
 
-**Current v0.2 worktree recheck (metadata still0.1.0, no publication):** JUnit106,
+The current optional-integration revision makes Create the only required gameplay
+dependency. A packaged Create-only server containing only NeoForge, Create and
+Fieldwork reached `Done`, then console-stopped with complete dimension saves. Its
+mod list contained no Sable, Aeronautics or Simulated. With an integration marker,
+the same packaged server logged the prominent backup/data-loss warning, reached
+`Done`, then console-stopped with complete dimension saves and exit code 0.
+Fieldwork's own stable registry identities remain inert, but recovery of content
+owned by missing optional mods is not claimed. Packaged Create-only client/offhand
+interaction and real asymmetric multiplayer handshakes remain pending.
+
+**Full v0.2 worktree recheck before the latest client hand-swap polish (metadata
+still0.1.0, no publication):** JUnit106,
 network174, refresh69, movement74, lifecycle23, packed24, schematic347,
 binding177, binding-reset57, binding-faults134, controller-index43,
 controller-work15 and independent-JVM seed24/reload25 plus
@@ -19,6 +30,14 @@ for times, reproduction and limits. This does not replace historical hashes belo
 or establish every player check of later client builds. Final integration review
 and detailed [client matrix](schematic-client-v02.md#player-matrix--scoped-feedback-and-remaining-checks)
 remain partial; the later Iris/ghost follow-up has a scoped owner-reported pass.
+
+The 2026-11-11 right-hand→offhand transform-preservation change then passed a
+clean build and schematic348 with complete save/state close. The follow-up forces
+the boundary sync even when Create's periodic-sync cooldown is zero. Its JAR
+SHA-256 is
+`366cf41a1a8b5601bccd83c9553b18df5d16b891215088eb3e51ad9dccd862f8`.
+That focused rerun does not claim the full matrix or a player hand-swap retest for
+this later hash.
 
 This recheck followed a behavior-preserving feature-package reorganization.
 `FieldworkServerState` remains the logical-server composition root; controller
@@ -115,7 +134,7 @@ Scratch directory: `run-fieldwork-acceptance/`, separate from smoke. Runs reset 
 | movement / controller index / controller work | 74 / 43 / 15, saved/closed | zero movement/teleport Fieldwork work, targeted indexes/retries, 200-post safety cadence and native TTL removal |
 | binding / reset / faults | 177 / 57 / 134, saved/closed | ordinary/managed routing, real result extraction, named quarantine/repair |
 | binding seed/reload | 30/27, each saved/closed | consecutive independent JVMs; force-load, revocation tombstone, unloaded reset and authority reconstruction |
-| schematic | 347, saved/closed | native headless schematic regressions; not a GUI/player rendering pass |
+| schematic | 348, saved/closed | native headless schematic regressions including pre-swap transform preservation; not a GUI/player rendering pass |
 
 An earlier integration review found a P1 post-publication barrier-release ordering issue. It was fixed and the follow-up gate passed. The remediation regression is preserved in `.audit/main-phase2-remediation-{build,network,lifecycle,packed,seed,reload}.log`: JUnit82 and phase136/23/24/24/25, each checked independently. Do not combine counts across revisions/phases into a single acceptance claim.
 

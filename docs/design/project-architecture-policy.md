@@ -82,8 +82,13 @@ post-commit and must not turn a committed authoritative transition into rollback
 
 ## Integration and mixin policy
 
-- `create_fieldwork.mixins.json` remains strict with `required=true` and
-  `defaultRequire=1`.
+- `create_fieldwork.base.mixins.json` and
+  `create_fieldwork.integration.mixins.json` both remain strict with
+  `required=true` and `defaultRequire=1`.
+- The base configuration may reference only Minecraft, NeoForge, Create and
+  Fieldwork base-safe classes. The integration configuration is declared with
+  `requiredMods=["sable", "aeronautics", "simulated"]`; optional API types must
+  not leak into base entry points, stable content classes or base mixins.
 - Each mixin class targets one upstream class or one coherent injection seam.
 - Package movement and injection-logic changes must be reviewed and verified as
   separate changes.

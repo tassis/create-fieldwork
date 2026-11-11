@@ -62,7 +62,7 @@ The texture revision retained identical bytes for all 58 Java classes from the s
 
 ## Installation
 
-Install the same pinned versions on both sides:
+Create is required. Choose one matching mode on both sides:
 
 | Component | Version/file |
 |---|---|
@@ -70,11 +70,18 @@ Install the same pinned versions on both sides:
 | Minecraft | 1.21.1 |
 | NeoForge | 21.1.257 |
 | Create | 6.0.10, `create-1.21.1-6.0.10.jar` |
-| Sable | 2.0.5, `sable-neoforge-1.21.1-2.0.5.jar` |
-| Aeronautics bundled | 1.3.2, `create-aeronautics-bundled-1.21.1-1.3.2.jar` |
+| Sable | Optional integration: 2.0.5, `sable-neoforge-1.21.1-2.0.5.jar` |
+| Aeronautics bundled | Optional integration: 1.3.2, `create-aeronautics-bundled-1.21.1-1.3.2.jar` |
 | Fieldwork | 0.1.0, the selected build above |
 
-External download URLs/hashes are in [`smoke/artifacts.lock`](../../smoke/artifacts.lock). Use Aeronautics **bundled** without installing duplicate nested mods such as Simulated. Metadata intentionally pins dependencies; other versions are unverified.
+Create-only mode keeps offhand schematic assistance but hides and disables the
+isolator. Integration mode requires Sable, Aeronautics and its bundled Simulated
+mod together. A client/server mismatch is rejected during connection setup. If a
+previously integrated world is opened without the bundle, Fieldwork warns but does
+not block startup; make a backup first because missing optional-mod content may be
+removed when the world is saved. External download URLs/hashes are in
+[`smoke/artifacts.lock`](../../smoke/artifacts.lock). Use Aeronautics **bundled**
+without installing duplicate nested mods. Other versions are unverified.
 
 Place Fieldwork in the instance's `mods/` directory and move out the old Fieldwork JAR to avoid duplicate mod IDs. Do not install `fieldwork_probe` or `fieldwork_acceptance`; these development drivers are not part of the shipping JAR.
 
@@ -90,6 +97,11 @@ For a fresh installation, use the [developer guide](../../AGENTS.md#packaged-jar
 ./scripts/smoke-server.sh logs
 # Wait for Done (...)! and check errors before connecting
 ```
+
+For a separate packaged Create-only server on TCP port `25566`, use
+`./scripts/base-smoke-server.sh` with the same `setup`, `start`, `logs`, `console`
+and `status` commands. It has an independent world and EULA file under
+`.smoke/base-server/`.
 
 On the same host, connect to `127.0.0.1:25565`. Both TCP and UDP bind only to localhost; another computer cannot connect through its own localhost. Remote access needs separate network configuration, including Sable's UDP traffic.
 
