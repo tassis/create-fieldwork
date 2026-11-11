@@ -17,8 +17,12 @@ red/orange outlines and extra HUD on the exact active offhand selection. Leaving
 that mode clears prior assistance once; idle/main-hand ticks do not repeatedly
 clear the cache or do comparison world reads.
 
-Controller-priority dispatch against the offhand blueprint and early sync flush
-before inventory actions are likewise restricted to offhand mode. Controller and
+Controller-priority dispatch remains restricted to the offhand blueprint. The
+early native sync flush before a swap or inventory action applies to an active
+schematic in either hand, so moving the same stack right→left or left→right retains
+its anchor, rotation, mirror and deployed state. The boundary sync is sent even
+when Create's periodic-sync cooldown is already zero; that cooldown is a scheduler,
+not proof that the destination hand can initialize from the current client pose. Controller and
 native lectern right-clicks yield to vanilla without a synthetic second use. Normal native
 controller interaction/server binding is a separate feature. Main-hand Create
 preview/tool/HUD continues; both valid hands still select main and disable this
@@ -258,7 +262,7 @@ Simulated dependencies. Record the exact candidate hash used for your report.
 | Assistance activation | Main-hand blueprint has no Fieldwork comparison frames/extra HUD; offhand blueprint enables assistance; switching back clears it. With valid blueprints in both hands, main wins and auxiliary mode stays off | Pending for latest scope-only candidate |
 | Offhand support | Non-schematic main, valid offhand; deploy/rotate/mirror/translate and verify server receives that offhand deployment | Pending |
 | Same filename, different state | Two copies with different deployment components; switch hands/slots and confirm no stale preview or wrong-slot overwrite | Pending |
-| Swap/inventory sync | Change preview, immediately F-swap or open inventory; reopen both copies and check each saved state | Pending |
+| Swap/inventory sync | Change preview, immediately F-swap or open inventory; the same stack retains its transform while a same-filename second copy keeps its own state | Headless native packet/slot-order coverage passed; player retest pending |
 | Construction hints | Ordinary world: wrong type red; matching block/wrong facing, log axis, stair half and slab half orange; correct block has no extra frame | Pending |
 | Native ghost | Missing block remains native ghost; no replacement of Create's preview | Pending |
 | Offhand opacity | Ordinary ghost about65% opaque; real correct blocks stay solid, red/orange frames remain clear. Switch to main hand: native opacity immediately returns; test both mirrors and glass/leaves | Owner reports follow-up OK; detailed combinations not individually recorded |
