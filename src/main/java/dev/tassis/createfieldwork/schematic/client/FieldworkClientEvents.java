@@ -3,6 +3,7 @@ package dev.tassis.createfieldwork.schematic.client;
 import com.simibubi.create.CreateClient;
 import dev.tassis.createfieldwork.platform.CreateFieldwork;
 import dev.tassis.createfieldwork.mixin.schematic.client.SchematicHandlerAccessor;
+import dev.tassis.createfieldwork.schematic.input.BlueprintSelection;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.network.chat.Component;
@@ -31,12 +32,18 @@ public final class FieldworkClientEvents {
         if (event.getLevel() instanceof ClientLevel) SchematicClientState.clear();
     }
     /** Flush pending native placement before vanilla's subsequent swap packet can
-     * replace that slot with a different same-name blueprint. No custom packet. */
+     * move or replace that slot. This preserves the same schematic's transform in
+     * either hand without copying it to another same-name stack. No custom packet. */
     private static void flushBeforeInventoryAction() {
         var mc = Minecraft.getInstance(); var handler = CreateClient.SCHEMATIC_HANDLER;
-        if (mc.player == null || mc.level == null || mc.screen != null || !OffhandProjectionBuffer.activeOffhand(handler)) return;
+        if (mc.player == null || mc.level == null || mc.screen != null || !handler.isActive()
+            || !BlueprintSelection.valid(handler.getActiveSchematicItem())) return;
         var accessor = (SchematicHandlerAccessor) handler;
-        if (accessor.fieldwork$syncCooldown() > 0) { handler.sync(); accessor.fieldwork$syncCooldown(0); }
+        // Create's cooldown only schedules its next periodic sync. Even at zero,
+        // force one immediately before vanilla swaps the server-side slots so the
+        // destination hand cannot initialize from an older item transform.
+        handler.sync();
+        accessor.fieldwork$syncCooldown(0);
     }
     @SubscribeEvent(priority = EventPriority.HIGHEST) public static void key(InputEvent.Key event) {
         var options = Minecraft.getInstance().options;

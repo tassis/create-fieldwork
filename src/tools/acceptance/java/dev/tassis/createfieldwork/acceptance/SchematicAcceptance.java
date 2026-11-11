@@ -95,6 +95,20 @@ final class SchematicAcceptance {
         check.accept("native slot40 sync carries rotation and mirror", off.get(AllDataComponents.SCHEMATIC_ROTATION) == Rotation.CLOCKWISE_90 && off.get(AllDataComponents.SCHEMATIC_MIRROR) == Mirror.FRONT_BACK);
         check.accept("native placement echo is recognized without resetting local preview", echoes.consume(40, off));
         check.accept("sync echo is consumed exactly once", !echoes.consume(40, off));
+        var rightToLeft = blueprint(new BlockPos(30, 122, 30));
+        var preserved = new BlockPos(36, 124, 38);
+        actor.setItemInHand(InteractionHand.MAIN_HAND, rightToLeft);
+        actor.setItemInHand(InteractionHand.OFF_HAND, ItemStack.EMPTY);
+        new SchematicSyncPacket(actor.getInventory().selected, true, preserved, Rotation.COUNTERCLOCKWISE_90, Mirror.LEFT_RIGHT).handle(actor);
+        actor.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+        actor.setItemInHand(InteractionHand.OFF_HAND, rightToLeft);
+        check.accept("native pre-swap sync preserves right-hand transform after moving the same schematic to offhand",
+            BlueprintSelection.select(actor).stack() == rightToLeft
+                && preserved.equals(rightToLeft.get(AllDataComponents.SCHEMATIC_ANCHOR))
+                && rightToLeft.get(AllDataComponents.SCHEMATIC_ROTATION) == Rotation.COUNTERCLOCKWISE_90
+                && rightToLeft.get(AllDataComponents.SCHEMATIC_MIRROR) == Mirror.LEFT_RIGHT);
+        actor.setItemInHand(InteractionHand.MAIN_HAND, main);
+        actor.setItemInHand(InteractionHand.OFF_HAND, off);
         echoes.expect(0, off, destination, expectedSettings, true);
         check.accept("identical other-slot item is not a sync acknowledgement", !echoes.consume(40, off));
         for (int i = 0; i < 100; i++) echoes.expect(40, off, destination.east(i), expectedSettings, true);
