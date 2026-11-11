@@ -22,7 +22,12 @@
 | Java / Gradle / ModDev | 21 / 9.2.1 / 2.0.141 |
 | Create / Sable / Aeronautics bundled | 6.0.10 / 2.0.5 / 1.3.2 |
 
-Metadata uses exact dependency ranges. Gradle compares the three mod JARs with `smoke/artifacts.lock` on each verification/extraction. `gradle/verification-metadata.xml` pins other build inputs; it is not an independent audit of every third-party source/supply chain. Do not install duplicate nested mods from Aeronautics bundled.
+Metadata requires exact Create and makes exact Sable/Aeronautics/Simulated one
+optional integration bundle. Gradle compares the three audited mod JARs with
+`smoke/artifacts.lock` on each verification/extraction.
+`gradle/verification-metadata.xml` pins other build inputs; it is not an
+independent audit of every third-party source/supply chain. Do not install
+duplicate nested mods from Aeronautics bundled.
 
 ## Docker builds (default)
 
@@ -91,6 +96,16 @@ Smoke uses the real NeoForge installer, Java21 JRE and `.smoke/server/`, separat
 - `.smoke/downloads/` caches verified inputs. Installer libraries are not fully reverified each setup. For suspected corruption, stop, back up the world and use a fresh `.smoke/server/`.
 - Mixin exports: `.smoke/server/.mixin.out/class/`; filters: `fieldwork_jvm_args.txt`. Exports prove transformation, not behavior.
 - `.smoke/` and `.audit/` are ignored. Preserve conclusions/reproduction paths in `docs/`, not only local logs.
+
+Create-only packaged smoke uses an independent server directory and TCP port:
+
+```sh
+./scripts/base-smoke-server.sh setup
+# Read the EULA and, only if you agree, set .smoke/base-server/eula.txt to eula=true
+./scripts/base-smoke-server.sh start
+./scripts/base-smoke-server.sh logs
+./scripts/base-smoke-server.sh console
+```
 
 ## Verification layers
 

@@ -1,6 +1,5 @@
 package dev.tassis.createfieldwork.isolator.smart;
 
-import dev.tassis.createfieldwork.isolator.lifecycle.IsolationRuntime;
 import dev.tassis.createfieldwork.platform.registry.FieldworkContent;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -10,12 +9,11 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
-import dev.ryanhcode.sable.Sable;
 import dev.tassis.createfieldwork.isolator.state.CraftKey;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.UUID;
-import dev.tassis.createfieldwork.platform.FieldworkStateAccess;
+import dev.tassis.createfieldwork.platform.IsolatorIntegrationBridge;
 import dev.tassis.createfieldwork.isolator.binding.BindingRevocations;
 
 public final class BrassIsolatorBlockEntity extends BlockEntity {
@@ -24,13 +22,10 @@ public final class BrassIsolatorBlockEntity extends BlockEntity {
     public BrassIsolatorBlockEntity(BlockPos pos, BlockState state) { super(FieldworkContent.BRASS_ISOLATOR_BE.get(), pos, state); }
     @Override public void onLoad() {
         super.onLoad();
-        if (level instanceof ServerLevel server) {
-            IsolationRuntime.markerChanged(server, worldPosition, true);
-            FieldworkStateAccess.get(server.getServer()).bindings().track(this);
-        }
+        IsolatorIntegrationBridge.smartLoaded(this);
     }
     @Override public void setRemoved() {
-        if (level instanceof ServerLevel server && !server.getServer().isStopped()) FieldworkStateAccess.get(server.getServer()).bindings().untrack(this);
+        IsolatorIntegrationBridge.smartRemoved(this);
         super.setRemoved();
     }
 
@@ -45,11 +40,7 @@ public final class BrassIsolatorBlockEntity extends BlockEntity {
         return !craft.id().equals(instance) || grants.size() < 4096 || existingDevice != null && grants.containsKey(existingDevice);
     }
     public CraftKey currentCraft() {
-        if (!(level instanceof ServerLevel server) || isRemoved() || !server.hasChunkAt(worldPosition)) return null;
-        var owner = Sable.HELPER.getContaining(server, worldPosition);
-        if (owner == null || owner.isRemoved()) return null;
-        // Never materialize a packed replacement BE from a radio scope query.
-        return server.getChunkAt(worldPosition).getBlockEntities().get(worldPosition) == this ? IsolationRuntime.key(owner) : null;
+        return IsolatorIntegrationBridge.currentCraft(this);
     }
     public void grant(CraftKey craft, UUID device, long generation) {
         if (!(level instanceof ServerLevel server) || !server.getServer().isSameThread() || !craft.equals(currentCraft()) || generation <= 0)
@@ -57,7 +48,7 @@ public final class BrassIsolatorBlockEntity extends BlockEntity {
         if (!craft.id().equals(instance)) { grants.clear(); instance = craft.id(); }
         if (grants.size() >= 4096 && !grants.containsKey(device)) throw new IllegalStateException("Smart isolator grant limit reached");
         grants.put(device, generation); setChanged();
-        FieldworkStateAccess.get(server.getServer()).bindings().track(this);
+        IsolatorIntegrationBridge.smartLoaded(this);
     }
     @Override protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
@@ -70,7 +61,7 @@ public final class BrassIsolatorBlockEntity extends BlockEntity {
     @Override protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
         loadGrants(tag);
-        if (level instanceof ServerLevel server) FieldworkStateAccess.get(server.getServer()).bindings().track(this);
+        if (level instanceof ServerLevel) IsolatorIntegrationBridge.smartLoaded(this);
     }
     private void loadGrants(CompoundTag tag) {
         grants.clear(); instance = null;

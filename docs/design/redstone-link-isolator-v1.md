@@ -20,9 +20,27 @@ ownership, dependency, integration, and documentation boundaries.
 | D01 | Strong recovery of upstream-lost blocks/data and an exceptional journal are optional/deferred |
 | D02 | Every train condition is a public WORLD observer; private train consumers are deferred |
 | D03 | Ordinary shaped 3×3 recipe, `OBO/ELE/BPB`, output one |
+| Dependency boundary | Create required; Sable + Aeronautics + Simulated activate as one optional bundle |
 
 D01 and D02 do not remove responsibility for Fieldwork's own registry,
 initialization, refresh correctness, or train source visibility/cache behavior.
+
+### Optional integration boundary
+
+Fieldwork always registers its own block, item, block-entity and data-component
+identities. In Create-only mode those identities are inert and unobtainable;
+offhand schematic assistance remains active. The complete optional bundle installs
+the lifecycle runtime, server events, commands, recipes, creative exposure,
+Sable-aware schematic exclusion and integration mixins.
+
+The base and integration mixins are separate strict configurations. NeoForge
+filters the integration configuration with all three `requiredMods` before Mixin
+loads it. A configuration-phase payload requires client/server activation equality.
+Integrated worlds receive `data/create_fieldwork_integration_required`. If the
+bundle is later absent, Fieldwork logs a prominent backup/data-loss warning but
+honors the player's decision to continue. Stable Fieldwork registry identities
+remain decodable and inert; data owned by absent optional mods is outside
+Fieldwork's recovery guarantee.
 
 ## 2. Supported scope
 

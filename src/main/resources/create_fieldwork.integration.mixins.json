@@ -27,10 +27,9 @@
     "controller.lectern.LecternRemovalMixin",
     "controller.lectern.ControllerInteractionMixin",
     "controller.reset.ControllerResetCraftingMixin",
-    "schematic.StructureTemplateAccessor",
     "wireless.LinkPublicationMixin"
   ],
-  "client": ["schematic.client.SchematicHandlerAccessor", "schematic.client.SchematicTransformationAccessor", "schematic.client.SchematicHandlerMixin", "schematic.client.SchematicRendererMixin", "schematic.client.SchematicOffhandOverlayMixin", "schematic.client.ClientBlockChangesMixin"],
+  "client": [],
   "injectors": {
     "defaultRequire": 1
   }

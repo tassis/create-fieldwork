@@ -1,7 +1,7 @@
 package dev.tassis.createfieldwork.controller.reset;
 
 import com.simibubi.create.AllItems;
-import dev.tassis.createfieldwork.platform.registry.FieldworkContent;
+import dev.tassis.createfieldwork.platform.registry.OptionalFieldworkContent;
 import dev.tassis.createfieldwork.isolator.binding.ControllerDevice;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.world.item.ItemStack;
@@ -21,5 +21,5 @@ public final class ControllerResetRecipe extends CustomRecipe {
         return input.items().stream().filter(item -> !item.isEmpty()).findFirst().map(ControllerReset::preview).orElse(ItemStack.EMPTY);
     }
     @Override public boolean canCraftInDimensions(int width, int height) { return width > 0 && height > 0; }
-    @Override public RecipeSerializer<?> getSerializer() { return FieldworkContent.CONTROLLER_RESET.get(); }
+    @Override public RecipeSerializer<?> getSerializer() { return OptionalFieldworkContent.CONTROLLER_RESET.get(); }
 }

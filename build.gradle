@@ -90,8 +90,51 @@ tasks.register('verifyShippingIsolation') {
                 throw new GradleException('Test-driver metadata leaked into shipping JAR')
             }
             if (zip.getEntry('LICENSE') == null) throw new GradleException('Shipping JAR must include LICENSE')
+            def dependency = { id, type ->
+                metadata ==~ /(?s).*modId="${java.util.regex.Pattern.quote(id)}"\s*type="${type}".*/
+            }
+            if (!dependency('create', 'required')) throw new GradleException('Create must remain a required dependency')
+            ['sable', 'aeronautics', 'simulated'].each { id ->
+                if (!dependency(id, 'optional')) throw new GradleException("${id} must be an optional dependency")
+            }
+            def baseMixin = zip.getEntry('create_fieldwork.base.mixins.json')
+            def integrationMixin = zip.getEntry('create_fieldwork.integration.mixins.json')
+            if (baseMixin == null || integrationMixin == null) throw new GradleException('Both strict Fieldwork mixin configs must ship')
+            def integrationConfig = zip.getInputStream(integrationMixin).getText('UTF-8')
+            def baseConfig = zip.getInputStream(baseMixin).getText('UTF-8')
+            if (!baseConfig.contains('"required": true') || !baseConfig.contains('"defaultRequire": 1') ||
+                    !integrationConfig.contains('"required": true') || !integrationConfig.contains('"defaultRequire": 1')) {
+                throw new GradleException('Both Fieldwork mixin configs must remain strict')
+            }
+            if (!metadata.contains('requiredMods=["sable", "aeronautics", "simulated"]')) {
+                throw new GradleException('Integration mixins must require the complete optional bundle')
+            }
+            def baseClasses = zip.entries().findAll { entry ->
+                entry.name.endsWith('.class') && (
+                    entry.name.startsWith('dev/tassis/createfieldwork/schematic/') ||
+                    entry.name.startsWith('dev/tassis/createfieldwork/mixin/schematic/') ||
+                    entry.name in [
+                        'dev/tassis/createfieldwork/platform/CreateFieldwork.class',
+                        'dev/tassis/createfieldwork/platform/AeronauticsIntegration.class',
+                        'dev/tassis/createfieldwork/platform/IntegrationHandshake.class',
+                        'dev/tassis/createfieldwork/platform/WorldIntegrationGuard.class',
+                        'dev/tassis/createfieldwork/platform/IsolatorIntegrationBridge.class',
+                        'dev/tassis/createfieldwork/platform/registry/FieldworkContent.class',
+                        'dev/tassis/createfieldwork/platform/registry/FieldworkDataComponents.class',
+                        'dev/tassis/createfieldwork/isolator/ordinary/IsolatorBlock.class',
+                        'dev/tassis/createfieldwork/isolator/ordinary/IsolatorBlockEntity.class',
+                        'dev/tassis/createfieldwork/isolator/smart/BrassIsolatorBlock.class',
+                        'dev/tassis/createfieldwork/isolator/smart/BrassIsolatorBlockEntity.class'
+                    ])
+            }
+            baseClasses.each { entry ->
+                def constants = new String(zip.getInputStream(entry).readAllBytes(), java.nio.charset.StandardCharsets.ISO_8859_1)
+                if (constants.contains('dev/ryanhcode/sable') || constants.contains('dev/simulated_team/simulated')) {
+                    throw new GradleException("Optional API leaked into base class ${entry.name}")
+                }
+            }
         }
-        logger.lifecycle('Shipping isolation verified: no research, acceptance or binding-prototype driver/config/metadata')
+        logger.lifecycle('Shipping isolation verified: driver isolation, optional metadata/mixins and base constant pools')
     }
 }
 tasks.named('check') { dependsOn 'verifyShippingIsolation' }

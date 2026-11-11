@@ -1,6 +1,11 @@
 # Production V1 Mixin Audit
 
-Pinned artifacts/hashes: [`smoke/artifacts.lock`](../../smoke/artifacts.lock). Configuration: `src/main/resources/create_fieldwork.mixins.json`, `required=true/defaultRequire=1`. This audit was recorded against `0.1.0-dev` candidates on the pinned stack; it is not a cross-version compatibility claim.
+Pinned artifacts/hashes: [`smoke/artifacts.lock`](../../smoke/artifacts.lock).
+Configurations: `src/main/resources/create_fieldwork.base.mixins.json` and
+`create_fieldwork.integration.mixins.json`, both
+`required=true/defaultRequire=1`. The integration config is metadata-gated by
+Sable, Aeronautics and Simulated. This audit was recorded against `0.1.0-dev`
+candidates on the pinned stack; it is not a cross-version compatibility claim.
 
 The 2026-11-07 scoped revision added no main injection points. Update entry now receives actual ServerLevel to record reentrant scope; controller/mutation internals use selection and PRIVATE non-boundary fast paths. Inspection found two Sable bridges/main wrappers, one Operation each, with aggregate slot4 retained. The durable findings are recorded here; local `.audit/` bytecode dumps are optional raw evidence. See [scoped regression/counters](scoped-refresh.md).
 
@@ -43,8 +48,8 @@ Method signatures below use short class names; source contains actual descriptor
 | `schematic.client.SchematicOffhandOverlayMixin` | `SchematicHotbarSlotOverlay.renderOn` HEAD cancellable require1/allow1 | Suppress native selected-slot overlay for offhand assistance |
 | `schematic.client.ClientBlockChangesMixin` | `LevelChunk.setBlockState` RETURN require1 | Coalesce native schematic cache rebuild after client block changes |
 
-These 25 common and six client entries match the 31 classes listed by
-`create_fieldwork.mixins.json`. No `Level#getSignal` interception, player-move
+These 25 common and six client entries match the 31 classes listed across the two
+strict production configs. No `Level#getSignal` interception, player-move
 authority hook or replacement of the full network handler is used.
 
 ### Controller target descriptors

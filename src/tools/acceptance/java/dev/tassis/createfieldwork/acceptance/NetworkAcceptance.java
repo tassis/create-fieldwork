@@ -286,7 +286,7 @@ final class NetworkAcceptance {
     }
 
     private void content() {
-        var tab = FieldworkContent.FIELDWORK_TAB.get();
+        var tab = dev.tassis.createfieldwork.platform.registry.OptionalFieldworkContent.FIELDWORK_TAB.get();
         check.accept("Fieldwork has a registered dedicated creative tab", ResourceLocation.fromNamespaceAndPath("create_fieldwork", "main")
             .equals(net.minecraft.core.registries.BuiltInRegistries.CREATIVE_MODE_TAB.getKey(tab)));
         check.accept("Fieldwork creative tab uses the isolator icon", tab.getIconItem().is(FieldworkContent.ISOLATOR_ITEM.get()));
