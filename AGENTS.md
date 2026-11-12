@@ -211,10 +211,12 @@ See [probe history](docs/testing/scope-hook-probe.md) and the [research index](d
 - Architecture exceptions must be explicit in durable documentation, narrowly
   scoped, and supported by verification evidence.
 
-CI uses native Java21/Gradle9.2.1 runners. Branch/PR/manual CI runs build and
-upload artifacts but never publish. Releases are started only through the manual
-Release workflow on `main`; after a successful clean build, CI creates the
-matching `v<mod_version>` tag and GitHub Release from the same commit and artifact.
+CI uses native Java21/Gradle9.2.1 runners. Branch/PR/manual CI runs checks/build
+without uploading artifacts or publishing. Releases are started only through the
+manual Release workflow on `main`; its required `release_version` input overrides
+the project default via `-Pmod_version`. After a successful clean build, Release
+creates the matching `v<release_version>` tag and GitHub Release from the same
+commit and artifact, without rewriting the default or creating a version commit.
 Hyphenated versions are prereleases. See [CI and release](docs/testing/github-actions.md).
 
 ## Change and verification rules

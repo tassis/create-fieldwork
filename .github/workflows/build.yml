@@ -37,7 +37,6 @@ jobs:
           gradle-version: '9.2.1'
 
       - name: Read and validate version
-        id: version
         shell: bash
         run: |
           version="$(sed -n 's/^mod_version=//p' gradle.properties)"
@@ -55,24 +54,6 @@ jobs:
             echo "mod_id is invalid: $mod_id" >&2
             exit 1
           fi
-          echo "value=$version" >> "$GITHUB_OUTPUT"
-          # Matches build.gradle's archivesName; this project is NeoForge-only.
-          echo "artifact_name=${mod_id}-neoforge-${minecraft_version}-${version}" >> "$GITHUB_OUTPUT"
 
       - name: Test and build
         run: gradle --no-daemon clean test build
-
-      - name: Upload test report on failure
-        if: failure()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        with:
-          name: test-report-${{ github.run_number }}
-          path: build/reports/tests/test/
-          if-no-files-found: ignore
-
-      - name: Upload mod JAR
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        with:
-          name: ${{ steps.version.outputs.artifact_name }}
-          path: build/libs/${{ steps.version.outputs.artifact_name }}.jar
-          if-no-files-found: error
