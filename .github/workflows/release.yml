@@ -3,8 +3,8 @@ name: Release
 on:
   workflow_dispatch:
     inputs:
-      confirm_version:
-        description: Exact mod_version from gradle.properties
+      release_version:
+        description: 'Version to publish (for example 0.3.0 or 0.3.0-rc.1); overrides the project default'
         required: true
         type: string
 
@@ -45,7 +45,7 @@ jobs:
       - name: Validate release request
         id: version
         env:
-          CONFIRM_VERSION: ${{ inputs.confirm_version }}
+          RELEASE_VERSION: ${{ inputs.release_version }}
         shell: bash
         run: |
           if [[ "$GITHUB_REF" != "refs/heads/main" ]]; then
@@ -53,12 +53,12 @@ jobs:
             exit 1
           fi
 
-          version="$(sed -n 's/^mod_version=//p' gradle.properties)"
+          version="$RELEASE_VERSION"
           minecraft_version="$(sed -n 's/^minecraft_version=//p' gradle.properties)"
           mod_id="$(sed -n 's/^mod_id=//p' gradle.properties)"
 
           if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z]+)*$ ]]; then
-            echo "mod_version is invalid: $version" >&2
+            echo "release_version is invalid: $version" >&2
             exit 1
           fi
           if [[ ! "$minecraft_version" =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?$ ]]; then
@@ -69,11 +69,6 @@ jobs:
             echo "mod_id is invalid: $mod_id" >&2
             exit 1
           fi
-          if [[ "$CONFIRM_VERSION" != "$version" ]]; then
-            echo "Confirmation '$CONFIRM_VERSION' does not match mod_version=$version" >&2
-            exit 1
-          fi
-
           echo "value=$version" >> "$GITHUB_OUTPUT"
           echo "tag=v$version" >> "$GITHUB_OUTPUT"
           echo "artifact_name=${mod_id}-neoforge-${minecraft_version}-${version}" >> "$GITHUB_OUTPUT"
@@ -141,7 +136,9 @@ jobs:
           fi
 
       - name: Test and build release artifact
-        run: gradle --no-daemon clean test build
+        env:
+          RELEASE_VERSION: ${{ steps.version.outputs.value }}
+        run: gradle --no-daemon clean test build "-Pmod_version=$RELEASE_VERSION"
 
       - name: Prepare release files
         env:
