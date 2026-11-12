@@ -55,13 +55,21 @@ public final class FieldworkClientEvents {
     }
     @SubscribeEvent public static void hud(RenderGuiEvent.Post event) {
         var mc = Minecraft.getInstance();
-        if (mc.player == null || mc.level == null || mc.options.hideGui || !OffhandProjectionBuffer.activeOffhand(CreateClient.SCHEMATIC_HANDLER) || !CreateClient.SCHEMATIC_HANDLER.isDeployed()) return;
+        if (mc.player == null || mc.level == null || mc.screen != null || mc.options.hideGui || !OffhandProjectionBuffer.activeOffhand(CreateClient.SCHEMATIC_HANDLER) || !CreateClient.SCHEMATIC_HANDLER.isDeployed()) return;
         String status = SchematicClientState.status();
         var text = status.equals("partial") ? Component.translatable("gui.create_fieldwork.schematic.partial", SchematicClientState.cached(), SchematicClientState.total())
             : Component.translatable("gui.create_fieldwork.schematic." + status);
         if (status.equals("partial") && ((SchematicHandlerAccessor) CreateClient.SCHEMATIC_HANDLER).fieldwork$slot() == 40 && !SchematicClientState.supportsGhostHiding())
             text = text.copy().append(" — ").append(Component.translatable("gui.create_fieldwork.schematic.hide_budget"));
         event.getGuiGraphics().drawString(mc.font, text, 8, 8, 0xDAD6CD);
+        var hovered = SchematicClientState.hoveredBlock(CreateClient.SCHEMATIC_HANDLER);
+        if (hovered != null) {
+            int iconWidth = hovered.icon().isEmpty() ? 0 : 20;
+            int x = (event.getGuiGraphics().guiWidth() - mc.font.width(hovered.name()) - iconWidth) / 2;
+            int y = event.getGuiGraphics().guiHeight() / 2 + 16;
+            if (!hovered.icon().isEmpty()) event.getGuiGraphics().renderItem(hovered.icon(), x, y);
+            event.getGuiGraphics().drawString(mc.font, hovered.name(), x + iconWidth, y + 4, 0xFFFFFF);
+        }
     }
     @EventBusSubscriber(modid = CreateFieldwork.MOD_ID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
     public static final class Reload {

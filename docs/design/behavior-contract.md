@@ -139,6 +139,13 @@ Schematic assistance contract:
    stale, ambiguous, unsupported or over-budget results must restore the ghost.
 5. Comparison, caching, outlines, masking and metadata capture are bounded. No
    measured performance improvement is claimed.
+6. In active offhand assistance, a settled projected block under the crosshair may
+   show its localized block name and corresponding item icon below the crosshair.
+   A block without an item shows only its name. This is client-only guidance,
+   limited to discovered, eligible cached cells within 64 blocks; hidden ghosts
+   and cells occluded by real block outline geometry do not receive a label.
+   Selection uses whole-cell bounds, not exact model shapes, and adds no material
+   counts or construction-state text.
 
 D01: restoring upstream-lost blocks/data and preserving their former isolation
 intent across crashes are optional safeguards, not V1 prerequisites. Fieldwork

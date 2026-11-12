@@ -15,7 +15,9 @@ import net.createmod.catnip.outliner.Outliner;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Mirror;
@@ -24,9 +26,11 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -35,6 +39,7 @@ import java.util.Set;
 
 /** One client/world cache. Rendering is handled by existing Outliner, never a world scan. */
 public final class SchematicClientState {
+    public record HoveredBlock(Component name, ItemStack icon) {}
     private static final SchematicClientState INSTANCE = new SchematicClientState();
     private record OutlineKey(BlockPos pos) {}
     private static final class Candidate {
@@ -66,6 +71,7 @@ public final class SchematicClientState {
     private int handSlot = -1, nextSlot, ticks;
     private boolean paused, ghostMaskSaturated;
     private String status = "inactive";
+    private HoveredBlock hoveredBlock;
     private SchematicClientState() {}
 
     public static void capture(StructureTemplate source) {
@@ -79,6 +85,16 @@ public final class SchematicClientState {
     }
     public static void reload() { INSTANCE.resetCache(); }
     public static String status() { return INSTANCE.status; }
+    public static HoveredBlock hoveredBlock(SchematicHandler handler) {
+        var state = INSTANCE;
+        var mc = Minecraft.getInstance();
+        if (state.hoveredBlock == null || state.world != mc.level || state.player != mc.player
+            || !OffhandProjectionBuffer.activeOffhand(handler) || !handler.isDeployed() || !settled(handler)) return null;
+        var tx = handler.getTransformation();
+        var settings = tx.toSettings();
+        return state.anchor != null && state.anchor.equals(tx.getAnchor())
+            && state.rotation == settings.getRotation() && state.mirror == settings.getMirror() ? state.hoveredBlock : null;
+    }
     public static int cached() { return INSTANCE.slots.size(); }
     public static int total() { return INSTANCE.template == null ? 0 : INSTANCE.template.blocks().size(); }
     public static Set<Long> hiddenGhosts(SchematicHandler handler) {
@@ -90,9 +106,13 @@ public final class SchematicClientState {
     }
     public static Vec3i templateSize() { return INSTANCE.template == null ? Vec3i.ZERO : INSTANCE.template.size(); }
     public static boolean supportsGhostHiding() { return !INSTANCE.ghostMaskSaturated && GhostMask.supported(templateSize()); }
-    public static void tick(SchematicHandler handler) { INSTANCE.update(handler); }
+    public static void tick(SchematicHandler handler) {
+        INSTANCE.update(handler);
+        INSTANCE.updateHover(handler);
+    }
 
     private void resetCache() {
+        hoveredBlock = null;
         for (var pos : outlines) Outliner.getInstance().remove(new OutlineKey(pos));
         outlines.clear(); slots.clear(); dirty.clear(); Arrays.fill(cache, null);
         ghostMask.clear(); ghostMaskSaturated = false;
@@ -135,7 +155,34 @@ public final class SchematicClientState {
         var positionTarget = Vec3.atLowerCornerOf(animation.fieldwork$positionTarget());
         return animation.fieldwork$rotation().settled() && tx.getScaleFB().settled() && tx.getScaleLR().settled()
             && animation.fieldwork$position().distanceToSqr(positionTarget) < 0.0001
-            && animation.fieldwork$previousPosition().distanceToSqr(positionTarget) < 0.0001;
+             && animation.fieldwork$previousPosition().distanceToSqr(positionTarget) < 0.0001;
+    }
+    private void updateHover(SchematicHandler handler) {
+        hoveredBlock = null;
+        var mc = Minecraft.getInstance();
+        if (!status.equals("partial") || mc.screen != null || mc.options.hideGui || mc.player == null
+            || mc.level != world || !OffhandProjectionBuffer.activeOffhand(handler) || !handler.isDeployed()) return;
+
+        var camera = mc.getCameraEntity();
+        if (camera == null) return;
+        var start = camera.getEyePosition(1f);
+        var end = start.add(camera.getViewVector(1f).scale(ComparisonBudget.RANGE));
+        var obstruction = world.clip(new ClipContext(start, end, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, camera));
+        double obstructionDistance = obstruction.getType() == HitResult.Type.MISS
+            ? Double.POSITIVE_INFINITY : start.distanceToSqr(obstruction.getLocation());
+        var positions = new ArrayList<BlockPos>();
+        var hidden = ghostMask.positions();
+        for (var candidate : cache) {
+            if (candidate == null || candidate.ambiguous || candidate.expected.isAir()
+                || ticks - candidate.checked > ComparisonBudget.MAX_RESULT_AGE || hidden.contains(candidate.sourcePosition)
+                || !inRange(candidate.pos) || !comparable(candidate)) continue;
+            positions.add(candidate.pos);
+        }
+        var selected = ProjectionRaycast.nearest(start, end, positions, obstructionDistance);
+        if (selected != null) {
+            var block = cache[slots.get(selected)].expected.getBlock();
+            hoveredBlock = new HoveredBlock(block.getName(), block.asItem().getDefaultInstance());
+        }
     }
     private void updateGhostMask() {
         if (handSlot != 40 || !supportsGhostHiding()) { ghostMask.clear(); return; }
