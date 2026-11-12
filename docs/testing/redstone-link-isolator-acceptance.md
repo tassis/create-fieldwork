@@ -39,6 +39,16 @@ SHA-256 is
 That focused rerun does not claim the full matrix or a player hand-swap retest for
 this later hash.
 
+The subsequent projected-block icon/name HUD prototype passed `build`, JUnit
+(including six new ray-selection tests), shipping isolation and schematic348 on
+2026-11-11; all dimensions were saved at `15:38:26Z` and the verifier confirmed
+state close. Candidate JAR SHA-256:
+`ddfbb715ad5a919b7e0e923637003195d244b9e266bfe2b63921a67ce99d5f2b`.
+The existing schematic phase is regression evidence, not execution of the client
+HUD. Icon rendering, crosshair alignment, transformed previews and GUI/Iris
+acceptance for this addition remain pending; see the
+[prototype boundaries](schematic-client-v02.md#projected-block-identification-prototype-2026-11-11).
+
 This recheck followed a behavior-preserving feature-package reorganization.
 `FieldworkServerState` remains the logical-server composition root; controller
 validation/index/input/reconciliation/safety work, transition capture and

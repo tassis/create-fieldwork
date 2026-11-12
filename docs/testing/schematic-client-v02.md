@@ -7,6 +7,39 @@ added. This is a local working-tree candidate, not a released v0.2 artifact;
 metadata remains `0.1.0`. The current product boundary is defined by the
 [behavior contract](../design/behavior-contract.md).
 
+## Projected-block identification prototype (2026-11-11)
+
+Active offhand assistance now identifies the nearest eligible cached ghost cell
+along the camera ray. The HUD centers its item icon and localized block name below
+the crosshair; blocks without a corresponding item show the name only. It does
+not display construction properties, material counts or a separate tooltip panel.
+
+- Selection runs once per client tick, examining at most the existing 4096 cached
+  candidates and a 64-block ray. Rendering reads the resulting presentation only;
+  it does not scan a template or query world block states.
+- Real-world outline geometry occludes the ray and wins equal-distance hits.
+  Hidden, ambiguous, stale and spatially excluded candidates are not identified.
+  As with comparison, a not-yet-discovered cell may have no identification.
+- Selection uses full block-cell boxes, including for stairs, panes and other
+  non-cubic models. It is not a pixel/model-shape picker. Camera targeting updates
+  at tick rate rather than render rate.
+- Main-hand priority, undeployed previews, open screens and hidden GUI suppress
+  the display. Moving transformations suppress selection; render-time guards
+  reject snapshots from a different world/player or anchor/rotation/mirror.
+- Six geometry unit tests cover nearest ordering, misses/range, real occlusion
+  and ties, an origin inside a cell, negative/reverse rays and the candidate cap.
+  These establish ray policy, not visual alignment or item rendering.
+
+The icon/name candidate passed `build`, JUnit (including all six new geometry
+tests), shipping isolation and the existing headless schematic348 regression on
+2026-11-11. See the [production acceptance record](redstone-link-isolator-acceptance.md)
+for the artifact hash and evidence boundary.
+
+Client acceptance for this prototype remains pending: verify localized names and
+icons for vanilla/modded blocks; nearest overlap and wall occlusion; rotations and
+both mirrors; movement/reset/main-hand switching; non-cubic cells; GUI scale and
+Iris. Previous player-reported rendering passes do not cover this addition.
+
 ## Latest scope clarification: offhand assistance only
 
 The owner explicitly wants ordinary main-hand blueprint use to remain free of
@@ -260,6 +293,7 @@ Simulated dependencies. Record the exact candidate hash used for your report.
 | Client startup | Normal shipping mod, no acceptance/research driver; no strict mixin failure | Pending |
 | Main-hand priority | Different valid schematics in both hands; main preview/HUD wins | Pending |
 | Assistance activation | Main-hand blueprint has no Fieldwork comparison frames/extra HUD; offhand blueprint enables assistance; switching back clears it. With valid blueprints in both hands, main wins and auxiliary mode stays off | Pending for latest scope-only candidate |
+| Projected-block identification | Look at an eligible offhand ghost: item icon and localized block name appear below the crosshair. Check occlusion, nearest overlap, mirrors, movement, GUI hiding and blocks without item icons | Six geometry unit tests; client check pending |
 | Offhand support | Non-schematic main, valid offhand; deploy/rotate/mirror/translate and verify server receives that offhand deployment | Pending |
 | Same filename, different state | Two copies with different deployment components; switch hands/slots and confirm no stale preview or wrong-slot overwrite | Pending |
 | Swap/inventory sync | Change preview, immediately F-swap or open inventory; the same stack retains its transform while a same-filename second copy keeps its own state | Headless native packet/slot-order coverage passed; player retest pending |
