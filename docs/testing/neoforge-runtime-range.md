@@ -9,8 +9,11 @@ These reproducibility choices do not require an exact-version load gate.
 
 The [metadata template](../../src/main/templates/META-INF/neoforge.mods.toml)
 instead declares NeoForge `[21.1.219,)`, matching the required Create6.0.10
-artifact. Minecraft remains exactly1.21.1 and Create remains exactly6.0.10;
-no other dependency constraint or strict mixin setting was widened.
+artifact. Minecraft remains exactly1.21.1. The current mod load gates allow
+Create6.0.10+, Sable2.0.5+ and Aeronautics/Simulated1.3.2+; their build and
+artifact-lock pins remain unchanged. Strict mixin settings remain unchanged.
+These open-ended declarations do not establish runtime compatibility with newer
+mod releases. The checks below describe the pinned mod versions used at the time.
 
 ## Upstream metadata evidence
 

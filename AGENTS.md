@@ -28,8 +28,9 @@ Sable/Aeronautics separately require at least `21.1.228`. Keep `neo_version=21.1
 as the build pin. See [runtime-range evidence/limits](docs/testing/neoforge-runtime-range.md)
 before claiming a lower-version runtime pass.
 
-Metadata requires exact Create and makes exact Sable/Aeronautics/Simulated one
-optional integration bundle. Gradle compares the three audited mod JARs with
+Metadata requires Create 6.0.10+ and makes Sable 2.0.5+ and
+Aeronautics/Simulated 1.3.2+ one optional integration bundle. Newer mod versions
+are allowed by metadata, not runtime-verified by the pinned build. Gradle compares the three audited mod JARs with
 `smoke/artifacts.lock` on each verification/extraction.
 `gradle/verification-metadata.xml` pins other build inputs; it is not an
 independent audit of every third-party source/supply chain. Do not install
