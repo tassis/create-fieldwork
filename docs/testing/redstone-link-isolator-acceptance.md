@@ -2,7 +2,7 @@
 
 ## Status and evidence boundary
 
-Recorded through 2026-11-11. Production main implements server-owned state/registry, the actual isolator/BE and recipe, Create/Simulated filters, lifecycle/mutation barriers, per-receiver scoped refresh, two-tier controller routing with event-driven reconciliation, fixed-WORLD train conditions and source-publication cache handling.
+Recorded through 2026-11-13. Production main implements server-owned state/registry, the actual isolator/BE and recipe, Create/Simulated filters, lifecycle/mutation barriers, per-receiver scoped refresh, two-tier controller routing with event-driven reconciliation, fixed-WORLD train conditions and source-publication cache handling.
 
 The current optional-integration revision makes Create the only required gameplay
 dependency. A packaged Create-only server containing only NeoForge, Create and
@@ -83,6 +83,162 @@ The logic revision's full regression recorded JUnit85, network148, refresh69, li
 The subsequent texture-only candidate (`c6536ce872e8acf97b1253f6304c09c7a1fa7b305ef1afb9912077477381ab4a`) retained identical bytes for all 58 Java classes and repeated clean build/JUnit85/network148/installer-save checks. See [texture integration](placeholder-textures.md). Those hashes do **not** identify `0.1.0` after version preparation. That preparation passed clean build, 85 JUnit tests and installed texture/model checks; it did not newly rerun every historical runtime phase.
 
 The later local0.1.0 worktree build adds receiver-limited private-controller position updates. It newly passed JUnit85, network148, refresh69, movement81, lifecycle23, packed24 and independent-JVM seed24/reload25, each with complete save/state close. Its installer also reached ready and console-save/stop exit0. Hash `a7769b40ca8a7f1bee15a6c21929f724e1748eb009e614ab34d312c6408e0000` identifies this build, not the earlier tag's artifact; see [controller movement evidence](controller-movement-refresh.md). No new player rendering/multiplayer/performance claim is made.
+
+## Fix-only 0.2.1 preparation — 2026-11-13
+
+The owner requested isolating the accepted Position and contact-flicker fixes
+before publishing 0.2.1. The selected index is based on `d94afd3` (also the
+`v0.2.0` source commit) and includes only the four production fix files, two
+focused unit-test files, common schematic acceptance additions and three repair
+documents. Unfinished workstation registrations, menus, assets, recipes, tooling
+and build changes are excluded and remain uncommitted in the original worktree.
+No default-version change is needed: Release takes `release_version=0.2.1` and
+builds with `-Pmod_version=0.2.1`.
+
+The selected index was exported to a disposable verification directory, without
+stashing or modifying feature files. Through the project's pinned Java21/Gradle9.2.1
+Docker image, that isolated source ran these Gradle tasks:
+
+```sh
+gradle --no-daemon clean build -Pmod_version=0.2.1
+gradle --no-daemon verifyFieldworkAcceptance -PacceptancePhase=schematic -Pmod_version=0.2.1
+gradle --no-daemon verifyFieldworkAcceptance -PacceptancePhase=network -Pmod_version=0.2.1
+```
+
+- Clean build passed **JUnit124**, zero failures/errors/skips; strict shipping
+  isolation, license and mixin-configuration checks passed. The larger counts in
+  the earlier worktree records below do not describe this fix-only snapshot.
+- `schematic` **376** passed at `2026-11-13T05:11:28.192276983Z`, complete saves
+  at `05:11:33Z`; `network` **174** passed at `05:12:04.077095101Z`, final complete
+  saves at `05:12:08Z`. Both verifiers checked server-owned state close.
+- The shipping archive contains neither new workstation classes/assets nor its
+  registration identity, and excludes all non-shipping drivers. Embedded mod
+  metadata is exactly `0.2.1`. All 23 schematic input/client/client-mixin class bytes
+  are identical to the owner-passed `a4c01956` artifact, including crosshair block
+  name/icon presentation and both fixes. This is binary equivalence, not a new
+  player or GPU test.
+- Original working files were hash-checked for preservation except this deliberate
+  evidence update; the original player-test JAR is unchanged. After recording the
+  results, only documentation differs from the tested index snapshot's sources.
+
+Isolated fix-only artifact:
+
+```text
+build/libs/create_fieldwork-neoforge-1.21.1-0.2.1.jar
+c7faa8790f61d39ddbf7195091fe9257403ae5546bd1f84b228b4612e488cfae
+```
+
+This is local preparation, not a published release; no tag, push or hosted release
+workflow was performed. Earlier player confirmations
+below apply to the same fix/HUD class bytes, not a separately observed runtime
+hash for this new archive. No new full server matrix or installer smoke is claimed.
+
+## Offhand contact-depth candidate — 2026-11-13
+
+Following the owner's confirmation of the Position coordinate repair below, this
+candidate changes only ordinary offhand projection layering to address the
+separate contact-face flicker report (Iris installed, no shader pack). Coplanar
+depth conflict is a hypothesis, not an independently reproduced diagnosis.
+
+One stable custom RenderType retains native entity-translucent shader, block
+atlas, format, batching/sorting, alpha and depth/output/outline state, adding only
+VIEW_OFFSET_Z_LAYERING. Its native model-view push/scale/apply and pop/apply run
+at actual batch draws, including implicit buffer-switch flushes. It does not
+change stored coordinates, native transformation, Position state, material
+calculation, caches, mainhand or custom BE render types. A slight render-space
+scale can affect silhouettes/nearby occlusion; those detailed cases remain
+unrecorded despite the symptom-specific owner pass below. See the
+[client boundaries/player checks](schematic-client-v02.md#contact-face-flicker-report--2026-11-13)
+and [unchanged hook scope](main-mixin-audit.md#offhand-contact-depth-follow-up-2026-11-13).
+
+Newly executed checks:
+
+- `./scripts/gradle-docker.sh clean build`: **JUnit148**, zero failures/errors/skips;
+  shipping isolation, licenses and strict mixin configuration passed. Five new
+  ASM tests check exact pinned render states, defaults, setup/clear, singleton/
+  passthrough and Catnip phase/type forwarding without client/GL initialization.
+  Existing alpha/vertex tests are unchanged and pass.
+- `./scripts/gradle-docker.sh verifyFieldworkAcceptance -PacceptancePhase=schematic`:
+  **376 assertions** at `2026-11-13T04:50:18.838064491Z`, complete dimension saves
+  at `04:50:24Z`, state close checked by the verifier. This is common/native
+  regression and dedicated-server safety evidence, not a render execution test.
+- Uncompressed shipping-entry comparison against captured Position baseline
+  `af78820c97b52033f41e829ec9a8453c7a8ea24791e4450eda85023fce38a640`
+  found exactly two differences: `OffhandProjectionBuffer.class` and the new
+  `OffhandProjectionRenderType.class`. All other class bytes, Position repair,
+  resources, metadata, mixin configs and license entries remain
+  identical. Documentation links and whitespace checks passed.
+
+Earlier full-worktree player-test candidate (metadata `0.1.0`, not the fix-only
+`0.2.1` artifact above):
+
+```text
+build/libs/create_fieldwork-neoforge-1.21.1-0.1.0.jar
+a4c0195644a63bbd4ee505e0cf8097c60c7bb7dde4b66a6d798c4f9ed7f83e10
+```
+
+After this candidate was supplied, the owner confirmed that flicker disappeared
+and explicitly reported testing **without and with a shader pack**. Record this
+as a **player-reported pass for the reported contact-face flicker in both tested
+configurations**. The runtime hash was not independently captured; exact Iris and
+shader-pack names/versions and individual wall/occlusion/silhouette, first/third
+person, mirror and mainhand/custom BE results were not reported. This is not
+compatibility evidence for arbitrary shader packs or a no-Iris baseline.
+
+No agent-executed client launch or GPU-state validation, new installer smoke or
+full server matrix was performed. This feedback-only update checks documentation
+and existing artifact consistency; it does not rerun builds or runtime tests.
+
+## Native Position state candidate — 2026-11-13
+
+The owner reports intermittent immediate one-block Position shifts with an offhand
+schematic and Iris installed without a shader pack. Exact Iris version and
+agent-controlled client reproduction remain unestablished. Pinned Create bytecode
+exposes a concrete
+Fieldwork invalidation defect: native Position writes deployed/anchor on the active
+ItemStack, which the next full-stack selection comparison could mistake for a new
+schematic and reload settings before its pending native sync.
+
+The candidate acknowledges only that successful synchronous native DeployTool
+mutation, with unchanged world/player/slot/stack/prior-snapshot identity, an
+accepted pre-action snapshot, no other component changes, and agreement with the
+native raw target/deployed state. It leaves coordinate math, transformation,
+rotation/mirror, material calculation, controller priority and rendering unchanged.
+See the [exact hook audit](main-mixin-audit.md#native-position-acknowledgement-2026-11-13)
+and [client report/retest](schematic-client-v02.md#position-mode-one-block-shift-report--2026-11-13).
+
+Newly executed checks:
+
+- `./scripts/gradle-docker.sh clean build`: JUnit **143**, no failures or skips;
+  shipping isolation, license and strict-mixin configuration checks passed.
+- `./scripts/gradle-docker.sh verifyFieldworkAcceptance -PacceptancePhase=schematic`:
+  **376 assertions** at `2026-11-13T04:13:40.450521607Z`, complete dimension saves
+  at `04:13:46Z`, state close checked by the verifier. The 28 new checks exercise
+  common native ItemStack acknowledgement/rejection policy; the existing native
+  sync, transforms, comparison and craft exclusions remain regression coverage.
+- Three new ASM tests inspect the pinned native tool invocation, component-write/
+  transform-call ordering and raw target storage without initializing the client.
+  The final clean build adds only the third test relative to the runtime run;
+  production and acceptance classes are unchanged between those checks.
+
+Position-only local candidate (before the contact-depth follow-up above;
+metadata remains `0.1.0`, no publication):
+
+```text
+build/libs/create_fieldwork-neoforge-1.21.1-0.1.0.jar
+af78820c97b52033f41e829ec9a8453c7a8ea24791e4450eda85023fce38a640
+```
+
+After this candidate was supplied, the owner confirmed that the coordinate issue
+is fixed. Record this as a **player-reported pass for the reported Position
+symptom**. The tested runtime hash was not independently captured, and individual
+rotation/mirror/hand/swap or synchronized-deployment cases were not reported.
+No agent-executed client wrapper/mixin validation, new installer smoke or full
+server matrix is claimed. This feedback-only update reruns documentation/artifact
+consistency checks, not builds or runtime tests. At this Position-only delivery,
+contact-face flicker remained unresolved; its subsequent correction and owner
+shader-on/shader-off pass are recorded in the contact-depth section above. This
+Position-only candidate intentionally includes no render change.
 
 ## Player observations: single-player, 2026-11-07
 

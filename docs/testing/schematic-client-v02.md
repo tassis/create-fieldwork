@@ -1,11 +1,105 @@
 # v0.2 schematic comparison — implementation evidence and player checks
 
-Status: **implementation/headless gate passed; owner reports current Iris/ghost
-follow-up OK; detailed client acceptance remains partial**.
+Status: **implementation/headless gate passed; the Position coordinate correction,
+contact-face flicker correction with and without a shader pack, and an earlier
+Iris/ghost follow-up have owner-reported passes;
+detailed client acceptance remains partial**.
 The owner chose to perform GUI testing. No graphics-container dependencies were
 added. This is a local working-tree candidate, not a released v0.2 artifact;
 metadata remains `0.1.0`. The current product boundary is defined by the
 [behavior contract](../design/behavior-contract.md).
+
+## Contact-face flicker report — 2026-11-13
+
+The owner reports frequent flicker where a projection bottom/contact face meets
+real blocks and subsequently confirmed offhand use with Iris installed and no
+shader pack enabled. The exact Iris version is unknown. The screenshot is
+consistent with coplanar depth conflict, but no agent-controlled client reproduction
+is claimed. After receiving the contact-depth candidate, the owner confirmed that
+flicker disappeared and explicitly reported testing both without and with a shader
+pack. This is a player-reported pass for the reported symptom in those two tested
+configurations, not universal shader compatibility. Exact Iris and shader-pack
+names/versions and the runtime hash were not independently captured.
+The earlier Position-only candidate left
+rendering unchanged; after the owner confirmed its coordinate repair, the current
+candidate adds a separate, narrowly scoped render-layer adjustment.
+
+Ordinary offhand chunk layers now map to one dedicated RenderType equivalent to
+native entity-translucent on the block atlas, except NO_LAYERING becomes
+VIEW_OFFSET_Z_LAYERING. The entity shader, NEW_ENTITY/QUADS,1536-byte initial
+buffer, crumbling/sort flags, texture/blend/cull/lightmap/overlay state and
+outline=true remain native. Builder defaults retain LEQUAL depth testing,
+COLOR_DEPTH_WRITE, MAIN_TARGET and default texturing. Existing alpha166/255,
+submitted vertex positions/normals/UV/light, native transforms and caches are
+unchanged. Mainhand receives the original buffer and non-chunk/custom BE types
+pass through unchanged; no new mixin or eager flush is added.
+
+The native layer performs model-view push, uniform0.99975586 scale and apply at
+the actual batch draw, then pop/apply on clear. It is not polygon offset or a
+camera-detached-only operation. The stable singleton key is used by all three
+acquisition paths and targeted draws. Pinned Catnip `DefaultSuperRenderTypeBuffer`
+forwards each phase to `BufferSource`, including any implicit non-fixed-buffer
+switch flushes; the layer therefore follows the actual draw rather than global
+state changes around vertex submission. This slightly biases render-space depth,
+not stored schematic coordinates, but can still affect silhouettes and nearby
+occlusion. The owner-confirmed flicker correction does not establish every
+occlusion/silhouette or renderer combination.
+
+Five new ASM tests audit native/custom states, builder defaults, view-layer
+setup/clear, singleton/passthrough and exact Catnip phase/type forwarding without
+initializing client/GL state. Clean build/JUnit148, schematic376 and shipping
+entry comparison passed; only the adapter and new render-type class differ from
+the owner-confirmed Position baseline. See the
+[current candidate evidence](redstone-link-isolator-acceptance.md#offhand-contact-depth-candidate--2026-11-13)
+for its hash and newly executed checks. This does not prove client mixin execution,
+graphics-state restoration on a GPU or the reported visual outcome.
+
+Remaining detailed acceptance: record exact Iris/shader-pack versions and individual
+results for near/far and first/third-person contacts, wall occlusion, silhouettes,
+mirrors, mainhand switching and special BE parts. These were not individually
+reported by the owner. No comparison without Iris or agent-executed GPU validation
+is implied by the confirmed shader-on/shader-off flicker result.
+
+## Position-mode one-block shift report — 2026-11-13
+
+The owner additionally reports that choosing a placement with Create's Position
+tool sometimes leaves an immediate one-block shift in offhand use. It is
+intermittent and repeated clicks can restore the expected position. The exact
+face/rotation and whether the displaced presentation also affects synchronized
+deployment were not established during diagnosis. After receiving the isolated
+state-invalidation candidate `af78820c97b52033f41e829ec9a8453c7a8ea24791e4450eda85023fce38a640`,
+the owner confirmed that the coordinate issue is fixed. This is a player-reported
+pass for the reported symptom, not an agent-executed client reproduction or a
+per-combination acceptance result; the runtime hash was not independently captured.
+
+Fieldwork's current hooks select the hand, track sync echoes, flush native sync
+before inventory/swap actions and adapt offhand presentation; they do not add a
+clicked-face offset or replace Create's deployment math. Pinned Create source
+uses logical target and rotation/mirror chase targets for `getAnchor`/`toSettings`,
+not render interpolation, so forcing sync during animation is not by itself
+evidence of an intermediate-coordinate error. Native deployment has bounds-center
+rounding and vertical-face adjacency behavior; none of that math is changed.
+
+Pinned bytecode confirms that native `DeployTool.handleRightClick` changes only
+deployed/anchor on the active stack, then updates its live transformation and marks
+it dirty. Fieldwork's full-stack snapshot comparison previously interpreted that
+local write as a replacement and could reinitialize from older item settings
+before periodic sync. The new narrow wrapper acknowledges that successful native
+write only when selection context and stack identity remain unchanged, the prior
+snapshot was accepted, other components are unchanged and item anchor/deployed
+agree with the native raw target/handler. External edits outside that synchronous
+action still invalidate normally. Native sync echoes remain a separate mechanism;
+the wrapper does not copy live rotation/mirror into the item or change coordinates.
+The shared hand-selection adapter uses this acknowledgement in either hand.
+
+Headless policy checks and pinned bytecode checks establish these state guards,
+not actual client wrapper execution or the player's symptom. See the
+[production acceptance record](redstone-link-isolator-acceptance.md#native-position-state-candidate--2026-11-13)
+for the exact candidate and checks. Detailed coverage of repeated Position clicks
+with rotations/both mirrors, immediate F-swap/inventory, main/offhand and preview
+versus synchronized deployment remains unrecorded. Exact Iris version is still
+unknown. The separate contact-face correction now has an owner-reported pass with
+and without a shader pack, as recorded above.
 
 ## Projected-block identification prototype (2026-11-11)
 
@@ -295,11 +389,13 @@ Simulated dependencies. Record the exact candidate hash used for your report.
 | Assistance activation | Main-hand blueprint has no Fieldwork comparison frames/extra HUD; offhand blueprint enables assistance; switching back clears it. With valid blueprints in both hands, main wins and auxiliary mode stays off | Pending for latest scope-only candidate |
 | Projected-block identification | Look at an eligible offhand ghost: item icon and localized block name appear below the crosshair. Check occlusion, nearest overlap, mirrors, movement, GUI hiding and blocks without item icons | Six geometry unit tests; client check pending |
 | Offhand support | Non-schematic main, valid offhand; deploy/rotate/mirror/translate and verify server receives that offhand deployment | Pending |
+| Position local state | Repeat offhand Position clicks after rotations/both mirrors, then immediate swap/inventory; no unexpected reinitialization or one-block shift, synchronized deployment agrees with preview | Owner confirmed coordinate repair after candidate af78820c; detailed combinations and synchronized-deployment checks not individually recorded |
 | Same filename, different state | Two copies with different deployment components; switch hands/slots and confirm no stale preview or wrong-slot overwrite | Pending |
 | Swap/inventory sync | Change preview, immediately F-swap or open inventory; the same stack retains its transform while a same-filename second copy keeps its own state | Headless native packet/slot-order coverage passed; player retest pending |
 | Construction hints | Ordinary world: wrong type red; matching block/wrong facing, log axis, stair half and slab half orange; correct block has no extra frame | Pending |
 | Native ghost | Missing block remains native ghost; no replacement of Create's preview | Pending |
 | Offhand opacity | Ordinary ghost about65% opaque; real correct blocks stay solid, red/orange frames remain clear. Switch to main hand: native opacity immediately returns; test both mirrors and glass/leaves | Owner reports follow-up OK; detailed combinations not individually recorded |
+| Contact-face depth | With Iris, check contact flicker without and with a shader pack; detailed first/third-person, wall/silhouette, mirror and mainhand/custom BE checks remain separate | Owner confirmed flicker disappeared with shader off and on after candidate a4c01956; detailed combinations and exact versions not individually recorded |
 | Correct ghost removal | Within hiding budgets: correctly placed supported blocks lose their ghosts after comparison/coalescing; delete/change them and verify ghosts return. Rotate/mirror/move/swap hands and ensure no wrong cells disappear | Owner reports follow-up OK; detailed reset/mirror cases not individually recorded |
 | Hiding limits | Over32,768 bounding-volume cells or candidate-cache eviction: HUD reports masking disabled, normal preview/outlines remain | Pending |
 | Iris | First opacity candidate reported flicker/lost alpha; the owner confirmed the current entity-translucent/correct-ghost candidate worked | Player-reported pass in tested setup; exact pack/version not recorded |
