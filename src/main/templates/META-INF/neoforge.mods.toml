@@ -4,6 +4,8 @@ license="GPL-3.0-only"
 
 [[mods]]
 modId="${mod_id}"
+# Release workflow input release_version supplies -Pmod_version for this field.
+# The local default is not the release version; choose release_version explicitly.
 version="${mod_version}"
 displayName="${mod_name}"
 authors="${mod_authors}"
