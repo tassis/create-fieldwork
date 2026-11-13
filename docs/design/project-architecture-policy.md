@@ -38,7 +38,7 @@ provide context only and cannot override current requirements.
 | `isolator` | Blocks, block entities, binding authority, craft state, and lifecycle transactions |
 | `controller` | Endpoint provenance, routing, sessions, lecterns, and reset behavior |
 | `wireless` | Scope policy, receiver refresh, source publication, and train visibility |
-| `schematic` | Comparison, masks, inputs, and client-only rendering assistance |
+| `schematic` | Comparison, masks, inputs, server-owned material-list workstation, and client-only rendering assistance |
 | `mixin` | Feature-grouped adapters for exact upstream injection points |
 
 Packages follow feature ownership rather than generic technical categories. New

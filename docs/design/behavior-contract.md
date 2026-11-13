@@ -47,7 +47,7 @@ any upgrade requires a new artifact and transformed-bytecode audit.
   isolator integration activates only when all three exact supported versions are
   present.
 - In Create-only mode, offhand schematic assistance remains available. Fieldwork
-  keeps its block/item/BE registry identities dormant for decoding safety, but
+  keeps its isolator block/item/BE registry identities dormant for decoding safety, but
   exposes no isolator recipe, loot, creative entry, command or behavior.
 - Client and server exchange the integration-active state during configuration and
   reject either mismatch before player join.
@@ -82,6 +82,22 @@ Excluded:
 - Generic upstream block/block-entity data recovery, automatic rollback, and a crash-recovery journal (D01: optional safeguards, deferred beyond the V1 core)
 
 The addon must not intercept broad methods such as `Level#getSignal`. Isolation is applied at the audited standard-network pair/consumer paths and, for D02, the train condition's global source-visibility query. The global train query must be handled separately rather than assumed covered by a pair filter.
+
+### Additive scribing workstation scope
+
+The planned 0.3.0 worktree adds a Create-only schematic scribing table independently
+of the V1 isolator integration. It must generate placement-aware native material
+lists from deployed schematics, persist its schematic/media/output inventory and
+settings, and validate output actions on the server. It must not construct target
+blocks/entities, consume adjacent building materials, require kinetics, or change
+wireless scope rules. Explicit print work may scan the schematic; hot wireless
+pair queries remain constant-time and unchanged.
+
+The [scribing-table contract](schematic-scribing-table.md) defines media replacement,
+partial warnings, native replacement/availability semantics and cost boundaries.
+The table remains active with Create alone; only the isolators are dormant without
+the optional bundle. Client/Ponder acceptance and publication are not implied by
+the development implementation.
 
 ## Behavior Contract
 

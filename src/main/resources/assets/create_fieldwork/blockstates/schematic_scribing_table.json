@@ -1,0 +1,20 @@
+{
+  "variants": {
+    "facing=south,schematic=false,clipboard=false": {"model":"create_fieldwork:block/schematic_scribing_table"},
+    "facing=south,schematic=true,clipboard=false": {"model":"create_fieldwork:block/schematic_scribing_table_schematic"},
+    "facing=south,schematic=false,clipboard=true": {"model":"create_fieldwork:block/schematic_scribing_table_clipboard"},
+    "facing=south,schematic=true,clipboard=true": {"model":"create_fieldwork:block/schematic_scribing_table_schematic_clipboard"},
+    "facing=west,schematic=false,clipboard=false": {"model":"create_fieldwork:block/schematic_scribing_table","y":90},
+    "facing=west,schematic=true,clipboard=false": {"model":"create_fieldwork:block/schematic_scribing_table_schematic","y":90},
+    "facing=west,schematic=false,clipboard=true": {"model":"create_fieldwork:block/schematic_scribing_table_clipboard","y":90},
+    "facing=west,schematic=true,clipboard=true": {"model":"create_fieldwork:block/schematic_scribing_table_schematic_clipboard","y":90},
+    "facing=north,schematic=false,clipboard=false": {"model":"create_fieldwork:block/schematic_scribing_table","y":180},
+    "facing=north,schematic=true,clipboard=false": {"model":"create_fieldwork:block/schematic_scribing_table_schematic","y":180},
+    "facing=north,schematic=false,clipboard=true": {"model":"create_fieldwork:block/schematic_scribing_table_clipboard","y":180},
+    "facing=north,schematic=true,clipboard=true": {"model":"create_fieldwork:block/schematic_scribing_table_schematic_clipboard","y":180},
+    "facing=east,schematic=false,clipboard=false": {"model":"create_fieldwork:block/schematic_scribing_table","y":270},
+    "facing=east,schematic=true,clipboard=false": {"model":"create_fieldwork:block/schematic_scribing_table_schematic","y":270},
+    "facing=east,schematic=false,clipboard=true": {"model":"create_fieldwork:block/schematic_scribing_table_clipboard","y":270},
+    "facing=east,schematic=true,clipboard=true": {"model":"create_fieldwork:block/schematic_scribing_table_schematic_clipboard","y":270}
+  }
+}

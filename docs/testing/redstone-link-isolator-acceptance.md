@@ -2,7 +2,7 @@
 
 ## Status and evidence boundary
 
-Recorded through 2026-11-13. Production main implements server-owned state/registry, the actual isolator/BE and recipe, Create/Simulated filters, lifecycle/mutation barriers, per-receiver scoped refresh, two-tier controller routing with event-driven reconciliation, fixed-WORLD train conditions and source-publication cache handling.
+Recorded through 2026-11-13. Production main implements server-owned state/registry, the actual isolator/BE and recipe, Create/Simulated filters, lifecycle/mutation barriers, per-receiver scoped refresh, two-tier controller routing with event-driven reconciliation, fixed-WORLD train conditions, source-publication cache handling and the development scribing-table slice below.
 
 The current optional-integration revision makes Create the only required gameplay
 dependency. A packaged Create-only server containing only NeoForge, Create and
@@ -241,7 +241,7 @@ Newly executed checks:
   `af78820c97b52033f41e829ec9a8453c7a8ea24791e4450eda85023fce38a640`
   found exactly two differences: `OffhandProjectionBuffer.class` and the new
   `OffhandProjectionRenderType.class`. All other class bytes, Position repair,
-  resources, metadata, mixin configs and license entries remain
+  scribing behavior, resources, metadata, mixin configs and license entries remain
   identical. Documentation links and whitespace checks passed.
 
 Earlier full-worktree player-test candidate (metadata `0.1.0`, not the fix-only
@@ -313,7 +313,182 @@ server matrix is claimed. This feedback-only update reruns documentation/artifac
 consistency checks, not builds or runtime tests. At this Position-only delivery,
 contact-face flicker remained unresolved; its subsequent correction and owner
 shader-on/shader-off pass are recorded in the contact-depth section above. This
-Position-only candidate intentionally includes no render change.
+Position-only candidate intentionally includes no render change. The prior scribing
+behavior/runtime evidence below is historical baseline, not newly executed checks
+on this Position candidate.
+
+## Schematic scribing table development slice — 2026-11-12
+
+This unpublished worktree slice implements the
+[schematic scribing table contract](../design/schematic-scribing-table.md) using
+the owner-approved original C-01 finish and vertical timed-scribing screen. Default metadata remains `0.1.0`;
+planned 0.3.0 feature work is not a new release or version/publication action.
+
+Scribing-only clean-build SHA-256 (before the Position candidate above):
+`fa6c06cc1aa0f5d659533ba0052708124be46de2cb1203590875304be04dc6b5`.
+This hash has not received a new installer smoke or agent-controlled client test.
+The owner-reported material acceptance is recorded below.
+
+The last scribing-only follow-up shortens the empty-media tooltip to `Book / Clipboard`
+and its Traditional Chinese equivalent. A fresh clean build passed JUnit140;
+archive-entry comparison against the preceding vertical/timed candidate
+`f3bad6a21070e8474700241a505334faefeb70c61c6c4bd59befc5ae704f0332`
+found only the two locale JSON entries changed. All production class bytes,
+settings/job behavior, assets and Print overwrite warnings are identical. Settings
+and calculation policy were deliberately left unchanged. Runtime phases were not
+newly rerun for this copy-only follow-up; the matrix below records that preceding
+behavioral candidate.
+
+| Check | Vertical/timed runtime baseline | Prior A5 screen |
+|---|---|---|
+| `clean build` / JUnit | 140 tests; no failures, errors or skips | 136 tests |
+| `scribing` | 240 assertions | 166 assertions |
+| Consecutive independent-JVM `scribing-reload -PacceptanceKeepWorld` | 26 assertions, including in-flight job | 13 assertions |
+| `schematic` regression | 348 assertions | 348 assertions |
+| `network` regression | 174 assertions | 174 assertions |
+
+The prior A5 client candidate was
+`ff3d0bfae0e1c75ca64b497fdd3cada89dd1352eed81d1f718a38e2eedc580c4`.
+
+The previous C-01 material candidate was
+`e946bdc5f3aa659d741b21094da91979ced5713a6ca6cecba02091067c6b712e`.
+
+The earlier functional baseline was
+`f7f293f41e0cfa9213eead1faac9d0d393da6a8083c7107e16efa2d5cf75859a`.
+The C-01 follow-up promotes the selected lighter 16×16 wood core, golden-sheet
+fittings and plain square corner nails, retaining the iron legs. Its two golden
+sheet recipe inputs are accepted by actual crafting while the former brass
+inputs were rejected. At that material-only revision, decoded production PNGs
+matched the accepted drafts, and all six unaffected textures, model geometry,
+production Java sources and packaged class bytes remained identical to the
+functional baseline. Material names
+and authoring labels changed from brass to gold. Canonical preview regeneration
+is deterministic and reads the newly shipped resources, not private overrides.
+
+The owner reported successful item spawning before these material refinements;
+the exact earlier client artifact/context was not independently confirmed. The
+selected preview was visually approved. After delivery, the owner explicitly
+reported that the **new materials passed acceptance** and requested a UI redesign.
+Record this as an owner-reported material-appearance pass for the delivered C-01
+candidate, not an independently captured client hash/log or a pass for menu
+usability, multiplayer, other lighting/resource-pack cases or Ponder.
+
+Every listed runtime verifier checked the requested phase, assertion result,
+complete dimension saves and logical-server state close. The broader historical
+isolation/binding lifecycle matrix was not newly rerun for this additive feature.
+
+### Historical A5 UI implementation evidence
+
+The A5 revision implemented a 232×246 iron/wood/paper screen, thin ruled-paper
+buttons and local settings pane; the current
+[UI contract](../design/schematic-scribing-table-ui.md) supersedes its geometry and timing.
+The background is an original text/icon-free 256×256 RGBA texture. Deterministic
+regeneration and comparison checked 40,543 static skin pixels against the approved
+design, excluding runtime text/items/status/buttons and transparent exterior.
+Native container rendering supplies ItemStack/component models, counts, hover and
+tooltips; no dependency sprites or custom fonts are shipped.
+
+New tests cover immutable shared geometry, all 39 slot coordinates, disjoint wells,
+settings-panel coverage, transparent/blank resources, translations, variable
+Latin/Chinese/emoji width-policy metrics and preservation of styled prefixes.
+Production uses actual client `Font.width`/component-aware prefix splitting and
+native visual ordering, not those injected test metrics. Paper buttons keep
+native scrolling text/narration/input. Tooltips are cached until their displayed
+settings change.
+
+The scribing phase now additionally checks every relocated production slot,
+presentation-only hide/restore of schematic slot 0, actual native QUICK_MOVE
+packets for both inputs, printing, output retrieval and return of remaining
+inputs without duplication. Native action IDs and server validation are unchanged.
+The original C-01 materials/recipe and BE/checklist policy sources remain unchanged;
+unrelated production class bytes were compared with the captured functional
+baseline, while Screen/Menu changes and the new UI helpers are intentional.
+
+Read-only review found no server/security blocker. Native inactive-slot gates for
+rendering, hover and mouse lookup were checked against the pinned client bytecode;
+cached hover is cleared on pane changes. This is static seam evidence, not an
+executed client interaction test. No actual client was launched: host Xvfb alone
+is insufficient because the standard Docker image lacks the required X11/OpenGL
+graphics libraries/tooling. No dependencies were installed for a graphics claim.
+Actual alpha appearance, en/zh font layout, focus/narration, tooltip delay, drag
+behavior, GUI scales and resource packs still need the player pass below.
+
+The owner's subsequent client screenshots reported three concrete follow-ups:
+missing empty-slot guide icons, the schematic caption touching its locator/border,
+and dark button text with an unwanted shadow/doubled look. Those were not fixed
+by the automated A5 pass. The owner then selected a model-aligned larger left
+blueprint/right scribing layout and top-to-bottom medium/progress/output.
+The current revision implements those changes; the screenshots are scoped defect
+reports, not a full acceptance pass for this new JAR.
+
+### Vertical timed-scribing revision — 2026-11-13
+
+The current 232×254 screen has 128-pixel blueprint paper and a 76-pixel right card.
+Only empty active input slots have faint runtime-native model guides; output has
+no guide or Media/Output label. Explicit no-shadow native-font button text replaces
+the old shadowed renderer; ellipsis/full tooltips retain long-label information.
+Caption geometry now has nine pixels from locator to label rectangle and eight
+before the sheet edge. Actual ghost opacity/depth and player-font appearance still
+need client retesting.
+
+The server ticker starts at elapsed0 and completes on active tick21. No medium is
+consumed before successful native generation/commit. Repeat start cannot reset
+work. Tests cover exact counts/components/options, no-change notifications,
+removal/transfer, same-name file replacement/deletion and target-world changes at
+completion. Callback/fault tooling exercises pre-generation cancellation plus
+restore/nested calls, an exception inside the native-work try path, post-generation
+output replacement, RuntimeException failure and Error cancellation/rethrow.
+Job identity loss takes precedence over the generated result/status.
+
+The clean-save pair leaves an actual job at elapsed10, starts an independent JVM,
+verifies unchanged inputs/output and exact progress10, then completes once after
+the remaining11 loaded ticks with no wall-clock catch-up. Malformed/elapsed21/
+option/snapshot/output-mismatched NBT fails closed without consumption. The fixture
+observes actual BE progress, not an assumption that newly forced chunks immediately
+become ticking: its first attempt exposed that global-tick/active-tick distinction
+and was corrected without changing the production21-tick boundary.
+
+Read-only review found no remaining transactional blocker conditional on this
+successful persistence evidence and updated contracts. The new job/helper and UI
+are the intended code changes; C-01 materials, recipe, placement policy and
+unrelated isolation/controller classes remain unchanged. This is ordinary
+in-memory/clean-save transaction evidence, not cross-chunk crash-atomic durability
+or detection of unnotified transient stack changes restored before observation.
+
+The scribing phase uses actual uploaded schematic files, native cannon/checklist
+serialization and production main, not a fixture-supplied materials answer. It
+covers all mirror/rotation/replacement-mode combinations, already-built blocks,
+existing-BE options, native entity requirements without target entity spawning,
+adjacent extractable availability without material consumption, partial/unloaded
+targets without force-loading, invalid deployment/media/files, same-item filename
+replacement and deletion, actual shaped crafting, model flags/open collision
+space, inventory drops, native server menu opening and vanilla button handling,
+reach/spectator/menu identity rejection, medium consumption, output occupancy,
+repeat-start protection and three-slot/settings/job persistence across JVMs.
+
+The first implementation cached a successful file by item components; review
+identified same-name file replacement/deletion as a stale-output hazard. Current
+production loads a fresh printer only at the21-tick job's completion, and the
+replacement/deletion controls pass. A stale success status after extraction was
+also corrected. The initial asynchronous fixture needed its table/target chunks
+kept loaded; those tickets are fixture-only, not production loading. The headless
+menu test uses NeoForge's `configureMockConnection` to support outbound advanced
+menu payloads; this does not simulate a real client handshake. The regression tab
+assertion now expects the new desk alongside both existing isolators.
+
+Archive inspection confirmed required common/client classes and exact assets,
+GPL inclusion, the adapted Create policy's MIT notice, no upstream Create PNGs,
+no art/acceptance tools, and no optional API/client-type references in the new
+common table classes. Source review approved the corrected authority/transaction
+path. These are resource/server checks, not client acceptance.
+
+Beyond that reported appearance check, still pending are the full client
+orientation/lighting/resource-pack matrix, localized screen/button/
+slot/tooltip usability, shift-click and recipe-unlock UI, collision feel, actual
+multiplayer interaction, resource-pack behavior, explosions, size/stress limits
+and Ponder scenes. Adjacent shared-wrapper counting and synchronous/per-table
+job-cost boundaries are explicit in the gameplay contract; no aggregate abuse or
+measured performance claim is made.
 
 ## Player observations: single-player, 2026-11-07
 
@@ -348,6 +523,9 @@ Minecraft 1.21.1 / NeoForge 21.1.257 / Create 6.0.10 / Sable 2.0.5 / Aeronautics
 ./scripts/gradle-docker.sh verifyFieldworkAcceptance -PacceptancePhase=lifecycle
 ./scripts/gradle-docker.sh verifyFieldworkAcceptance -PacceptancePhase=packed
 ./scripts/gradle-docker.sh verifyFieldworkAcceptance -PacceptancePhase=schematic
+# Consecutive independent JVMs; no world-resetting phase between these
+./scripts/gradle-docker.sh verifyFieldworkAcceptance -PacceptancePhase=scribing
+./scripts/gradle-docker.sh verifyFieldworkAcceptance -PacceptancePhase=scribing-reload -PacceptanceKeepWorld
 ./scripts/gradle-docker.sh verifyFieldworkAcceptance -PacceptancePhase=binding
 ./scripts/gradle-docker.sh verifyFieldworkAcceptance -PacceptancePhase=binding-reset
 ./scripts/gradle-docker.sh verifyFieldworkAcceptance -PacceptancePhase=binding-faults

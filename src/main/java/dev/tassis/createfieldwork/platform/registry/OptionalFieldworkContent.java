@@ -28,6 +28,7 @@ public final class OptionalFieldworkContent {
             .displayItems((parameters, output) -> {
                 output.accept(FieldworkContent.ISOLATOR_ITEM.get());
                 output.accept(FieldworkContent.BRASS_ISOLATOR_ITEM.get());
+                output.accept(FieldworkContent.SCRIBING_TABLE_ITEM.get());
             })
             .build());
 

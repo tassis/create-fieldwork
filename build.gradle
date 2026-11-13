@@ -90,6 +90,9 @@ tasks.register('verifyShippingIsolation') {
                 throw new GradleException('Test-driver metadata leaked into shipping JAR')
             }
             if (zip.getEntry('LICENSE') == null) throw new GradleException('Shipping JAR must include LICENSE')
+            if (zip.getEntry('META-INF/licenses/create-scribing-policy-MIT.txt') == null) {
+                throw new GradleException('Shipping JAR must retain the adapted Create policy code notice')
+            }
             def dependency = { id, type ->
                 metadata ==~ /(?s).*modId="${java.util.regex.Pattern.quote(id)}"\s*type="${type}".*/
             }
@@ -286,7 +289,7 @@ tasks.register('verifyFieldworkAcceptance') {
 tasks.matching { it.name == 'runFieldworkAcceptanceServer' }.configureEach {
     doFirst {
         def phase = providers.gradleProperty('acceptancePhase').getOrElse('core')
-        if (!(phase in ['core', 'network', 'refresh', 'movement', 'controller-work', 'controller-index', 'lifecycle', 'packed', 'seed', 'reload', 'binding', 'binding-faults', 'binding-reset', 'binding-seed', 'binding-reload', 'schematic'])) throw new GradleException('Unknown acceptance phase')
+        if (!(phase in ['core', 'network', 'refresh', 'movement', 'controller-work', 'controller-index', 'lifecycle', 'packed', 'seed', 'reload', 'binding', 'binding-faults', 'binding-reset', 'binding-seed', 'binding-reload', 'schematic', 'scribing', 'scribing-reload'])) throw new GradleException('Unknown acceptance phase')
         if (phase.endsWith('reload') && !providers.gradleProperty('acceptanceKeepWorld').isPresent()) {
             throw new GradleException('Acceptance reload requires -PacceptanceKeepWorld')
         }

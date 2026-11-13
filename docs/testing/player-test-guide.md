@@ -1,6 +1,6 @@
 # Player Testing Guide
 
-Current version: **0.1.0**. Client/GUI, multiplayer, real explosions and the complete lifecycle matrix still need validation. Prefer a new or backed-up world. The project is licensed under GNU GPL v3.0 only (`GPL-3.0-only`); see [LICENSE](../../LICENSE).
+Default build version: **0.1.0**. The current worktree also contains planned 0.3.0 scribing-table development; this is not a release declaration. Client/GUI, multiplayer, real explosions and the complete lifecycle matrix still need validation. Prefer a new or backed-up world. The project is licensed under GNU GPL v3.0 only (`GPL-3.0-only`); see [LICENSE](../../LICENSE).
 
 ## Obtain and identify the build
 
@@ -15,12 +15,17 @@ Current version: **0.1.0**. Client/GUI, multiplayer, real explosions and the com
 
 Record the hash of the exact JAR you install. **Fully close the game/server before replacing a mod JAR**; leaving a world does not reload mod code.
 
-### Current local controller/schematic candidate
+### Current local scribing-table candidate
 
-Use the current hash below; the controller player-fix record preserves an older
-historical candidate. Client and server must both use this same candidate.
+Use the exact current hash in the
+[production acceptance record](redstone-link-isolator-acceptance.md#schematic-scribing-table-development-slice--2026-11-12),
+not a historical hash below. Client and server must use the same build. The new
+workstation has headless development-server evidence but no new installer/client
+acceptance for that hash.
 
-Current SHA-256: `c69b8bb59e098f96027a8d3a8050d7be77cbaa9812d2d88183e382733340886c`.
+### Historical local controller/schematic candidate
+
+Historical SHA-256: `c69b8bb59e098f96027a8d3a8050d7be77cbaa9812d2d88183e382733340886c`.
 
 This exact build also passed packaged dedicated-server startup/status/save with
 exit0. That does not replace the client interaction checks below.
@@ -76,7 +81,7 @@ Create is required. Choose one matching mode on both sides:
 | Aeronautics bundled | Optional integration: 1.3.2, `create-aeronautics-bundled-1.21.1-1.3.2.jar` |
 | Fieldwork | 0.1.0, the selected build above |
 
-Create-only mode keeps offhand schematic assistance but hides and disables the
+Create-only mode provides offhand schematic assistance and the scribing table but hides and disables the
 isolator. Integration mode requires Sable, Aeronautics and its bundled Simulated
 mod together. A client/server mismatch is rejected during connection setup. If a
 previously integrated world is opened without the bundle, Fieldwork warns but does
@@ -115,6 +120,67 @@ To save and stop:
 ```
 
 `smoke-server.sh stop` is a Docker termination command; its observed SIGTERM path did not establish complete saving. For important worlds use console `stop`. After source changes, stop normally, then `setup`/`start` and record the new hash. Historical installer success does not establish which JAR is currently installed in a reused local directory.
+
+## Scribing-table player checks
+
+The block/item ID is `create_fieldwork:schematic_scribing_table`. Find it in
+Functional Blocks or the optional Fieldwork tab, or craft one using a book,
+two golden sheets, one andesite casing and two iron ingots (` B /PAP/I I`).
+
+1. Deploy an asymmetric Create schematic nearby and put that schematic in the
+   left blueprint-area slot. Open the table with an empty hand if the active schematic
+   tool intercepts your click.
+2. Add a book or clipboard to the upper-right input, then press Print. Written books
+   and existing clipboards are overwritten; paper/writable books are not inputs.
+3. Progress should fill downward for about21 active ticks before one medium is
+   consumed and the native checklist appears in the lower-right output, with the schematic unchanged.
+   Build a matching portion and print again: remaining placement requirements
+   should reflect it. No target block or entity should be constructed by the desk.
+4. Check rotation, mirrors and replacement options. Compare with a cannon using
+   the same options, keeping targets outside the cannon's two-block firing gap.
+5. Put building materials in an adjacent chest. Availability should mark native
+   entries complete without removing materials. The player's inventory is not
+   counted as adjacent storage.
+6. Check clipboard/written-book replacement, output-full rejection, rapid-click
+   behavior and shift-click. Confirm all items remain after closing the menu and
+   after a normal save/restart; breaking the table should drop its contents.
+7. Inspect all four orientations, empty/populated models, inventory icon, open
+   desk collision, localized labels, slot alignment and the overwrite tooltip.
+8. Repeat with another real player. Missing files must not consume media;
+   unloaded target chunks must produce a partial warning rather than a complete
+   empty result. The table does not force-load the target.
+
+### Vertical scribing UI-specific player pass
+
+- Confirm the iron frame, wood backing, paper banner/cards and lighter blue grid;
+  title/labels/items must be live rendering, not baked lettering or icon images.
+- Test English and Traditional Chinese, multiple GUI scales and any font/resource
+  packs you normally use. Long labels/buttons should fit/ellipsis appropriately
+  with full status/settings tooltips. Paper-button labels must not have the old
+  dark text-shadow/doubled edge. Hover the short status for
+  its full explanation and Print for the overwrite warning.
+- Empty input slots should have faint native-model guide icons; output must stay
+  blank. Guides should vanish when occupied, never add fake stacks/counts, and
+  schematic text should have clear space from its locator and sheet edge.
+- Open Settings with a schematic already inserted. All three work
+  slots should hide; they must not highlight or accept an ordinary click through the
+  paper settings pane. Close with Done or Escape and confirm the item remains.
+- Start work and click Print repeatedly: progress must not restart and no item is
+  consumed early. Move an input/change settings during work and confirm cancellation
+  without extra consumption. Clean-save a running job and reload: only remaining
+  loaded ticks should be needed, with no wall-clock catch-up or duplicate result.
+- Change both settings and confirm server-synchronized values. Media/output and
+  inventory slots remain usable; test shift-click while the pane is open, then
+  close it and verify all contents. Print should be disabled while settings is open.
+- Try opening Settings while carrying a cursor stack: opening should be refused
+  until it is put down. If you pick up an inventory item after opening the pane,
+  Done/Escape must still close the pane without trapping/losing the stack.
+- Check keyboard focus, disabled/hover tooltips, narrator output and close/reopen.
+  Native packet tests and bytecode inspection are not a pass for these client paths.
+
+These are pending player checks, not a claimed pass. See the
+[gameplay contract](../design/schematic-scribing-table.md) for current performance
+and native-inventory boundaries. Ponder teaching is not included yet.
 
 ## Suggested first test pass
 

@@ -291,9 +291,10 @@ final class NetworkAcceptance {
             .equals(net.minecraft.core.registries.BuiltInRegistries.CREATIVE_MODE_TAB.getKey(tab)));
         check.accept("Fieldwork creative tab uses the isolator icon", tab.getIconItem().is(FieldworkContent.ISOLATOR_ITEM.get()));
         tab.buildContents(new net.minecraft.world.item.CreativeModeTab.ItemDisplayParameters(level.enabledFeatures(), false, level.registryAccess()));
-        check.accept("Fieldwork tab is visible and contains both isolators without operator permissions", tab.shouldDisplay()
-            && tab.getDisplayItems().size() == 2 && tab.getDisplayItems().stream().anyMatch(stack -> stack.is(FieldworkContent.ISOLATOR_ITEM.get()))
-            && tab.getDisplayItems().stream().anyMatch(stack -> stack.is(FieldworkContent.BRASS_ISOLATOR_ITEM.get())));
+        check.accept("Fieldwork tab exposes both isolators and the desk without operator permissions", tab.shouldDisplay()
+            && tab.getDisplayItems().size() == 3 && tab.getDisplayItems().stream().anyMatch(stack -> stack.is(FieldworkContent.ISOLATOR_ITEM.get()))
+            && tab.getDisplayItems().stream().anyMatch(stack -> stack.is(FieldworkContent.BRASS_ISOLATOR_ITEM.get()))
+            && tab.getDisplayItems().stream().anyMatch(stack -> stack.is(FieldworkContent.SCRIBING_TABLE_ITEM.get())));
         check.accept("Fieldwork tab also exposes the isolator to creative search", tab.getSearchTabDisplayItems().stream()
             .anyMatch(stack -> stack.is(FieldworkContent.ISOLATOR_ITEM.get())));
         var recipeId = ResourceLocation.fromNamespaceAndPath("create_fieldwork", "redstone_link_isolator");

@@ -12,11 +12,18 @@ A Create addon offering tools for building and operating your creations:
 - **Offhand schematic assistance** — compares a deployed blueprint with your build,
   highlights mismatches, hides confirmed matching ghosts within supported limits,
   and shows the item icon and localized name of the projected block you look at.
+- **Schematic Scribing Table (development)** — prints a deployed schematic's
+  placement-aware material checklist to a book or clipboard, without construction.
+  Its [current contract](docs/design/schematic-scribing-table.md) and
+  [acceptance record](docs/testing/redstone-link-isolator-acceptance.md#schematic-scribing-table-development-slice--2026-11-12)
+  describe this unpublished worktree feature and pending client checks.
 
 ## License
 
 Copyright (C) 2026 Tassis. Licensed under the **GNU General Public License v3.0
 only** (`GPL-3.0-only`). See [LICENSE](LICENSE).
+The adapted Create placement-policy code retains its
+[MIT notice](src/main/resources/META-INF/licenses/create-scribing-policy-MIT.txt).
 
 ## Requirements
 
@@ -29,7 +36,7 @@ only** (`GPL-3.0-only`). See [LICENSE](LICENSE).
 | Sable | 2.0.5+ | For isolators |
 | Create Aeronautics bundled | 1.3.2+, including Simulated 1.3.2+ | For isolators |
 
-Offhand schematic assistance works with Create alone. Isolators require NeoForge
+Offhand schematic assistance and the scribing table work with Create alone. Isolators require NeoForge
 21.1.228+ and the complete Sable, Aeronautics and Simulated bundle on both client
 and server. Use the bundled Aeronautics artifact without installing duplicate
 nested mods; client and server must use matching integration modes.

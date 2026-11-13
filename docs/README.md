@@ -30,6 +30,9 @@ notes never override those documents.
 
 - [Managed-controller binding contract](design/controller-binding-v02.md)
 - [D03 recipe and cost rationale](design/2026-11-06-isolator-recipe.md)
+- [Schematic scribing table visuals](design/schematic-scribing-table-visuals.md): approved 0.3.0 desk silhouette, original local assets and preview/client evidence boundaries; functionality is defined separately below.
+- [Schematic scribing table gameplay](design/schematic-scribing-table.md): current workstation inputs, native material semantics, server authority, persistence and performance/client boundaries.
+- [Schematic scribing table UI](design/schematic-scribing-table-ui.md): implemented iron/wood/paper screen, shared slot geometry, native fonts/items, foldout settings and client-test boundaries.
 
 ### Superseded design history
 
@@ -52,6 +55,10 @@ notes never override those documents.
 - [NeoForge runtime range](testing/neoforge-runtime-range.md).
 - [First pure-core slice](testing/pure-core.md): historical policy milestone.
 - [Controller binding experiment](testing/controller-binding-spike.md): non-shipping device-ID/lectern persistence and block-owned UUID-stamped authorization model; not remote-routing acceptance.
+
+### Current dependency research
+
+- [Create schematic ownership and copying](research/2026-11-13-schematic-copy.md): pinned owner/file semantics, fresh construction, server/client dependencies and bounded native probe. The owner declined copying; findings are reference, not an active feature or multiplayer/client acceptance.
 
 ## Historical research
 

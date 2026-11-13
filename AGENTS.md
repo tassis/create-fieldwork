@@ -9,6 +9,8 @@
 - **D02:** every train condition observes public WORLD sources only. Private train consumers and Train ownership research are deferred. Source visibility, high/low, PENDING and cache/session behavior remain required.
 - **D03:** ordinary shaped 3×3 crafting, `OBO/ELE/BPB`, output one. Implemented and headlessly tested; client crafting/unlock interaction remains part of player acceptance.
 - Version `0.1.0` is available for player testing. Client/GUI/multiplayer/explosion acceptance is incomplete. Use the [production acceptance record](docs/testing/redstone-link-isolator-acceptance.md), not historical prototype pass counts.
+- The current worktree also implements the planned 0.3.0 [schematic scribing table](docs/design/schematic-scribing-table.md): native Create material lists without construction, original local assets, persistent inputs/output and server-owned menu actions. The default version is unchanged; client/Ponder acceptance is not complete.
+- The [vertical workstation UI](docs/design/schematic-scribing-table-ui.md) implements a wider left blueprint area, right-side top-to-bottom media/progress/output, runtime input-only hints and no-shadow paper-button text. A captured server job consumes only on successful tick21 completion and validates clean-save progress before resuming. C-01 material appearance has an owner-reported pass; new GUI/font/hint/interaction acceptance remains pending.
 - Normal container removal retains the old footprint/barrier and publishes only
   after active UUID absence. Detached serialized markers are not validated through
   live plot block state; this does not expand deferred D01 data recovery.
@@ -125,6 +127,9 @@ Create-only packaged smoke uses an independent server directory and TCP port:
 ./scripts/gradle-docker.sh verifyFieldworkAcceptance -PacceptancePhase=lifecycle
 ./scripts/gradle-docker.sh verifyFieldworkAcceptance -PacceptancePhase=packed
 ./scripts/gradle-docker.sh verifyFieldworkAcceptance -PacceptancePhase=schematic
+# Consecutive independent JVMs; do not reset the world between them
+./scripts/gradle-docker.sh verifyFieldworkAcceptance -PacceptancePhase=scribing
+./scripts/gradle-docker.sh verifyFieldworkAcceptance -PacceptancePhase=scribing-reload -PacceptanceKeepWorld
 ./scripts/gradle-docker.sh verifyFieldworkAcceptance -PacceptancePhase=binding
 ./scripts/gradle-docker.sh verifyFieldworkAcceptance -PacceptancePhase=binding-reset
 ./scripts/gradle-docker.sh verifyFieldworkAcceptance -PacceptancePhase=binding-faults

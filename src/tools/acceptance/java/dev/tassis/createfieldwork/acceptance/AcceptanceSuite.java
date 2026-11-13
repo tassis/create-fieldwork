@@ -35,6 +35,7 @@ public final class AcceptanceSuite {
     private boolean coreDone;
     private RestartAcceptance restart;
     private BindingPersistenceAcceptance bindingPersistence;
+    private ScribingTableAcceptance scribing;
     private final List<Map<String, Object>> assertions = new ArrayList<>();
     private final String phase = System.getProperty("fieldwork.acceptance.phase", "core");
 
@@ -48,6 +49,8 @@ public final class AcceptanceSuite {
         server = event.getServer();
         if (phase.equals("seed") || phase.equals("reload")) restart = new RestartAcceptance(server.overworld(), this::check, phase);
         if (phase.equals("binding-seed") || phase.equals("binding-reload")) bindingPersistence = new BindingPersistenceAcceptance(server.overworld(), this::check, phase);
+        if (phase.equals("scribing") || phase.equals("scribing-reload"))
+            scribing = new ScribingTableAcceptance(server.overworld(), this::check, phase.equals("scribing-reload"));
     }
 
     private void tick(ServerTickEvent.Post event) {
@@ -57,6 +60,7 @@ public final class AcceptanceSuite {
             if (!coreDone) { core(); coreDone = true; }
             if (restart != null && !restart.tick(ticks)) return;
             if (bindingPersistence != null && !bindingPersistence.tick(ticks)) return;
+            if (scribing != null && !scribing.tick(ticks)) return;
             if (phase.equals("network")) {
                 new NetworkAcceptance(server.overworld(), this::check).run();
                 new ControllerAcceptance(server.overworld(), this::check).run();

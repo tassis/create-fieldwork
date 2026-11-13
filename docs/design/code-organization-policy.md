@@ -15,7 +15,7 @@ Top-level packages are vertical feature areas:
   authoritative craft state.
 - `controller`: endpoint routing, player sessions, lectern integration and reset.
 - `wireless`: scope policy, receiver refresh, source publication and train reads.
-- `schematic`: comparison, masking and client rendering/input assistance.
+- `schematic`: comparison, masking, material-list workstation and client rendering/input assistance.
 - `mixin`: integration classes grouped by the feature they serve.
 
 Technical categories such as `content`, `registry` or `server` must not become a
