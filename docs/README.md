@@ -49,6 +49,7 @@ notes never override those documents.
 - [Production mixin audit](testing/main-mixin-audit.md): exact hooks and transformed bytecode.
 - [Texture integration history](testing/placeholder-textures.md).
 - [GitHub Actions and CI-managed releases](testing/github-actions.md).
+- [NeoForge runtime range](testing/neoforge-runtime-range.md).
 - [First pure-core slice](testing/pure-core.md): historical policy milestone.
 - [Controller binding experiment](testing/controller-binding-spike.md): non-shipping device-ID/lectern persistence and block-owned UUID-stamped authorization model; not remote-routing acceptance.
 

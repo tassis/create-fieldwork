@@ -24,12 +24,12 @@ only** (`GPL-3.0-only`). See [LICENSE](LICENSE).
 |---|---|---|
 | Java | 21 | Yes |
 | Minecraft | 1.21.1 | Yes |
-| NeoForge | 21.1.257 | Yes |
+| NeoForge | 21.1.219+ | Yes |
 | Create | 6.0.10 | Yes |
 | Sable | 2.0.5 | For isolators |
 | Create Aeronautics bundled | 1.3.2, including Simulated | For isolators |
 
-Offhand schematic assistance works with Create alone. Isolators require the
-complete Sable, Aeronautics and Simulated bundle on both client and server. Use
-the bundled Aeronautics artifact without installing duplicate nested mods; client
-and server must use matching integration modes. Other versions are not verified.
+Offhand schematic assistance works with Create alone. Isolators require NeoForge
+21.1.228+ and the complete Sable, Aeronautics and Simulated bundle on both client
+and server. Use the bundled Aeronautics artifact without installing duplicate
+nested mods; client and server must use matching integration modes.
