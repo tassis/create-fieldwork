@@ -4,6 +4,9 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.simibubi.create.content.schematics.SchematicItem;
 import com.simibubi.create.content.schematics.client.SchematicHandler;
+import com.simibubi.create.content.schematics.client.tools.DeployTool;
+import com.simibubi.create.content.schematics.client.tools.ISchematicTool;
+import dev.tassis.createfieldwork.schematic.input.BlueprintLocalDeployment;
 import dev.tassis.createfieldwork.schematic.input.BlueprintSelection;
 import dev.tassis.createfieldwork.schematic.BlueprintSyncEchoes;
 import dev.tassis.createfieldwork.schematic.client.SchematicClientState;
@@ -82,6 +85,40 @@ public abstract class SchematicHandlerMixin {
     @Inject(method = "onMouseInput", at = @At("HEAD"), cancellable = true, require = 1, allow = 1)
     private void fieldwork$controllerFirst(int button, boolean pressed, CallbackInfoReturnable<Boolean> cir) {
         if (OffhandProjectionBuffer.activeOffhand((SchematicHandler) (Object) this) && button == 1 && pressed && ControllerGesture.preferNative()) cir.setReturnValue(false);
+    }
+    @WrapOperation(method = "onMouseInput(IZ)Z",
+        at = @At(value = "INVOKE", target = "Lcom/simibubi/create/content/schematics/client/tools/ISchematicTool;handleRightClick()Z"), require = 1, allow = 1)
+    private boolean fieldwork$localDeployment(ISchematicTool tool, Operation<Boolean> upstream) {
+        var local = tool instanceof DeployTool
+            ? BlueprintLocalDeployment.begin(fieldwork$deploymentSelection()) : null;
+
+        boolean handled = upstream.call(tool);
+
+        if (!handled || local == null) {
+            return handled;
+        }
+        var handler = (SchematicHandler) (Object) this;
+        var transformation = handler.getTransformation();
+        var snapshot = transformation == null ? null : local.acknowledge(fieldwork$deploymentSelection(),
+            ((SchematicTransformationAccessor) transformation).fieldwork$positionTarget(), handler.isDeployed());
+        if (snapshot != null) {
+            fieldwork$previous = snapshot;
+        }
+        return handled;
+    }
+    @Unique
+    private BlueprintLocalDeployment.Selection fieldwork$deploymentSelection() {
+        var minecraft = Minecraft.getInstance();
+        var player = minecraft.player;
+        if (!active || player == null || minecraft.level != fieldwork$world || player != fieldwork$player) {
+            return null;
+        }
+        var selected = BlueprintSelection.select(player);
+        if (selected == null || selected.slot() != activeHotbarSlot || selected.slot() != fieldwork$previousSlot
+            || selected.stack() != activeSchematicItem) {
+            return null;
+        }
+        return new BlueprintLocalDeployment.Selection(minecraft.level, player, selected.slot(), selected.stack(), fieldwork$previous);
     }
     @WrapOperation(method = "render(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/createmod/catnip/render/SuperRenderTypeBuffer;Lnet/minecraft/world/phys/Vec3;)V",
         at = @At(value = "INVOKE", target = "Lcom/simibubi/create/content/schematics/client/SchematicRenderer;render(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/createmod/catnip/render/SuperRenderTypeBuffer;)V"), require = 3, allow = 3)

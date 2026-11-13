@@ -7,7 +7,6 @@ import dev.tassis.createfieldwork.schematic.input.BlueprintSelection;
 import net.createmod.catnip.render.SuperRenderTypeBuffer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.texture.TextureAtlas;
 
 /** Only the selected handler's ghost receives this adapter. Chunk layers need
  * both alpha vertices AND a blended render type; alpha on a solid shader alone
@@ -30,8 +29,9 @@ public final class OffhandProjectionBuffer implements SuperRenderTypeBuffer {
     private static RenderType layer(RenderType type) {
         // Ghosts are immediate-mode geometry, not terrain chunk meshes. Iris can
         // replace the terrain pass/format and lose this alpha; use the native
-        // entity-translucent shader path with the same block atlas instead.
-        return chunkLayer(type) ? RenderType.entityTranslucent(TextureAtlas.LOCATION_BLOCKS) : type;
+        // entity-translucent shader path with the same block atlas instead. Its
+        // dedicated type scopes contact bias to actual ghost batch draws only.
+        return chunkLayer(type) ? OffhandProjectionRenderType.TYPE : type;
     }
     private static VertexConsumer alpha(RenderType type, VertexConsumer consumer) {
         return chunkLayer(type) ? new ProjectionAlphaVertexConsumer(consumer) : consumer;

@@ -6,6 +6,7 @@ import com.simibubi.create.AllItems;
 import com.simibubi.create.content.schematics.packet.SchematicSyncPacket;
 import dev.tassis.createfieldwork.mixin.schematic.StructureTemplateAccessor;
 import dev.tassis.createfieldwork.schematic.input.BlueprintSelection;
+import dev.tassis.createfieldwork.schematic.input.BlueprintLocalDeployment;
 import dev.tassis.createfieldwork.schematic.comparison.BuildStatePolicy;
 import dev.tassis.createfieldwork.schematic.comparison.NativeSchematicTarget;
 import dev.tassis.createfieldwork.schematic.BlueprintSyncEchoes;
@@ -40,7 +41,7 @@ final class SchematicAcceptance {
     private final BiConsumer<String, Boolean> check;
     SchematicAcceptance(ServerLevel level, BiConsumer<String, Boolean> check) { this.level = level; this.check = check; }
     void run() {
-        policy(); selectionAndSync(); transforms(); worldOnly();
+        policy(); selectionAndSync(); localDeployment(); transforms(); worldOnly();
     }
     private void policy() {
         var stone = Blocks.STONE.defaultBlockState();
@@ -125,6 +126,91 @@ final class SchematicAcceptance {
         item.set(AllDataComponents.SCHEMATIC_BOUNDS, new Vec3i(3, 2, 4));
         item.set(AllDataComponents.SCHEMATIC_ANCHOR, anchor); item.set(AllDataComponents.SCHEMATIC_DEPLOYED, true);
         return item;
+    }
+    private void localDeployment() {
+        var stack = blueprint(new BlockPos(11, 120, 13));
+        stack.set(AllDataComponents.SCHEMATIC_DEPLOYED, false);
+        stack.set(AllDataComponents.SCHEMATIC_ROTATION, Rotation.CLOCKWISE_90);
+        stack.set(AllDataComponents.SCHEMATIC_MIRROR, Mirror.FRONT_BACK);
+        var previous = BlueprintSyncEchoes.normalized(stack);
+        var selected = deploymentSelection(40, stack, previous);
+        var local = BlueprintLocalDeployment.begin(selected);
+        check.accept("accepted unchanged schematic can begin a local Position action", local != null);
+        var destination = new BlockPos(-27, 124, 35);
+        stack.set(AllDataComponents.SCHEMATIC_DEPLOYED, true);
+        stack.set(AllDataComponents.SCHEMATIC_ANCHOR, destination);
+        check.accept("native Position writes differ from the old full-stack selection snapshot",
+            !ItemStack.matches(previous, BlueprintSyncEchoes.normalized(stack)));
+        var acknowledged = local.acknowledge(selected, destination, true);
+        check.accept("native deployed and anchor writes produce the next accepted selection snapshot",
+            acknowledged != null && ItemStack.matches(acknowledged, BlueprintSyncEchoes.normalized(stack)));
+        check.accept("local acknowledgement leaves the old snapshot and current item settings untouched",
+            new BlockPos(11, 120, 13).equals(previous.get(AllDataComponents.SCHEMATIC_ANCHOR))
+                && !previous.get(AllDataComponents.SCHEMATIC_DEPLOYED)
+                && stack.get(AllDataComponents.SCHEMATIC_ROTATION) == Rotation.CLOCKWISE_90
+                && stack.get(AllDataComponents.SCHEMATIC_MIRROR) == Mirror.FRONT_BACK);
+        check.accept("pre-action stale state is not acknowledged as a local action",
+            BlueprintLocalDeployment.begin(selected) == null);
+        check.accept("identical replacement ItemStack identity is not a local mutation",
+            local.acknowledge(deploymentSelection(40, stack.copy(), previous), destination, true) == null);
+        check.accept("same-stack no-op Position action can retain its accepted snapshot",
+            BlueprintLocalDeployment.begin(deploymentSelection(40, stack, acknowledged))
+                .acknowledge(deploymentSelection(40, stack, acknowledged), destination, true) != null);
+        check.accept("local acknowledgement rejects a different world",
+            local.acknowledge(new BlueprintLocalDeployment.Selection(new Object(), this, 40, stack, previous), destination, true) == null);
+        check.accept("local acknowledgement rejects a different player",
+            local.acknowledge(new BlueprintLocalDeployment.Selection(level, new Object(), 40, stack, previous), destination, true) == null);
+        check.accept("local acknowledgement rejects a hand or selected-slot change",
+            local.acknowledge(deploymentSelection(0, stack, previous), destination, true) == null);
+        check.accept("local acknowledgement rejects reentrant selection-snapshot replacement",
+            local.acknowledge(deploymentSelection(40, stack, previous.copy()), destination, true) == null);
+        check.accept("local acknowledgement rejects lost eligible selection", local.acknowledge(null, destination, true) == null);
+        check.accept("local acknowledgement rejects an item anchor different from the native raw target",
+            local.acknowledge(selected, destination.east(), true) == null);
+        check.accept("local acknowledgement requires the native handler to be deployed",
+            local.acknowledge(selected, destination, false) == null);
+        check.accept("missing eligible selection cannot begin local deployment", BlueprintLocalDeployment.begin(null) == null);
+        var main = deploymentSelection(0, stack, acknowledged);
+        check.accept("same native action policy preserves main-hand tool semantics",
+            BlueprintLocalDeployment.begin(main).acknowledge(main, destination, true) != null);
+
+        deploymentRejected("file replacement", item -> item.set(AllDataComponents.SCHEMATIC_FILE, "other.nbt"));
+        deploymentRejected("bounds replacement", item -> item.set(AllDataComponents.SCHEMATIC_BOUNDS, new Vec3i(5, 2, 4)));
+        deploymentRejected("rotation replacement", item -> item.set(AllDataComponents.SCHEMATIC_ROTATION, Rotation.CLOCKWISE_180));
+        deploymentRejected("mirror replacement", item -> item.set(AllDataComponents.SCHEMATIC_MIRROR, Mirror.LEFT_RIGHT));
+        deploymentRejected("count change", item -> item.setCount(2));
+        deploymentRejected("unrelated custom name change", item -> item.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME,
+            net.minecraft.network.chat.Component.literal("replacement")));
+        deploymentRejected("missing anchor", item -> item.remove(AllDataComponents.SCHEMATIC_ANCHOR));
+        deploymentRejected("undeployed state", item -> item.set(AllDataComponents.SCHEMATIC_DEPLOYED, false));
+        deploymentRejected("missing schematic identity", item -> item.remove(AllDataComponents.SCHEMATIC_FILE));
+        check.accept("empty schematic cannot begin local deployment",
+            BlueprintLocalDeployment.begin(deploymentSelection(40, ItemStack.EMPTY, ItemStack.EMPTY)) == null);
+
+        // The returned snapshot is a copy, not an alias that hides later external edits.
+        stack.set(AllDataComponents.SCHEMATIC_ANCHOR, destination.east());
+        check.accept("subsequent external mutation still differs from acknowledged local snapshot",
+            !ItemStack.matches(acknowledged, BlueprintSyncEchoes.normalized(stack)));
+        var echoes = new BlueprintSyncEchoes();
+        echoes.expect(40, stack, destination, new StructurePlaceSettings().setRotation(Rotation.CLOCKWISE_90).setMirror(Mirror.FRONT_BACK), true);
+        stack.set(AllDataComponents.SCHEMATIC_ANCHOR, destination);
+        check.accept("native sync acknowledgement remains independent of local deployment recognition", echoes.consume(40, stack));
+    }
+
+    private void deploymentRejected(String change, java.util.function.Consumer<ItemStack> mutate) {
+        var stack = blueprint(BlockPos.ZERO);
+        stack.set(AllDataComponents.SCHEMATIC_ROTATION, Rotation.NONE);
+        stack.set(AllDataComponents.SCHEMATIC_MIRROR, Mirror.NONE);
+        var selected = deploymentSelection(40, stack, BlueprintSyncEchoes.normalized(stack));
+        var local = BlueprintLocalDeployment.begin(selected);
+        var destination = new BlockPos(20, 124, 24);
+        stack.set(AllDataComponents.SCHEMATIC_ANCHOR, destination);
+        mutate.accept(stack);
+        check.accept("local Position acknowledgement rejects " + change, local.acknowledge(selected, destination, true) == null);
+    }
+
+    private BlueprintLocalDeployment.Selection deploymentSelection(int slot, ItemStack stack, ItemStack previous) {
+        return new BlueprintLocalDeployment.Selection(level, this, slot, stack, previous);
     }
     private void transforms() {
         var source = new BlockPos(768, 120, 0);

@@ -43,7 +43,7 @@ Method signatures below use short class names; source contains actual descriptor
 | `schematic.StructureTemplateAccessor` | `StructureTemplate.palettes` accessor | Exact template palette access; no injection replacement |
 | `schematic.client.SchematicHandlerAccessor` | Accessors for `activeHotbarSlot` and `syncCooldown` getter/setter | Narrow client state access |
 | `schematic.client.SchematicTransformationAccessor` | Accessors for rotation, current/previous position and target | Narrow transformation state access |
-| `schematic.client.SchematicHandlerMixin` | Four hooks require1/allow1 plus renderer INVOKE require3/allow3 | Offhand selection/sync/capture/input and three mirrored ghost passes |
+| `schematic.client.SchematicHandlerMixin` | Five hooks require1/allow1 plus renderer INVOKE require3/allow3 | Offhand selection/sync/capture/input, local Position acknowledgement and three mirrored ghost passes |
 | `schematic.client.SchematicRendererMixin` | `drawLayer` block-state INVOKE and `render` BE-helper INVOKE, each require1/allow1 | Hidden-ghost model and block-entity submission masks |
 | `schematic.client.SchematicOffhandOverlayMixin` | `SchematicHotbarSlotOverlay.renderOn` HEAD cancellable require1/allow1 | Suppress native selected-slot overlay for offhand assistance |
 | `schematic.client.ClientBlockChangesMixin` | `LevelChunk.setBlockState` RETURN require1 | Coalesce native schematic cache rebuild after client block changes |
@@ -93,6 +93,57 @@ The exact pinned Create class resource is checked by ASM in JUnit without client
 loading; new build/JUnit98 plus main schematic329 passed. This is descriptor/
 call-site and vertex-data evidence, **not client transformation or visual alpha
 acceptance**. See [current opacity boundary/player checks](schematic-client-v02.md#current-follow-up-iris-and-hiding-completed-ghosts-2026-11-08).
+
+## Native Position acknowledgement (2026-11-13)
+
+`schematic.client.SchematicHandlerMixin` additionally wraps the unique
+`ISchematicTool.handleRightClick()Z` interface invocation in
+`SchematicHandler.onMouseInput(IZ)Z`, with `require=1/allow=1`. The original call
+runs exactly once and retains its return value; the earlier controller-priority
+HEAD hook and native eligibility checks remain before that invocation.
+
+Only a successful `DeployTool` action can advance Fieldwork's prior selection
+snapshot. Common policy requires the same world/player/slot/ItemStack and prior
+snapshot identity, an accepted pre-action stack, and no changes other than native
+deployed/anchor writes. The item must agree with the native handler's deployed
+state and transformation's raw `target` through the existing accessor. This is
+intentionally not `getAnchor()`: pinned `DeployTool` stores the same target in the
+item and passes it to `startAt`/`moveTo`, while anchor conversion is separate.
+No coordinate offset, transform reset, replacement renderer or new sync packet is
+introduced. Both hand-selection paths retain native tool math.
+
+ASM tests read the pinned Create classes without loading the client and check the
+unique invocation, deployed/anchor component writes before start/move/dirty/deploy,
+and raw target storage. Common native ItemStack acceptance checks the guard and
+rejection policy; it does not invoke the client wrapper, test its tool/success
+branches at runtime or prove that client mixin transformation applied. Actual
+Position and Iris acceptance remains in the [client record](schematic-client-v02.md).
+
+## Offhand contact-depth follow-up (2026-11-13)
+
+No injection point, descriptor or cardinality changes. The same three scoped
+normal/mirror ghost wrappers use the existing offhand selection gate. Only
+`OffhandProjectionBuffer`'s chunk-layer destination changes, to the stable
+`OffhandProjectionRenderType.TYPE` singleton; non-chunk types and mainhand remain
+native. The custom type preserves native entity-translucent state/format/sorting/
+outline and changes only layering to VIEW_OFFSET_Z_LAYERING. Native LEQUAL depth
+test and color/depth writes remain enabled; vertices and deployment coordinates
+are not changed.
+
+Pinned `DefaultSuperRenderTypeBuffer` forwards early/default/late acquisition to
+their distinct `BufferSource`s and `draw(type)` passes the same type into all three
+`endBatch(type)` calls. Both old entity-translucent and new custom types are absent
+from its fixed-buffer list, so switching types can also cause implicit draws.
+The native RenderType setup/draw/clear lifecycle scopes the model-view bias to the
+actual batch, not the wrapper's vertex-submission interval. No eager per-renderer
+flush or persistent GL toggle is introduced.
+
+Five new ASM checks inspect pinned class resources and the candidate without
+client/GL initialization: native/custom state equivalence except layering,
+depth/output defaults, view-layer push/scale/apply and pop/apply, stable remap key/
+non-chunk passthrough, and exact phase/argument forwarding plus setup/draw/clear
+ordering. These establish source/bytecode structure, not GPU state or Iris visual
+correctness. See [candidate evidence and player checks](schematic-client-v02.md#contact-face-flicker-report--2026-11-13).
 
 ## Installed transformation
 
