@@ -22,6 +22,12 @@
 | Java / Gradle / ModDev | 21 / 9.2.1 / 2.0.141 |
 | Create / Sable / Aeronautics bundled | 6.0.10 / 2.0.5 / 1.3.2 |
 
+This table pins the build/verification environment, not an exact NeoForge load
+gate. Runtime metadata follows Create 6.0.10's `[21.1.219,)` requirement; installed
+Sable/Aeronautics separately require at least `21.1.228`. Keep `neo_version=21.1.257`
+as the build pin. See [runtime-range evidence/limits](docs/testing/neoforge-runtime-range.md)
+before claiming a lower-version runtime pass.
+
 Metadata requires exact Create and makes exact Sable/Aeronautics/Simulated one
 optional integration bundle. Gradle compares the three audited mod JARs with
 `smoke/artifacts.lock` on each verification/extraction.

@@ -21,7 +21,8 @@ requiredMods=["sable", "aeronautics", "simulated"]
 [[dependencies.${mod_id}]]
 modId="neoforge"
 type="required"
-versionRange="[${neo_version}]"
+# Match required Create 6.0.10's runtime floor; neo_version remains the build pin.
+versionRange="[21.1.219,)"
 ordering="NONE"
 side="BOTH"
 

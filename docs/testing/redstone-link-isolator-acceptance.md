@@ -84,6 +84,81 @@ The subsequent texture-only candidate (`c6536ce872e8acf97b1253f6304c09c7a1fa7b30
 
 The later local0.1.0 worktree build adds receiver-limited private-controller position updates. It newly passed JUnit85, network148, refresh69, movement81, lifecycle23, packed24 and independent-JVM seed24/reload25, each with complete save/state close. Its installer also reached ready and console-save/stop exit0. Hash `a7769b40ca8a7f1bee15a6c21929f724e1748eb009e614ab34d312c6408e0000` identifies this build, not the earlier tag's artifact; see [controller movement evidence](controller-movement-refresh.md). No new player rendering/multiplayer/performance claim is made.
 
+## NeoForge 21.1.228 verification — 2026-11-13
+
+Following the range declaration below, the owner requested actual21.1.228
+verification, not just compilation or a metadata allowance. Workstation sources
+were separated onto the real `v0.3.0-dev` branch; main remains based on the
+`v0.2.2` source commit `9ae4ba4` with only metadata/range documentation changes.
+
+In a disposable pure-fix export,25 supplemental toolchain artifacts were resolved
+as data and verified against publisher SHA-256/SHA-512 values before compiling
+or launching them. The existing trusted checksums were not changed; the main
+verification file, smoke lock, normal21.1.257 compile pin and source/index state
+were retained. The separate build/server commands ran with strict verification,
+not a disabled-verification switch. See [method and limits](neoforge-runtime-range.md).
+
+Newly executed21.1.228 checks:
+
+| Check | Result | Evidence boundary |
+|---|---|---|
+| `clean build -Pneo_version=21.1.228 -Pmod_version=0.2.2` | JUnit **124**, zero failures/errors/skips; shipping/license/strict-mixin checks passed | Actual228 compilation and tests, not a257-only build |
+| `verifyFieldworkAcceptance -PacceptancePhase=schematic -Pneo_version=21.1.228 -Pmod_version=0.2.2` | **376** assertions at `2026-11-13T18:05:14.285804982Z`; complete saves `18:05:19Z`, state close verified | Integrated real server/native schematic and source-scope paths; not GUI rendering |
+| `verifyFieldworkAcceptance -PacceptancePhase=network -Pneo_version=21.1.228 -Pmod_version=0.2.2` | **174** assertions at `18:05:49.846697364Z`; final complete saves `18:05:53Z`, state close verified | Integrated isolation/controller/train/native network cases with expected acceptance faults |
+
+Both server mod lists explicitly report **NeoForge21.1.228**, Create6.0.10,
+Sable2.0.5, Aeronautics/Simulated1.3.2 and Fieldwork0.2.2. They reached
+`Done` before the checks and cleanly saved/stopped. Expected injected receiver,
+publication and visual-sync failures in the network phase are checked controls,
+not unexamined runtime failures.
+
+All **145 production class bytes** match the257-built pure-fix range reference
+`7e32ceb9ded3b28f4ef69bb9c9ebcd80acc1709d2eb5c3b6183223f248a2c50f`.
+The228 test artifact has embedded version0.2.2 and the selected NeoForge
+`[21.1.219,)` range, and contains no workstation or non-shipping driver content:
+
+```text
+build/libs/create_fieldwork-neoforge-1.21.1-0.2.2.jar
+70bf83ccd1f0aa82eaa79b0630afc7c2c1540ad109793eceeea03b041525053d
+```
+
+This establishes scoped integrated228 compile/server evidence for the same
+production bytecode. It does not establish219, every intermediate/future version,
+GUI/Iris/shader rendering, real remote multiplayer, full acceptance-phase coverage
+or an installed-JAR smoke. It does not republish the existing0.2.2 release.
+No compatibility Java change or orchestrator commit/push was performed.
+
+## NeoForge runtime-range follow-up — 2026-11-13
+
+Fieldwork's NeoForge load range follows required Create6.0.10 metadata:
+`[21.1.219,)`, rather than exact `[21.1.257]`. The compile pin and normal smoke/
+dependency-verification inputs remain21.1.257; other constraints and strict
+mixins are unchanged. Pinned Sable/Aeronautics separately require21.1.228.
+See [range rationale and limits](neoforge-runtime-range.md).
+
+An isolated export of committed `9ae4ba4` plus the metadata change newly passed
+the pinned21.1.257 clean build with **JUnit124**, zero failures/errors/skips,
+and shipping/license/strict-mixin checks. Its schematic phase passed **376**
+assertions at `2026-11-13T17:26:54.138347831Z`, complete saves at `17:26:59Z`
+and verifier-checked state close. This is not a219 or228 runtime pass.
+
+Only `META-INF/neoforge.mods.toml` differs from the preceding pure-fix comment
+candidate `a428bc168a9e239386101de4a8613c658a26229df795e7e5dce0844da680695a`;
+parsed metadata differs only in the NeoForge range. All class/resource/license/
+mixin bytes are unchanged and no workstation content is included.
+
+```text
+build/libs/create_fieldwork-neoforge-1.21.1-0.2.1.jar
+7e32ceb9ded3b28f4ef69bb9c9ebcd80acc1709d2eb5c3b6183223f248a2c50f
+```
+
+The219 attempt stopped before compilation in `createMinecraftArtifacts` because
+strict verification lacks the alternative userdev/module inputs. Their cached
+bytes match official NeoForge SHA-256 values, but the older toolchain is not
+fully audited; no pins were added or checks disabled. No minimum-version server/
+client test, full new server matrix, installer run or publication was completed
+for this earlier range candidate.
+
 ## Fix-only 0.2.1 preparation — 2026-11-13
 
 The owner requested isolating the accepted Position and contact-flicker fixes

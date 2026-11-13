@@ -19,3 +19,8 @@ run-scope-probe/
 run-fieldwork-acceptance/
 run-binding-probe/
 __pycache__/
+
+# BEGIN oh-my-opencode-slim worktrees
+.slim/worktrees/
+.slim/worktrees.json
+# END oh-my-opencode-slim worktrees
