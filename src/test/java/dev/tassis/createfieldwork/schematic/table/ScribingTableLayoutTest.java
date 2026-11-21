@@ -30,19 +30,13 @@ class ScribingTableLayoutTest {
     }
 
     @Test
-    void settingsPaneCoversAllThreeHiddenWorkSlotsButNotInventoryOrActions() {
-        var pane = ScribingTableLayout.SETTINGS;
-        assertTrue(pane.intersects(ScribingTableLayout.SCHEMATIC.well()));
-        assertTrue(pane.intersects(ScribingTableLayout.MEDIUM.well()));
-        assertTrue(pane.intersects(ScribingTableLayout.OUTPUT.well()));
-        assertFalse(pane.intersects(ScribingTableLayout.OPTIONS));
-        assertFalse(pane.intersects(ScribingTableLayout.PRINT));
-        for (int index = 0; index < 36; index++) {
-            assertFalse(pane.intersects(ScribingTableLayout.playerSlot(index).well()));
+    void printActionDoesNotCoverWorkOrInventorySlots() {
+        var button = ScribingTableLayout.PRINT;
+        for (int index = 0; index < 3; index++) {
+            assertFalse(button.intersects(ScribingTableLayout.tableSlot(index).well()));
         }
-        for (var button : new ScribingTableLayout.Rect[]{ScribingTableLayout.MODE, ScribingTableLayout.BLOCK_ENTITIES}) {
-            assertTrue(pane.contains(button.x(), button.y()));
-            assertTrue(pane.contains(button.right() - 1, button.bottom() - 1));
+        for (int index = 0; index < 36; index++) {
+            assertFalse(button.intersects(ScribingTableLayout.playerSlot(index).well()));
         }
     }
 

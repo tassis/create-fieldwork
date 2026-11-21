@@ -88,7 +88,8 @@ The addon must not intercept broad methods such as `Level#getSignal`. Isolation 
 The planned 0.3.0 worktree adds a Create-only schematic scribing table independently
 of the V1 isolator integration. It must generate placement-aware native material
 lists from deployed schematics, persist its schematic/media/output inventory and
-settings, and validate output actions on the server. It must not construct target
+fixed-policy job progress, and validate Print actions on the server. The owner
+removed adjustable settings; use mode2 with existing-BE protection. It must not construct target
 blocks/entities, consume adjacent building materials, require kinetics, or change
 wireless scope rules. Explicit print work may scan the schematic; hot wireless
 pair queries remain constant-time and unchanged.

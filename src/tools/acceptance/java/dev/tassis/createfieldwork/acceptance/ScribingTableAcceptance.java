@@ -92,9 +92,7 @@ final class ScribingTableAcceptance {
         ScribingFixtures.complete(table);
         check.accept("a new print resamples the changed world", table.status() == ScribingChecklist.Status.PRINTED);
         check.accept("second print consumes one book only", table.getItem(1).getCount() == 1 && table.getItem(2).is(Items.WRITTEN_BOOK));
-        menu.clickMenuButton(actor, ScribingTableMenu.CYCLE_MODE);
-        menu.clickMenuButton(actor, ScribingTableMenu.TOGGLE_BLOCK_ENTITIES);
-        check.accept("settings are server owned", menu.replaceMode() == 3 && menu.replaceBlockEntities());
+        check.accept("removed settings buttons are rejected", !menu.clickMenuButton(actor, 1) && !menu.clickMenuButton(actor, 2));
         var saved = table.saveWithFullMetadata(level.registryAccess());
         var restored = new ScribingTableBlockEntity(table.getBlockPos(), table.getBlockState());
         restored.loadWithComponents(saved, level.registryAccess());
@@ -106,8 +104,6 @@ final class ScribingTableAcceptance {
         active.setItem(1, new ItemStack(Items.BOOK, 2));
         var activeActor = fixtures.actor(PERSISTING);
         var activeMenu = fixtures.menu(active, activeActor);
-        activeMenu.clickMenuButton(activeActor, ScribingTableMenu.CYCLE_MODE);
-        activeMenu.clickMenuButton(activeActor, ScribingTableMenu.TOGGLE_BLOCK_ENTITIES);
         activeMenu.clickMenuButton(activeActor, ScribingTableMenu.PRINT);
         ScribingFixtures.advance(active, 10);
         check.accept("seed leaves a clean-save mid-job snapshot without preconsumption", active.isPrinting()
@@ -326,7 +322,8 @@ final class ScribingTableAcceptance {
             && table.getItem(1).is(Items.BOOK) && table.getItem(1).getCount() == 1 && table.getItem(2).is(Items.WRITTEN_BOOK));
         var actor = fixtures.actor(ScribingFixtures.TABLE);
         var menu = fixtures.menu(table, actor);
-        check.accept("settings survive independent reload", menu.replaceMode() == 3 && menu.replaceBlockEntities());
+        var reloaded = table.saveWithFullMetadata(level.registryAccess());
+        check.accept("removed table settings do not survive as hidden configuration", !reloaded.contains("ReplaceMode") && !reloaded.contains("ReplaceBlockEntities"));
         check.accept("transient status is not restored as success", table.status() == ScribingChecklist.Status.IDLE);
         level.getChunkAt(ScribingFixtures.ANCHOR);
         level.getChunkAt(ScribingFixtures.ANCHOR.offset(3, 0, 3));
@@ -343,7 +340,8 @@ final class ScribingTableAcceptance {
         fixtures.pin(PERSISTING);
         fixtures.pin(ScribingFixtures.ANCHOR);
         var resumedMenu = fixtures.menu(resuming, fixtures.actor(PERSISTING));
-        check.accept("in-flight options survive reload", resumedMenu.replaceMode() == 3 && resumedMenu.replaceBlockEntities());
+        var running = resuming.saveWithFullMetadata(level.registryAccess()).getCompound("ScribingJob");
+        check.accept("in-flight fixed default policy survives reload", running.getInt("Mode") == 2 && !running.getBoolean("ReplaceEntities"));
         resumeTick = tick + 40;
         lastProgress = 10;
         return false;

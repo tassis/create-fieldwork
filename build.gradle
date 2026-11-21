@@ -81,17 +81,21 @@ tasks.register('verifyShippingIsolation') {
         new java.util.zip.ZipFile(archive).withCloseable { zip ->
             def forbidden = zip.entries().findAll { entry ->
                 entry.name.contains('/bindingprobe/') || entry.name.contains('/acceptance/') ||
-                    entry.name.contains('/probe/') || entry.name.startsWith('fieldwork_binding_probe') ||
+                    entry.name.contains('/probe/') || entry.name.contains('/pondersmoke/') ||
+                    entry.name.startsWith('fieldwork_ponder_smoke') || entry.name.startsWith('fieldwork_binding_probe') ||
                     entry.name.startsWith('fieldwork_acceptance') || entry.name.startsWith('fieldwork_probe')
             }
             if (forbidden) throw new GradleException("Non-shipping drivers leaked into JAR: ${forbidden*.name}")
             def metadata = zip.getInputStream(zip.getEntry('META-INF/neoforge.mods.toml')).getText('UTF-8')
-            if (metadata.contains('fieldwork_binding_probe') || metadata.contains('fieldwork_acceptance') || metadata.contains('fieldwork_probe')) {
+            if (metadata.contains('fieldwork_binding_probe') || metadata.contains('fieldwork_acceptance') || metadata.contains('fieldwork_probe') || metadata.contains('fieldwork_ponder_smoke')) {
                 throw new GradleException('Test-driver metadata leaked into shipping JAR')
             }
             if (zip.getEntry('LICENSE') == null) throw new GradleException('Shipping JAR must include LICENSE')
             if (zip.getEntry('META-INF/licenses/create-scribing-policy-MIT.txt') == null) {
                 throw new GradleException('Shipping JAR must retain the adapted Create policy code notice')
+            }
+            if (zip.getEntry('META-INF/licenses/draconic-insight-ponder-MIT.txt') == null) {
+                throw new GradleException('Shipping JAR must retain the Ponder reference code notice')
             }
             def dependency = { id, type ->
                 metadata ==~ /(?s).*modId="${java.util.regex.Pattern.quote(id)}"\s*type="${type}".*/
@@ -116,6 +120,7 @@ tasks.register('verifyShippingIsolation') {
                 entry.name.endsWith('.class') && (
                     entry.name.startsWith('dev/tassis/createfieldwork/schematic/') ||
                     entry.name.startsWith('dev/tassis/createfieldwork/mixin/schematic/') ||
+                    entry.name.startsWith('dev/tassis/createfieldwork/integration/ponder/') ||
                     entry.name in [
                         'dev/tassis/createfieldwork/platform/CreateFieldwork.class',
                         'dev/tassis/createfieldwork/platform/AeronauticsIntegration.class',
@@ -141,6 +146,7 @@ tasks.register('verifyShippingIsolation') {
     }
 }
 tasks.named('check') { dependsOn 'verifyShippingIsolation' }
+tasks.named('check') { dependsOn 'compilePonderSmokeJava' }
 
 sourceSets {
     testmod
@@ -151,6 +157,10 @@ sourceSets {
     bindingProbeTool {
         java.srcDirs = ['src/tools/binding-probe/java']
         resources.srcDirs = ['src/tools/binding-probe/resources']
+    }
+    ponderSmoke {
+        java.srcDirs = ['src/tools/ponder-smoke/java']
+        resources.srcDirs = ['src/tools/ponder-smoke/resources']
     }
 }
 configurations {
@@ -164,14 +174,25 @@ configurations {
     bindingProbeToolImplementation.extendsFrom implementation
     bindingProbeToolCompileOnly.extendsFrom compileOnly
     bindingProbeToolRuntimeOnly.extendsFrom runtimeOnly
+    ponderSmokeImplementation.extendsFrom implementation
+    ponderSmokeCompileOnly.extendsFrom compileOnly
+    ponderSmokeRuntimeOnly.extendsFrom runtimeOnly
 }
 dependencies {
     acceptanceToolImplementation sourceSets.main.output
     bindingProbeToolImplementation sourceSets.main.output
+    ponderSmokeImplementation sourceSets.main.output
     // Pure refresh selections expose Create's native frequency/Couple types.
     // Unit tests need the already-audited nested class libraries, not another
     // copy installed in any client/server runtime.
     testRuntimeOnly files(provider { fileTree(nestedCompileDir) { include '*.jar' } }).builtBy(extractAuditedCompileLibs)
+}
+
+// Keep the real Create-only dependency mode isolated to the teaching driver.
+if (providers.gradleProperty('ponderCreateOnly').isPresent()) {
+    sourceSets.ponderSmoke.runtimeClasspath = files(sourceSets.ponderSmoke.runtimeClasspath.filter { artifact ->
+        !artifact.name.startsWith('T9PomCSv-') && !artifact.name.startsWith('oWaK0Q19-')
+    })
 }
 
 neoForge {
@@ -179,6 +200,7 @@ neoForge {
     addModdingDependenciesTo sourceSets.testmod
     addModdingDependenciesTo sourceSets.acceptanceTool
     addModdingDependenciesTo sourceSets.bindingProbeTool
+    addModdingDependenciesTo sourceSets.ponderSmoke
 
     mods {
         "${mod_id}" {
@@ -187,6 +209,7 @@ neoForge {
         fieldwork_probe { sourceSet sourceSets.testmod }
         fieldwork_acceptance { sourceSet sourceSets.acceptanceTool }
         fieldwork_binding_probe { sourceSet sourceSets.bindingProbeTool }
+        fieldwork_ponder_smoke { sourceSet sourceSets.ponderSmoke }
     }
 
     unitTest {
@@ -237,6 +260,40 @@ neoForge {
             programArgument '--nogui'
             systemProperty 'fieldwork.binding.phase', providers.gradleProperty('bindingPhase').getOrElse('seed')
         }
+        fieldworkPonderClient {
+            client()
+            sourceSet = sourceSets.ponderSmoke
+            loadedMods = [mods."${mod_id}", mods.fieldwork_ponder_smoke]
+            gameDirectory = project.file(providers.gradleProperty('ponderCreateOnly').isPresent()
+                ? 'run-fieldwork-ponder-base' : 'run-fieldwork-ponder-integrated')
+            systemProperty 'fieldwork.ponder.expectedIntegrated', (!providers.gradleProperty('ponderCreateOnly').isPresent()).toString()
+            systemProperty 'fieldwork.ponder.visual', providers.gradleProperty('ponderVisualSmoke').isPresent().toString()
+            systemProperty 'fieldwork.ponder.language', providers.gradleProperty('ponderLanguage').getOrElse('en_us')
+            systemProperty 'fieldwork.ponder.report', layout.buildDirectory.file(
+                providers.gradleProperty('ponderCreateOnly').isPresent() ? 'ponder-smoke-base.json' : 'ponder-smoke-integrated.json').get().asFile.absolutePath
+        }
+    }
+}
+
+def ponderReport = layout.buildDirectory.file(providers.gradleProperty('ponderCreateOnly').isPresent()
+    ? 'ponder-smoke-base.json' : 'ponder-smoke-integrated.json')
+tasks.matching { it.name == 'runFieldworkPonderClient' }.configureEach {
+    doFirst { delete ponderReport.get().asFile }
+}
+tasks.register('verifyFieldworkPonder') {
+    dependsOn 'runFieldworkPonderClient'
+    doLast {
+        def report = ponderReport.get().asFile
+        if (!report.isFile()) throw new GradleException('No fresh Ponder client report')
+        def result = new groovy.json.JsonSlurper().parse(report)
+        def integrated = !providers.gradleProperty('ponderCreateOnly').isPresent()
+        if (result.passed != true || result.integrated != integrated || result.scenes != (integrated ? 3 : 0) ||
+            result.replays != result.scenes || result.visual != providers.gradleProperty('ponderVisualSmoke').isPresent() ||
+            result.language != providers.gradleProperty('ponderLanguage').getOrElse('en_us') ||
+            (providers.gradleProperty('ponderVisualSmoke').isPresent() && result.tablePrintOnly != true)) {
+            throw new GradleException("Ponder client verification failed: ${result}")
+        }
+        logger.lifecycle("Fieldwork Ponder client passed: ${result.scenes} scenes with playback/replay, integrated=${integrated}")
     }
 }
 

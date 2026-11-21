@@ -16,13 +16,8 @@ public final class ScribingTableLayout {
     public static final Rect SCHEMATIC_LABEL = new Rect(26, 98, 96, 12);
     public static final Rect STATUS = new Rect(10, 120, 212, 16);
     public static final Rect STATUS_TEXT = new Rect(22, 122, 194, 12);
-    public static final Rect OPTIONS = new Rect(10, 140, 82, 18);
     public static final Rect PRINT = new Rect(140, 140, 80, 18);
     public static final Rect INVENTORY_LABEL = new Rect(35, 161, 162, 10);
-    public static final Rect SETTINGS = new Rect(12, 28, 208, 90);
-    public static final Rect SETTINGS_TITLE = new Rect(18, 31, 196, 11);
-    public static final Rect MODE = new Rect(18, 49, 196, 18);
-    public static final Rect BLOCK_ENTITIES = new Rect(18, 77, 196, 18);
 
     public record Point(int x, int y) {
         public Rect well() { return new Rect(x - 1, y - 1, 18, 18); }

@@ -26,8 +26,6 @@ public final class ScribingTableBlockEntity extends BlockEntity implements Conta
     private final NonNullList<ItemStack> items = NonNullList.withSize(3, ItemStack.EMPTY);
     private final ScribingChecklist checklist = new ScribingChecklist();
     private ScribingChecklist.Status status = ScribingChecklist.Status.IDLE;
-    private int replaceMode = 2;
-    private boolean replaceBlockEntities;
     public static final int PRINT_TICKS = ScribingPrintJob.DURATION;
     private ScribingPrintJob job;
     private boolean generating;
@@ -37,16 +35,14 @@ public final class ScribingTableBlockEntity extends BlockEntity implements Conta
         @Override public int get(int index) {
             return switch (index) {
                 case 0 -> status.ordinal();
-                case 1 -> replaceMode;
-                case 2 -> replaceBlockEntities ? 1 : 0;
-                case 3 -> job == null ? 0 : PRINT_TICKS - job.elapsed();
-                case 4 -> progressTicks();
-                case 5 -> isPrinting() ? 1 : 0;
+                case 1 -> job == null ? 0 : PRINT_TICKS - job.elapsed();
+                case 2 -> progressTicks();
+                case 3 -> isPrinting() ? 1 : 0;
                 default -> 0;
             };
         }
         @Override public void set(int index, int value) {}
-        @Override public int getCount() { return 6; }
+        @Override public int getCount() { return 4; }
     };
 
     public ScribingTableBlockEntity(BlockPos pos, BlockState state) {
@@ -59,18 +55,6 @@ public final class ScribingTableBlockEntity extends BlockEntity implements Conta
     public boolean isPrinting() { return job != null; }
     public int progressTicks() { return job == null ? (items.get(OUTPUT).isEmpty() ? 0 : PRINT_TICKS) : job.elapsed(); }
 
-    void cycleMode() {
-        replaceMode = (replaceMode + 1) % 4;
-        changedInputs();
-        setChanged();
-    }
-
-    void toggleBlockEntities() {
-        replaceBlockEntities = !replaceBlockEntities;
-        changedInputs();
-        setChanged();
-    }
-
     void printChecklist() {
         if (!(level instanceof ServerLevel) || ticking || generating || job != null) {
             return;
@@ -81,7 +65,7 @@ public final class ScribingTableBlockEntity extends BlockEntity implements Conta
         }
         status = ScribingChecklist.validateInputs(worldPosition, items.get(BLUEPRINT), items.get(MEDIUM));
         if (status != ScribingChecklist.Status.IDLE) return;
-        job = new ScribingPrintJob(items.get(BLUEPRINT), items.get(MEDIUM), replaceMode, replaceBlockEntities);
+        job = new ScribingPrintJob(items.get(BLUEPRINT), items.get(MEDIUM), 2, false);
         status = ScribingChecklist.Status.PRINTING;
         setChanged();
     }
@@ -148,7 +132,7 @@ public final class ScribingTableBlockEntity extends BlockEntity implements Conta
     }
 
     private boolean matchesJob(ScribingPrintJob current) {
-        return current.matches(items.get(BLUEPRINT), items.get(MEDIUM), items.get(OUTPUT), replaceMode, replaceBlockEntities);
+        return current.matches(items.get(BLUEPRINT), items.get(MEDIUM), items.get(OUTPUT), 2, false);
     }
 
     private void changedInputs() {
@@ -247,8 +231,6 @@ public final class ScribingTableBlockEntity extends BlockEntity implements Conta
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
         ContainerHelper.saveAllItems(tag, items, registries);
-        tag.putInt("ReplaceMode", replaceMode);
-        tag.putBoolean("ReplaceBlockEntities", replaceBlockEntities);
         if (job != null) tag.put("ScribingJob", job.save(registries));
     }
 
@@ -257,8 +239,8 @@ public final class ScribingTableBlockEntity extends BlockEntity implements Conta
         super.loadAdditional(tag, registries);
         items.clear();
         ContainerHelper.loadAllItems(tag, items, registries);
-        replaceMode = tag.contains("ReplaceMode") ? Math.clamp(tag.getInt("ReplaceMode"), 0, 3) : 2;
-        replaceBlockEntities = tag.getBoolean("ReplaceBlockEntities");
+        // Legacy table settings are intentionally ignored. Default-policy jobs
+        // can resume; a captured non-default job fails matchesJob without consumption.
         job = null;
         generating = false;
         status = ScribingChecklist.Status.IDLE;

@@ -50,7 +50,7 @@ class ScribingUiResourcesTest {
                     language.get(prefix + "slot.medium").getAsString());
                 assertTrue(language.get(prefix + "overwrite").getAsString().length() > 20,
                     "Keep the full overwrite/consumption warning on Print, not on the media slot");
-                for (String key : new String[]{"settings", "media_label", "output_label", "workflow", "put_down_item",
+                for (String key : new String[]{"print", "media_label", "output_label", "workflow",
                     "hint.schematic", "hint.medium", "hint.ready"}) {
                     assertTrue(language.has(prefix + key), locale + "/" + key);
                 }

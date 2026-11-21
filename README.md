@@ -17,6 +17,9 @@ A Create addon offering tools for building and operating your creations:
   Its [current contract](docs/design/schematic-scribing-table.md) and
   [acceptance record](docs/testing/redstone-link-isolator-acceptance.md#schematic-scribing-table-development-slice--2026-11-12)
   describe this unpublished worktree feature and pending client checks.
+- **Ponder teaching (development)** — a shared airship introduction leads to
+  ordinary lectern or smart binding operation. Hover an isolator item and hold the configured Ponder
+  key (default `W`). See the [teaching contract](docs/design/ponder-teaching.md).
 
 ## License
 
@@ -24,6 +27,8 @@ Copyright (C) 2026 Tassis. Licensed under the **GNU General Public License v3.0
 only** (`GPL-3.0-only`). See [LICENSE](LICENSE).
 The adapted Create placement-policy code retains its
 [MIT notice](src/main/resources/META-INF/licenses/create-scribing-policy-MIT.txt).
+The Ponder introduction/reference adaptations retain their
+[MIT notice](src/main/resources/META-INF/licenses/draconic-insight-ponder-MIT.txt).
 
 ## Requirements
 

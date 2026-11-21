@@ -77,7 +77,7 @@ glinting, 3-D or resource-pack models remains a real-client check.
 The empty-media tooltip is deliberately just `Book / Clipboard`, localized for
 the player's language. Full consumption/overwrite guidance stays on the Print
 button tooltip; shortening this hint does not change accepted item types or
-material calculation. Settings remain unchanged.
+material calculation. The table uses a fixed calculation policy.
 
 Text uses translated Components and the player's current Minecraft font, glyph
 providers and language; nothing is baked from the mockup's bitmap lettering.
@@ -88,32 +88,25 @@ presence or server job results, not unverified file readiness.
 Paper buttons keep the thin dark outline and inset top/bottom rules. Their labels
 now explicitly use `drawString(..., false)` to remove the unwanted native button
 text-shadow layer seen in the owner's screenshot. Long button text is fitted with
-an ellipsis rather than the former shadowed scrolling renderer; full settings
-tooltips and native input/focus/narration are retained. This does not remove native
+an ellipsis rather than the former shadowed scrolling renderer; the full Print
+tooltip and native input/focus/narration are retained. This does not remove native
 styling from tooltips or stack counts, nor alter a font pack's own glyph artwork.
-Tooltip objects update only when their displayed settings change.
+The Print tooltip is fixed guidance for its operation.
 
 Injected-width tests cover variable Latin/Chinese/emoji metrics and styled-prefix
 retention. They are policy tests, not execution of actual client glyphs, font-pack
 line heights or every bidirectional/grapheme case.
 
-## Local settings pane
+## Print-only controls
 
-Settings covers both work areas with a paper pane exposing the two existing
-replacement controls. All **three work slots** become presentation-inactive,
-and stale hover clears; player inventory remains active. No new client flag is
-trusted by the server or persisted. Print is locally disabled while the pane is
-open or the server job is active. Settings may be viewed during work; changing
-the server replacement settings cancels the captured job without consumption.
+The owner removed Settings, its replacement controls and the covering pane.
+Print is the sole button. All three work slots and all inventory slots stay
+presentation-active. Native quick-move keeps the original semantic indices and
+input mutations can cancel running work. Server reach/menu identity/spectator
+validation is retained; old settings button IDs are rejected.
 
-Done/Escape closes the pane. Opening is refused with a cursor stack; closing stays
-possible after picking up an inventory item. Native quick-move still uses stable
-indices, including valid input routing; its mutations can cancel running work.
-Server reach/menu identity/spectator/predicate validation is unchanged.
-
-Pinned client bytecode has `Slot.isActive` gates for rendering, hover and mouse
-lookup; keyboard actions use the cached hover that is cleared on toggle. Static
-seam evidence and server tests do not replace client mouse/drag/key verification.
+The fixed policy and legacy job handling are defined by the gameplay contract.
+No hidden saved option continues to influence a new job.
 
 ## Verification boundary
 
@@ -123,8 +116,10 @@ native transfer packets, exact job timing, cancellation/fault/reentrancy, remova
 and independent-JVM mid-job persistence. Production files preserve the selected
 block finish, recipe and unrelated isolation/controller behavior.
 
-No agent-controlled client screen was launched. Host Xvfb alone is insufficient
-for the standard Docker image, which lacks X11/OpenGL/display tooling. New player
+The current Xvfb/software-rendered verification opens the actual server-backed
+table screen, checks the sole Print button and active slots, and captures it.
+The standard build image still lacks display tooling; the dedicated client wrapper
+uses an existing display-capable image. New player
 acceptance is still needed for guide visibility/depth, no-shadow lettering,
 actual caption gaps, progress direction, GUI scales, localization/font/resource
-packs, settings masking, dragging, narration and multiplayer use.
+packs, dragging, narration and multiplayer use.

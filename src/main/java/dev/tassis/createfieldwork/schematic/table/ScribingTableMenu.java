@@ -15,16 +15,13 @@ import net.minecraft.world.item.ItemStack;
 
 public final class ScribingTableMenu extends AbstractContainerMenu {
     public static final int PRINT = 0;
-    public static final int CYCLE_MODE = 1;
-    public static final int TOGGLE_BLOCK_ENTITIES = 2;
     private final Container inventory;
     private final ContainerData data;
     private final ScribingTableBlockEntity table;
     private final BlockPos position;
-    private boolean workSlotsVisible = true;
 
     public ScribingTableMenu(int id, Inventory player, RegistryFriendlyByteBuf buffer) {
-        this(id, player, new SimpleContainer(3), new SimpleContainerData(6), null, buffer.readBlockPos());
+        this(id, player, new SimpleContainer(3), new SimpleContainerData(4), null, buffer.readBlockPos());
     }
 
     public ScribingTableMenu(int id, Inventory player, ScribingTableBlockEntity table) {
@@ -35,7 +32,7 @@ public final class ScribingTableMenu extends AbstractContainerMenu {
                               ScribingTableBlockEntity table, BlockPos position) {
         super(FieldworkContent.SCRIBING_TABLE_MENU.get(), id);
         checkContainerSize(inventory, 3);
-        checkContainerDataCount(data, 6);
+        checkContainerDataCount(data, 4);
         this.inventory = inventory;
         this.data = data;
         this.table = table;
@@ -46,15 +43,12 @@ public final class ScribingTableMenu extends AbstractContainerMenu {
         addSlot(new Slot(inventory, 0, schematic.x(), schematic.y()) {
             @Override public boolean mayPlace(ItemStack stack) { return ScribingChecklist.isBlueprint(stack); }
             @Override public int getMaxStackSize() { return 1; }
-            @Override public boolean isActive() { return workSlotsVisible; }
         });
         addSlot(new Slot(inventory, 1, medium.x(), medium.y()) {
             @Override public boolean mayPlace(ItemStack stack) { return ScribingChecklist.isMedium(stack); }
-            @Override public boolean isActive() { return workSlotsVisible; }
         });
         addSlot(new Slot(inventory, 2, output.x(), output.y()) {
             @Override public boolean mayPlace(ItemStack stack) { return false; }
-            @Override public boolean isActive() { return workSlotsVisible; }
         });
         for (int row = 0; row < 3; row++) {
             for (int column = 0; column < 9; column++) {
@@ -72,15 +66,10 @@ public final class ScribingTableMenu extends AbstractContainerMenu {
     public ScribingTableBlockEntity table() { return table; }
     public BlockPos position() { return position; }
     public ScribingChecklist.Status status() { return ScribingChecklist.Status.byId(data.get(0)); }
-    public int replaceMode() { return data.get(1); }
-    public boolean replaceBlockEntities() { return data.get(2) != 0; }
-    public int remainingTicks() { return Math.max(0, data.get(3)); }
-    public boolean isPrinting() { return data.get(5) != 0; }
-    public int progressTicks() { return Math.max(0, Math.min(ScribingTableBlockEntity.PRINT_TICKS, data.get(4))); }
+    public int remainingTicks() { return Math.max(0, data.get(1)); }
+    public boolean isPrinting() { return data.get(3) != 0; }
+    public int progressTicks() { return Math.max(0, Math.min(ScribingTableBlockEntity.PRINT_TICKS, data.get(2))); }
     public float progress() { return progressTicks() / (float) ScribingTableBlockEntity.PRINT_TICKS; }
-
-    /** Local presentation only; never sent to the server or used as authorization. */
-    public void setWorkSlotsVisible(boolean visible) { workSlotsVisible = visible; }
 
     @Override public boolean stillValid(Player player) { return inventory.stillValid(player); }
 
@@ -90,12 +79,8 @@ public final class ScribingTableMenu extends AbstractContainerMenu {
             || player.isSpectator() || !stillValid(player)) {
             return false;
         }
-        switch (button) {
-            case PRINT -> table.printChecklist();
-            case CYCLE_MODE -> table.cycleMode();
-            case TOGGLE_BLOCK_ENTITIES -> table.toggleBlockEntities();
-            default -> { return false; }
-        }
+        if (button != PRINT) return false;
+        table.printChecklist();
         broadcastChanges();
         return true;
     }

@@ -57,6 +57,10 @@ formatting rules are in the [code organization policy](code-organization-policy.
   loaded-craft references.
 - Schematic client code may consume synchronized or local presentation state but
   must not decide server authorization.
+- `integration.ponder` contains client-only teaching adapters and scene animation.
+  It may illustrate feature behavior but must not call server authority, mutate
+  real gameplay state or depend on Sable/Simulated types. Required Create provides
+  its Ponder API; teaching does not introduce a second wireless implementation.
 - Non-shipping executable tooling lives under `src/tools/`: production acceptance
   fixtures under `acceptance`, and the historical binding experiment under
   `binding-probe`. Research and acceptance tools remain separate source sets and

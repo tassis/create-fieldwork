@@ -16,7 +16,9 @@ appears in vanilla Functional Blocks and, when that optional tab is registered,
 the Fieldwork tab. Create-only client and latest packaged-server testing remain
 separate from the integrated development-server evidence.
 
-Ponder scenes are not implemented by this slice.
+The owner removed this table's Ponder stories and Settings controls. Its workflow
+is blueprint, medium, Print and output. Ponder now teaches only the isolators;
+see the [teaching contract](ponder-teaching.md).
 
 ## Player operation
 
@@ -26,9 +28,7 @@ Ponder scenes are not implemented by this slice.
    click. Insert the schematic in the larger left blueprint area.
 3. Insert a book, written book or Create clipboard in the upper-right input. Paper and
    writable books are not accepted, matching the cannon's media choices.
-4. Open Settings to choose a replacement mode and whether existing block entities may be replaced
-   **in the material calculation**. These options never authorize actual building.
-5. Press Print. Server-owned progress fills downward, then the native checklist
+4. Press Print. Server-owned progress fills downward, then the native checklist
    appears in the lower-right output. One job takes 21 active loaded server ticks
    (about 1.05 seconds at 20 TPS), matching the cannon-like paper-writing cadence.
 
@@ -65,22 +65,18 @@ placement requirements.
 
 ### Replacement policy
 
-Defaults are mode **2**, with existing block entities protected.
-
-| Mode | Native calculation policy |
-|---|---|
-| 0 | Non-air target into existing non-redstone-conducting blocks only |
-| 1 | Non-air target; normal cubes may replace solid blocks, other targets require non-conducting existing blocks |
-| 2 | Non-air target regardless of existing solidness |
-| 3 | Every target, subject to the other native exclusions |
+The table always uses native mode **2** (non-air targets regardless of current
+solidness), with existing block entities protected. There are no user-adjustable
+replacement settings. The policy adapter retains other modes only for native
+comparison/tooling; the table starts and resumes only this fixed policy.
 
 The native printer still handles matching states, unloaded positions, world
 border, unbreakable blocks, paired halves and mergeable block entities. The
 adapted predicate preserves structure void, upper-half, bed-head, piston-head
-and middle-belt exclusions and the existing-BE option. The cannon-specific
+and middle-belt exclusions and existing-BE protection. The cannon-specific
 two-block firing exclusion is intentionally omitted: a non-building workstation
 has no firing clearance to reserve. An existing table is still protected by the
-ordinary existing-BE option unless that option is enabled.
+fixed existing-BE protection.
 
 The small policy adaptation retains Create's MIT code notice in
 `META-INF/licenses/create-scribing-policy-MIT.txt`. Create's reserved-rights
@@ -109,15 +105,18 @@ printed list is not proof that every schematic element is buildable.
 
 ## Inventory, lifecycle and server authority
 
-Three block-entity slots persist: schematic, medium and output. Replacement
-settings persist too. Closing the menu leaves the items in the table. Normal
+Three block-entity slots persist: schematic, medium and output. Closing the menu
+leaves the items in the table. Normal
 removal releases all contents through the vanilla container-drop path, while the
 loot table supplies the table item subject to ordinary tool/explosion rules.
 Success/error UI status is transient, not persisted as authoritative success.
-Active work is saved as exact input snapshots, replacement options and elapsed
-loaded ticks together with the inventory/settings. Decode validates types,
-elapsed 0–20, item/count/components, settings and output vacancy before resuming;
-malformed or mismatched work is discarded without consumption. Unloaded time
+Active work is saved as exact input snapshots, fixed-policy identity and elapsed
+loaded ticks together with the inventory. Decode validates types,
+elapsed 0–20, item/count/components, fixed policy and output vacancy before resuming;
+malformed, mismatched or legacy non-default work is discarded without consumption.
+Legacy top-level `ReplaceMode`/`ReplaceBlockEntities` tags are ignored and omitted
+from subsequent saves. A legacy default-policy job resumes its exact saved progress.
+Inventory is preserved in either case. Unloaded time
 does not advance progress. Removal cancels before dropping the unconsumed items.
 
 Horizontal facing and two derived input-presence properties select the 16 native
@@ -127,20 +126,21 @@ items. The collision/selection shape retains open space under the desk and uses
 a stepped thin envelope for the sloped desktop; actual in-game feel is a player
 check, not established by resource geometry alone.
 
-Printing and settings use vanilla container-button packets. The server rejects
+Printing uses vanilla container-button packets. The removed settings action IDs
+are rejected, including while work is running. The server rejects
 unknown buttons, spectators, a stale/different active menu, and an invalid/distant
 table. The client only presents synchronized slots/data; it sends no material
 totals, file contents or trusted craft identities.
 
-The job captures both exact input stacks and replacement options at start and
-revalidates them plus empty output on each active tick. Normal inventory/settings
+The job captures both exact input stacks and the fixed policy at start and
+revalidates them plus empty output on each active tick. Normal inventory
 changes cancel without consumption; an identical notification does not. The live
 Container API still exposes mutable stacks: unnotified transient changes restored
 before observation cannot be detected, so no stronger mutation-history guarantee
 is claimed.
 
 At tick 21 the entire native output is generated before consuming a medium. Job
-object identity is checked first after external hooks, then exact inputs/options,
+object identity is checked first after external hooks, then exact inputs/fixed policy,
 BE ownership and output vacancy are revalidated. A callback that cancels/restores
 inputs cannot revive that job or replace its cancellation with success. Nested
 start/tick calls are suppressed while ticking/generating. Commit publishes one
@@ -176,7 +176,7 @@ server-owned progress in the middle and output below. Only input slots have fain
 runtime item guides; no Media/Output labels or output guide are shown. Caption
 clearance and normal inventory spacing are retained. This design is implemented;
 the [UI contract](schematic-scribing-table-ui.md) records the shared coordinates,
-settings foldout, original text-free background and real-client evidence limits.
+Print-only controls, original text-free background and real-client evidence limits.
 
 The selected buttons use light paper-label faces, a simple dark outline and thin
 inset horizontal rules above/below the text, rather than prominent beveled edges.
@@ -189,7 +189,7 @@ runtime through Minecraft's client font and translated Components, never baked
 into the background texture. Player language and font providers determine actual
 glyphs; GUI scale determines physical display size. Layout measures runtime
 text widths and uses native component-aware splitting, shadow-free button text and
-full status/settings tooltips rather than the mockup's English bitmap-letter widths.
+full status/Print tooltips rather than the mockup's English bitmap-letter widths.
 
 ## Recipe and client acceptance
 
@@ -204,4 +204,5 @@ NeoForge mock connection for outbound payload support. It is not a real client
 handshake or screen test. Still pending: actual client baking, inventory icon,
 localized layout, slot alignment, tooltip/readability, button use, shift-click,
 crafting/unlock UI, collision feel, resource-pack override behavior, real
-multiplayer interaction, explosions and Ponder teaching.
+multiplayer interaction and explosions. The current client verification opens the
+real table screen and checks that Print is its only button, with all slots active.

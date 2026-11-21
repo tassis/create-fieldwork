@@ -54,6 +54,9 @@ final class ScribingTimedAcceptance {
         var value = fresh();
         start(value);
         ScribingFixtures.advance(value.table, 20);
+        check.accept("obsolete settings requests cannot change or cancel active work",
+            !value.menu.clickMenuButton(value.actor, 1) && !value.menu.clickMenuButton(value.actor, 2)
+                && value.table.isPrinting() && value.table.progressTicks() == 20);
         value.menu.clickMenuButton(value.actor, ScribingTableMenu.PRINT);
         value.table.setChanged();
         value.table.setItem(1, value.table.getItem(1).copy());
@@ -67,7 +70,7 @@ final class ScribingTimedAcceptance {
     }
 
     private void cancellation() {
-        for (int kind = 0; kind < 8; kind++) {
+        for (int kind = 0; kind < 6; kind++) {
             var value = fresh();
             start(value);
             ScribingFixtures.advance(value.table, 5);
@@ -79,16 +82,14 @@ final class ScribingTimedAcceptance {
                 case 3 -> { value.table.getItem(1).shrink(1); expectedMedia = 1; }
                 case 4 -> value.table.getItem(1).set(net.minecraft.core.component.DataComponents.CUSTOM_NAME,
                     net.minecraft.network.chat.Component.literal("Changed"));
-                case 5 -> value.menu.clickMenuButton(value.actor, ScribingTableMenu.CYCLE_MODE);
-                case 6 -> value.menu.clickMenuButton(value.actor, ScribingTableMenu.TOGGLE_BLOCK_ENTITIES);
-                case 7 -> value.table.setItem(2, new ItemStack(Items.WRITTEN_BOOK));
+                case 5 -> value.table.setItem(2, new ItemStack(Items.WRITTEN_BOOK));
                 default -> throw new AssertionError();
             }
             value.table.serverTick();
             ScribingFixtures.complete(value.table);
             check.accept("mutation cancels without further consumption " + kind, !value.table.isPrinting()
                 && value.table.status() == ScribingChecklist.Status.INPUT_CHANGED && value.table.getItem(1).getCount() == expectedMedia
-                && (kind == 7 ? value.table.getItem(2).getCount() == 1 : value.table.getItem(2).isEmpty()));
+                && (kind == 5 ? value.table.getItem(2).getCount() == 1 : value.table.getItem(2).isEmpty()));
         }
         var retry = fresh();
         start(retry);
@@ -108,6 +109,26 @@ final class ScribingTimedAcceptance {
         var restored = decode(value.table, saved);
         check.accept("active snapshot NBT preserves exact progress without consuming", restored.isPrinting() && restored.progressTicks() == 10
             && restored.getItem(1).getCount() == 2 && restored.getItem(2).isEmpty());
+        var legacy = saved.copy();
+        legacy.putInt("ReplaceMode", 3);
+        legacy.putBoolean("ReplaceBlockEntities", true);
+        legacy.getCompound("ScribingJob").putInt("Mode", 3);
+        legacy.getCompound("ScribingJob").putBoolean("ReplaceEntities", true);
+        var oldCustomJob = decode(value.table, legacy);
+        check.accept("legacy customized job is cancelled without consuming or retargeting its inputs",
+            !oldCustomJob.isPrinting() && oldCustomJob.status() == ScribingChecklist.Status.INPUT_CHANGED
+                && oldCustomJob.getItem(1).getCount() == 2 && oldCustomJob.getItem(2).isEmpty()
+                && ItemStack.matches(oldCustomJob.getItem(0), value.table.getItem(0)));
+        legacy.remove("ScribingJob");
+        var oldIdle = decode(value.table, legacy);
+        var normalized = oldIdle.saveWithFullMetadata(fixtures.level.registryAccess());
+        check.accept("legacy idle settings normalize away while inventory survives",
+            oldIdle.status() == ScribingChecklist.Status.IDLE && oldIdle.getItem(1).getCount() == 2
+                && !normalized.contains("ReplaceMode") && !normalized.contains("ReplaceBlockEntities"));
+        var oldDefault = saved.copy();
+        oldDefault.putInt("ReplaceMode", 2);
+        oldDefault.putBoolean("ReplaceBlockEntities", false);
+        check.accept("legacy default job resumes its exact loaded-tick progress", decode(value.table, oldDefault).progressTicks() == 10);
         for (int kind = 0; kind < 8; kind++) {
             var bad = saved.copy();
             var job = bad.getCompound("ScribingJob");

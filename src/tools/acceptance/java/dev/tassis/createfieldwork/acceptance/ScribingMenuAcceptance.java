@@ -20,11 +20,8 @@ final class ScribingMenuAcceptance {
             var slot = menu.getSlot(index);
             check.accept("production menu slot matches shared UI geometry " + index, slot.x == point.x() && slot.y == point.y());
         }
-        menu.setWorkSlotsVisible(false);
-        check.accept("foldout presentation hides only the three work slots", menu.slots.subList(0, 3).stream().noneMatch(net.minecraft.world.inventory.Slot::isActive)
-            && menu.slots.subList(3, 39).stream().allMatch(net.minecraft.world.inventory.Slot::isActive));
-        menu.setWorkSlotsVisible(true);
-        check.accept("closing presentation foldout restores schematic without changing content", menu.getSlot(0).isActive() && table.isEmpty());
+        check.accept("work and inventory slots remain available without a settings overlay",
+            menu.slots.stream().allMatch(net.minecraft.world.inventory.Slot::isActive) && table.isEmpty());
 
         actor.getInventory().setItem(9, fixtures.blueprint(ScribingFixtures.ANCHOR));
         actor.getInventory().setItem(10, new ItemStack(Items.BOOK, 2));

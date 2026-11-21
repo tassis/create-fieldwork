@@ -9,8 +9,8 @@
 - **D02:** every train condition observes public WORLD sources only. Private train consumers and Train ownership research are deferred. Source visibility, high/low, PENDING and cache/session behavior remain required.
 - **D03:** ordinary shaped 3×3 crafting, `OBO/ELE/BPB`, output one. Implemented and headlessly tested; client crafting/unlock interaction remains part of player acceptance.
 - Version `0.1.0` is available for player testing. Client/GUI/multiplayer/explosion acceptance is incomplete. Use the [production acceptance record](docs/testing/redstone-link-isolator-acceptance.md), not historical prototype pass counts.
-- The current worktree also implements the planned 0.3.0 [schematic scribing table](docs/design/schematic-scribing-table.md): native Create material lists without construction, original local assets, persistent inputs/output and server-owned menu actions. The default version is unchanged; client/Ponder acceptance is not complete.
-- The [vertical workstation UI](docs/design/schematic-scribing-table-ui.md) implements a wider left blueprint area, right-side top-to-bottom media/progress/output, runtime input-only hints and no-shadow paper-button text. A captured server job consumes only on successful tick21 completion and validates clean-save progress before resuming. C-01 material appearance has an owner-reported pass; new GUI/font/hint/interaction acceptance remains pending.
+- The current worktree also implements the planned 0.3.0 [schematic scribing table](docs/design/schematic-scribing-table.md): native Create material lists, persistent inputs/output and a Print-only menu with fixed default policy. Three [Ponder chapters](docs/design/ponder-teaching.md) share the airship opening and split ordinary lectern/smart binding operation. The owner removed table stories and Settings. Current executed checks belong in the production acceptance record. The default version is unchanged; full client/player acceptance is not complete.
+- The [vertical workstation UI](docs/design/schematic-scribing-table-ui.md) implements a wider left blueprint area, right-side top-to-bottom media/progress/output, runtime input-only hints and a sole Print button. A captured server job consumes only on successful tick21 completion and validates clean-save progress before resuming. Legacy customized jobs cancel without consumption; default-policy jobs can resume. C-01 material appearance has an owner-reported pass; full GUI/font/hint/interaction acceptance remains pending.
 - Normal container removal retains the old footprint/barrier and publishes only
   after active UUID absence. Detached serialized markers are not validated through
   live plot block state; this does not expand deferred D01 data recovery.
@@ -157,6 +157,26 @@ measured speedups or remove Simulated bookkeeping/source iteration.
 Edit game PNGs directly in
 `src/main/resources/assets/create_fieldwork/textures/block/redstone_link_isolator/`.
 See [texture integration history](docs/testing/placeholder-textures.md).
+
+### Ponder client verification
+
+`integration/ponder/` registers client-only stories using Create's existing Ponder
+library. Isolator stories require active complete integration. The table has no
+Ponder stories. Scenes are client presentation, separate from server authority.
+
+```sh
+python3 scripts/generate-ponder-schematics.py --check
+./scripts/verify-ponder-docker.sh -PponderVisualSmoke
+./scripts/verify-ponder-docker.sh -PponderCreateOnly -PponderVisualSmoke -PponderLanguage=zh_tw
+```
+
+The wrapper requires an existing Java21/Gradle9.2.1 Xvfb/Mesa image. It defaults to
+the local `draconic-insight-tutorial-smoke` image; override
+`FIELDWORK_PONDER_IMAGE` for an equivalent environment. It resolves the image ID
+before running and preserves host UID/GID and project caches. It does not install
+display packages. Ordinary `runClient`/`runServer` and the shipping JAR exclude the
+`src/tools/ponder-smoke/` driver. Client reports/screenshots are scratch evidence;
+keep conclusions and exact artifact identity in the production acceptance record.
 
 ### Historical research probes
 

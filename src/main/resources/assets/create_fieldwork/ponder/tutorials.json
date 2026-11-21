@@ -1,0 +1,20 @@
+[
+  {
+    "id": "isolator_basics",
+    "items": ["create_fieldwork:redstone_link_isolator", "create_fieldwork:brass_redstone_link_isolator"],
+    "integrated": true,
+    "captions": ["two_airships", "matching_airships", "isolate_airship", "handheld_public_airship"]
+  },
+  {
+    "id": "isolator_lectern",
+    "items": ["create_fieldwork:redstone_link_isolator"],
+    "integrated": true,
+    "captions": ["lectern_works"]
+  },
+  {
+    "id": "smart_controller_binding",
+    "items": ["create_fieldwork:redstone_link_isolator", "create_fieldwork:brass_redstone_link_isolator"],
+    "integrated": true,
+    "captions": ["bind_controller", "bound_inside", "bound_outside"]
+  }
+]

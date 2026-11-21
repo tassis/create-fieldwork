@@ -15,13 +15,15 @@ Default build version: **0.1.0**. The current worktree also contains planned 0.3
 
 Record the hash of the exact JAR you install. **Fully close the game/server before replacing a mod JAR**; leaving a world does not reload mod code.
 
-### Current local scribing-table candidate
+### Current local scribing-table and Ponder candidate
 
 Use the exact current hash in the
-[production acceptance record](redstone-link-isolator-acceptance.md#schematic-scribing-table-development-slice--2026-11-12),
+[production acceptance record](redstone-link-isolator-acceptance.md#two-airship-teaching-and-print-only-table--2026-11-14),
 not a historical hash below. Client and server must use the same build. The new
-workstation has headless development-server evidence but no new installer/client
-acceptance for that hash.
+workstation has headless development-server evidence. The current local artifact
+is built with `-Pmod_version=0.3.0-dev`; production's default remains0.1.0.
+Ponder has development-client playback/render checks, but the final JAR still needs
+packaged/client-player acceptance.
 
 ### Historical local controller/schematic candidate
 
@@ -121,7 +123,30 @@ To save and stop:
 
 `smoke-server.sh stop` is a Docker termination command; its observed SIGTERM path did not establish complete saving. For important worlds use console `stop`. After source changes, stop normally, then `setup`/`start` and record the new hash. Historical installer success does not establish which JAR is currently installed in a reused local directory.
 
-## Scribing-table player checks
+## Ponder teaching player checks
+
+Hover the ordinary or smart isolator item and hold the
+configured Ponder key (default `W`). Create provides Ponder; no separate duplicate
+Ponder/Flywheel installation is needed. Complete integration offers the two
+isolator stories. The scribing table has no Ponder entry.
+
+- Play and replay each story. Check text, controls and framing in English and
+  Traditional Chinese at the GUI scales/fonts you use.
+- Start with two assembled ships on matching channels. The blue ship's lever
+  should operate both before isolation, then only blue after placing its isolator.
+  An ordinary handheld can still operate the public orange ship; the blue ship's
+  lectern operates its private network.
+- Follow the smart story's crouch-use binding, then test handheld control aboard
+  and outside the craft, without a lectern. Verify actual outputs separately from
+  the animation; native channel configuration and standalone-crafting unbind still
+  follow the managed-controller contract.
+- Check the real table separately: only Print is available, and its three work
+  slots remain usable throughout the screen's lifetime.
+
+These remain player checks even though automated client registration/playback and
+sampled render captures have passed.
+
+## Scribing-table operation checks
 
 The block/item ID is `create_fieldwork:schematic_scribing_table`. Find it in
 Functional Blocks or the optional Fieldwork tab, or craft one using a book,
@@ -136,8 +161,8 @@ two golden sheets, one andesite casing and two iron ingots (` B /PAP/I I`).
    consumed and the native checklist appears in the lower-right output, with the schematic unchanged.
    Build a matching portion and print again: remaining placement requirements
    should reflect it. No target block or entity should be constructed by the desk.
-4. Check rotation, mirrors and replacement options. Compare with a cannon using
-   the same options, keeping targets outside the cannon's two-block firing gap.
+4. Check rotation and mirrors. Compare with a cannon using mode2 and existing-BE
+   protection, keeping targets outside the cannon's two-block firing gap.
 5. Put building materials in an adjacent chest. Availability should mark native
    entries complete without removing materials. The player's inventory is not
    counted as adjacent storage.
@@ -156,31 +181,25 @@ two golden sheets, one andesite casing and two iron ingots (` B /PAP/I I`).
   title/labels/items must be live rendering, not baked lettering or icon images.
 - Test English and Traditional Chinese, multiple GUI scales and any font/resource
   packs you normally use. Long labels/buttons should fit/ellipsis appropriately
-  with full status/settings tooltips. Paper-button labels must not have the old
+  with full status/Print tooltips. Paper-button labels must not have the old
   dark text-shadow/doubled edge. Hover the short status for
   its full explanation and Print for the overwrite warning.
 - Empty input slots should have faint native-model guide icons; output must stay
   blank. Guides should vanish when occupied, never add fake stacks/counts, and
   schematic text should have clear space from its locator and sheet edge.
-- Open Settings with a schematic already inserted. All three work
-  slots should hide; they must not highlight or accept an ordinary click through the
-  paper settings pane. Close with Done or Escape and confirm the item remains.
+- Confirm Print is the only button and all three work slots remain visible and
+  usable. Escape closes the ordinary screen.
 - Start work and click Print repeatedly: progress must not restart and no item is
-  consumed early. Move an input/change settings during work and confirm cancellation
+   consumed early. Move an input during work and confirm cancellation
   without extra consumption. Clean-save a running job and reload: only remaining
   loaded ticks should be needed, with no wall-clock catch-up or duplicate result.
-- Change both settings and confirm server-synchronized values. Media/output and
-  inventory slots remain usable; test shift-click while the pane is open, then
-  close it and verify all contents. Print should be disabled while settings is open.
-- Try opening Settings while carrying a cursor stack: opening should be refused
-  until it is put down. If you pick up an inventory item after opening the pane,
-  Done/Escape must still close the pane without trapping/losing the stack.
+- Test shift-click and cursor-stack transfers, then close/reopen and verify all contents.
 - Check keyboard focus, disabled/hover tooltips, narrator output and close/reopen.
   Native packet tests and bytecode inspection are not a pass for these client paths.
 
 These are pending player checks, not a claimed pass. See the
 [gameplay contract](../design/schematic-scribing-table.md) for current performance
-and native-inventory boundaries. Ponder teaching is not included yet.
+and native-inventory boundaries. The table has no Ponder stories.
 
 ## Suggested first test pass
 

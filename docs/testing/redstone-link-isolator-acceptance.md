@@ -2,7 +2,303 @@
 
 ## Status and evidence boundary
 
-Recorded through 2026-11-13. Production main implements server-owned state/registry, the actual isolator/BE and recipe, Create/Simulated filters, lifecycle/mutation barriers, per-receiver scoped refresh, two-tier controller routing with event-driven reconciliation, fixed-WORLD train conditions, source-publication cache handling and the development scribing-table slice below.
+Recorded through 2026-11-21. Production main implements server-owned state/registry, the actual isolator/BE and recipe, Create/Simulated filters, lifecycle/mutation barriers, per-receiver scoped refresh, two-tier controller routing with event-driven reconciliation, fixed-WORLD train conditions, source-publication cache handling, the development scribing-table slice and client Ponder teaching below.
+
+### Integration verification — 2026-11-21
+
+The owner accepted the current candidate and authorized committing and merging
+the 0.3.0 development work into `main`. A final Docker
+`clean build -Pmod_version=0.3.0-dev` passed in 12 seconds, including 148 JUnit
+tests (zero failures, errors or skips) and shipping isolation/license checks.
+Gradle reused cached compilation and test results. Deterministic generation
+checks passed for all three Ponder structures, and the smoke wrapper passed
+shell syntax checking. The resulting JAR SHA-256 remains
+`c917545d1a90c1f3e99ee41985c3ebd993ebc82dc8c54283eb2c067fa76a1ab3`.
+The client/runtime evidence below remains from its recorded execution dates;
+broader player acceptance and fresh packaged-JAR smoke remain pending.
+
+## Two-airship teaching and Print-only table — 2026-11-14
+
+### Centered balloon supports — 2026-11-15, 05:54–05:56Z
+
+Both ships' fore/aft fence pillars now lie on each balloon's width centerline,
+at x3/x11 and symmetric z4/z8 anchors. Each pillar runs continuously from the deck
+to the balloon. The previous side columns are empty. Receiver links moved to the
+west sides of their existing lamps, at `(2,3,7)` and `(10,3,7)`, preserving the same
+iron-ingot/redstone pair and leaving the rear center pillars clear.
+
+Fresh Docker `clean build -Pmod_version=0.3.0-dev` passed in33s with JUnit148 and
+shipping checks. The actual Traditional Chinese client passed three full
+scene/replays, exact compiled chapter order, entrance/rotor probes,21 captures and
+the real Print-only table UI. Added geometry assertions check all centered fence
+cells, removed columns, deck/balloon contact, supported receivers and frequencies.
+Render review covered both ships in common and binding chapters.
+
+Current candidate SHA-256:
+`c917545d1a90c1f3e99ee41985c3ebd993ebc82dc8c54283eb2c067fa76a1ab3`.
+This supersedes the earlier placement candidate. The change is teaching geometry;
+no new gameplay server phase or packaged/player pass is claimed here.
+
+### Ship-side lectern placement — 08:20–08:25Z
+
+At the owner's correction, the lectern is now at `(1,3,5)`, directly beside the
+isolator `(2,3,5)` along the ship side. Both previous lectern cells are empty.
+The hint anchor is offset by `(-4,1,0)` and connected to the lectern by a white
+leader line for70 ticks. The active-hint render shows the lectern beside the
+isolator, with the hint box outside the deck rather than over the model.
+
+The resource revision passed a fresh clean build; the final hint adjustment
+passed Docker build in26s with JUnit148 and shipping checks. The actual Traditional
+Chinese client passed all three scene/replays, compiled item order, adjacency and
+clearance assertions, entrance/rotor probes,21 captures and Print-only table UI.
+
+Current candidate SHA-256:
+`1a561739938f02cc341d18beabffab93a587404d5a6a9d17d029cfe221a47c02`.
+This supersedes the earlier bow-corner candidate below. Render review is scoped
+to the captured view; broader player/packaged gates remain as recorded.
+
+### Clear lectern and onward smart chapter — 08:08–08:10Z
+
+The lectern moved from `(5,3,7)` beneath the balloon to the open bow corner
+`(1,3,3)`, facing north. Its interaction hint is raised one block above the prior
+anchor. The driver checks four blocks of overhead clearance and an empty old
+position; the actual lecture capture shows the tabletop and controller clearly.
+
+Ordinary item chapter order is now basics, lectern, then the existing smart-binding
+chapter. Smart item order remains basics, binding. Both routes reuse the same
+binding storyboard. Exact compiled order is checked independently of the unordered
+association sets printed in the report. Binding still depicts the smart block.
+
+Fresh Docker `clean build -Pmod_version=0.3.0-dev` passed in31s with JUnit148 and
+shipping checks. The actual Traditional Chinese client passed three full
+playback/replays, entrance/rotor checks,21 captures and the real Print-only table UI.
+
+Current candidate SHA-256:
+`0330a65757d321563617a942f0b42d65c66341250af3fe04a15e37a268b40964`.
+This supersedes the previous entrance hash. No new gameplay server phase or
+packaged/player pass is claimed for this teaching-only adjustment.
+
+### Gradual entrance follow-up — 07:54–07:55Z
+
+All three chapters now use native directional fade/slide entrances instead of
+immediate section display. Ship A and its rotor enter together; ship B and its
+rotor start8 ticks later. The first instruction waits until tick50, after both
+entrances settle. Circuit action timings were shifted by20 ticks accordingly.
+
+Fresh Docker `build -Pmod_version=0.3.0-dev` passed in26s with JUnit148 and shipping
+checks. The actual Traditional Chinese client passed three full scene/replays and
+exact item order, including intermediate/settled fade probes at ticks15/23/45 on
+both passes, plus rotor/circuit state and real Print-only table UI checks.
+
+The visual lane now records natural, unseeked opening frames5/15/26/45 for each
+chapter in addition to the operation captures:21 screenshots total. Reviewed frames
+show an empty stage, models progressively appearing, and settled ships before the
+first subtitle. Capture paths end in `<scene>-entrance-<frame>.png`.
+
+Current candidate SHA-256:
+`a446c53f54872099567c2c67598ea89f1eaa4e5b95637d737f5425510cabacd0`.
+This supersedes the prior chapter-split hash below. The change is client presentation;
+no new gameplay server phase or packaged/player acceptance is claimed here.
+
+### Shared-chapter follow-up — 07:41–07:43Z
+
+The owner requested sharing the repeated opening. Current item order is:
+
+- Ordinary isolator: `isolator_basics`, then `isolator_lectern`.
+- Smart isolator: the same `isolator_basics`, then `smart_controller_binding`.
+
+The common introduction is defined once. Variant chapters begin with the blue ship
+already isolated and contain only their operation steps. Native Ponder ordering
+constraints put the shared chapter first. Original ship geometry is generated by
+the same source function across chapters.
+
+Fresh Docker `clean build -Pmod_version=0.3.0-dev` passed in34s with JUnit148 and
+shipping isolation. The actual Traditional Chinese client passed three full
+playback/replays, exact compiled item ordering, visible rotor motion/stop checks,
+nine captures and the real Print-only table UI. Lectern and binding screenshots
+confirm direct operation starts rather than replaying the opening. English keys
+and default titles were checked; no new English render run is claimed here.
+
+Current candidate SHA-256:
+`3d7a3a4db603c808a420e13bc2b1fe2bc74fc2532dc93c208f09b3d5eeca5ac3`.
+It supersedes the preceding two-story artifact below. This split changes client
+teaching only; earlier gameplay and actual Create-only results remain their own
+scoped evidence, not new runs of this candidate.
+
+### Preceding two-story revision
+
+This revision supersedes the initial four-story teaching scope below. The owner
+selected two already-assembled airships, andesite-casing decks, visible propellers
+and short situational captions. Table Ponder, its Java/story registration/NBT/text,
+and the table Settings button/pane/actions were removed.
+
+### Current behavior and verification
+
+- A matching-channel lever initially turns both ships' rotors. Placing the isolator
+  on blue turns its top red and leaves only blue turning.
+- Releasing the lever and using an ordinary handheld drives public orange, not
+  private blue. Blue's lectern drives blue; smart binding enables handheld blue
+  operation aboard and outside.
+- Both receivers are supported by their lamps. All three frequency displays use
+  iron ingot/redstone. Visible front rotor sections rotate around their bearing hubs.
+  The driver checks rotor-angle change at each control stage and on replay, rather
+  than accepting a nominal speed field with no visible motion.
+- Table Print is its only action. Calculation is fixed to native mode2 with existing
+  BEs protected. Legacy customized jobs cancel without consumption; default-policy
+  jobs resume saved progress. Inventory is retained and old top-level settings are
+  removed on subsequent saves. Obsolete action IDs1/2 are rejected during active work.
+
+Final `clean build -Pmod_version=0.3.0-dev` passed, including JUnit148 with zero
+failures/errors/skips, driver isolation, license inclusion and strict mixins.
+Current artifact:
+`build/libs/create_fieldwork-neoforge-1.21.1-0.3.0-dev.jar`.
+
+SHA-256: `2b0b5a8a8f876c660a4ff8eb9c59679978c553408c14c07f2317c2105e2d2106`.
+The archive contains two Ponder structures and no table story class/resources.
+
+| Executed check | Result |
+|---|---|
+| Integrated Traditional Chinese client, 07:18–07:19Z | Two stories, full playback/replay,13 captures including real Print-only table UI |
+| Integrated English client, 07:19–07:20Z | Two stories, full playback/replay,13 captures including real Print-only table UI |
+| Actual Create-only Traditional Chinese client, 07:20Z | Zero Fieldwork story associations, one real table UI capture; no Sable/Aeronautics/Simulated loaded |
+| `scribing`, 07:08:26Z | 239 assertions passed |
+| Consecutive independent-JVM `scribing-reload`, 07:09:00Z | 26 assertions passed |
+| `schematic`, 07:09:31Z | 376 assertions passed |
+
+Main-only verifiers required complete saves and state close. The gameplay checks
+preceded final subtitle-only edits; server gameplay classes remained unchanged.
+The client opens the real server-backed table menu and checks exactly one Print
+button plus39 active slots. Render review covered both rotor assemblies, private
+blue/public orange control results and the shortened subtitles. No new network,
+binding or physical flight implementation is supplied by the teaching scene.
+
+During development, nominal small-propeller speed/angle checks were insufficient
+for its preview rendering. The final scene uses visible independent sail sections
+on propeller bearings; test probes verify each section's actual motion/stopped
+state. Earlier failed development reports are not counted as passes.
+
+Reproduce client checks with `scripts/verify-ponder-docker.sh`, adding
+`-PponderVisualSmoke`, the desired `-PponderLanguage=zh_tw`, and
+`-PponderCreateOnly` for the actual base dependency lane. Use
+`python3 scripts/generate-ponder-schematics.py --check` for source asset consistency.
+Reports/captures remain under the documented build scratch paths.
+
+Player input/pacing, other GUI scales/fonts and packaged installer gates remain
+as scoped earlier. No commit, release or publication was performed.
+
+## Ponder teaching development slice — 2026-11-14
+
+Historical initial version; superseded by the two-airship/Print-only revision above.
+
+Implemented on `v0.3.0-dev` above `cf49092`, without changing server gameplay,
+dependency pins, strict mixins or the default version. The
+[teaching contract](../design/ponder-teaching.md) defines four unique stories:
+isolation basics (ordinary + smart items), smart binding, clipboard scribing and
+book scribing. Table stories remain available with Create alone.
+
+### Executed client checks
+
+Actual software-rendered client runs used the already-installed
+`draconic-insight-tutorial-smoke` Java21/Xvfb image through the non-root wrapper;
+no new display packages were installed. Required Create supplied Ponder1.0.82 and
+Flywheel1.0.6; Fieldwork embeds no second copy.
+
+| Client run | Unique scenes / full replays | Captures | Result |
+|---|---|---|---|
+| Integrated, English, 05:57–05:58Z | 4 / 4 | 14 | Passed |
+| Actual Create-only, Traditional Chinese, 06:00Z | 2 / 2 | 6 | Passed |
+| Integrated, Traditional Chinese, 06:01Z | 4 / 4 | 14 | Passed |
+
+The Create-only mod list actually lacked Sable, Aeronautics and Simulated; it did
+not use an activation override. The driver checked exact item/story associations,
+nonempty loaded structures, registered palette/properties, English defaults and
+Traditional Chinese key completeness, actual storyboard compilation, full
+instruction playback and reset/replay. The isolation animation is sampled at
+handheld-denied, onboard-lectern-allowed, WORLD-lectern-denied and last-isolator
+removal stages, on both play passes. These are assertions about authored teaching
+states, not radio simulation.
+
+Inspected English and Traditional Chinese captures show the handheld denial,
+onboard lectern success, smart channel hint and table media/partial-list captions
+with recognizable models and visible text at the captured GUI scale. This is
+sampled visual evidence, not every font, scale, key binding or player's reading
+speed. Client runs completed integrated-server saves on exit.
+
+Reproduction (existing Java21/Gradle9.2.1 + Xvfb/Mesa image required; set
+`FIELDWORK_PONDER_IMAGE` to another equivalent local image if necessary):
+
+```sh
+./scripts/verify-ponder-docker.sh -PponderVisualSmoke
+./scripts/verify-ponder-docker.sh -PponderCreateOnly -PponderVisualSmoke -PponderLanguage=zh_tw
+./scripts/verify-ponder-docker.sh -PponderVisualSmoke -PponderLanguage=zh_tw
+python3 scripts/generate-ponder-schematics.py --check
+```
+
+Reports are `build/ponder-smoke-{base,integrated}.json`; captures use
+`build/ponder-screens/<mode>-<language>/screenshots/`. The final clean build removes
+those scratch outputs; a local capture/report archive was retained separately
+during this session. Conclusions and commands here are the durable record.
+
+### Clean build and gameplay regression
+
+`./scripts/gradle-docker.sh clean build -Pmod_version=0.3.0-dev` passed in27s.
+JUnit148 passed with zero failures, errors or skips. The shipping check confirmed
+driver exclusion, client presentation's optional-API separation, strict mixins,
+GPL and retained reference MIT notice. A separate ZIP check found exactly four
+Ponder NBTs and no bundled duplicate libraries or smoke-driver classes.
+
+Subsequent main-only verifiers used `-Pmod_version=0.3.0-dev`:
+
+| Phase | Assertions | Report timestamp (UTC) |
+|---|---:|---|
+| `scribing` | 240 | 06:04:41 |
+| `scribing-reload` | 26 | 06:05:15 |
+| `network` | 174 | 06:05:48 |
+| `binding` | 177 | 06:06:24 |
+| `schematic` | 376 | 06:06:57 |
+
+All passed, with verifier-checked complete saves and server-state close. The
+scribing pair ran consecutively in independent JVMs with the saved world retained.
+The network phase includes real ordinary handheld denial aboard a craft and real
+onboard lectern private output; its radio assertions are separate from scene lamp
+animation. Existing detached-holder visual retry warnings were observed during
+binding; that phase's output assertions and complete save/state-close gates passed.
+No unrelated lifecycle implementation was changed to suppress those warnings.
+
+Development artifact:
+`build/libs/create_fieldwork-neoforge-1.21.1-0.3.0-dev.jar`
+
+SHA-256: `c348e08026a042108905a91f8bf82d1e56a6c13b619afd114ad4fd42a3162e37`.
+The client checks used development output with the unchanged default0.1.0 label;
+the final clean-build override labels this local JAR0.3.0-dev. This is not a
+packaged-client test of that JAR, an installer pass, or a release/tag/publication.
+
+Remaining: actual item-hover/Ponder-key interaction and reading/pacing acceptance,
+other GUI scales/fonts/resource packs, real multiplayer/explosions and table GUI
+player checks. No fresh installed-JAR smoke was started: this worktree has no
+manually accepted smoke EULA. Prior installed-server evidence below is historical.
+
+### Ponder branch rebase follow-up — 2026-11-14
+
+At the owner's request, `v0.3.0-dev` was rebased onto `main` at `3cf9d01`.
+The committed workstation change is now `e056094` (formerly `cf49092`); the
+range-diff changes only its README integration with main's dependency guidance.
+Uncommitted Ponder work was stashed, restored, and checked: all20 added files
+matched the saved blobs, and Ponder Java/resources/build configuration matched
+their pre-rebase contents exactly.
+
+A fresh Docker `clean build -Pmod_version=0.3.0-dev` passed in27s, including
+JUnit148 (zero failures/errors/skips) and shipping isolation. The new packaged
+metadata was parsed and checked: NeoForge21.1.219+, Create6.0.10+, Sable2.0.5+,
+Aeronautics/Simulated1.3.2+, and exact Minecraft1.21.1. Build pins remain unchanged.
+
+Current local candidate SHA-256:
+`9a7cdbd5a2ee4afe302aee086dd7765d77dc376d06adc11a194d02a41179cdb2`.
+This supersedes the pre-rebase artifact hash above. No new client/runtime pass is
+claimed for the rebase; unchanged Ponder content retains the earlier scoped
+development evidence, with packaged/player gates still pending.
+
+## Earlier implementation and verification history
 
 The current optional-integration revision makes Create the only required gameplay
 dependency. A packaged Create-only server containing only NeoForge, Create and

@@ -1,0 +1,175 @@
+version: 1
+plan: docs/plans/v0.3.0-ponder/plan.md
+brief: docs/design/v030-release-scope.md
+research: docs/research/2026-11-14-ponder-reference.md
+status: awaiting_player_acceptance
+active_task: null
+updated_at: "2026-11-21"
+target_release: 0.3.0
+branch: v0.3.0-dev
+baseline_commit: cf4909207e9e3c3aa14a68e702b15e1ba7bfb2b1
+rebased_commit: e056094
+rebased_onto: 3cf9d01
+execution_authorized: true
+next_action: "Owner accepted the current candidate and authorized commit/integration into main. Broader player checks and fresh packaged-JAR smoke remain pending under ponder-06."
+integration_authorized: true
+confirmed_scope:
+  - "Schematic scribing table with clipboard and book outputs."
+  - "Three Ponder chapters: shared airship isolation basics, ordinary lectern operation and smart binding; table stories removed."
+  - "Use local draconic-insight as the introduction reference."
+  - "Two assembled ships initially share a channel. The lever drives both propellers; placing an isolator on blue immediately limits it to blue. Ordinary handheld still drives public orange; blue's lectern drives private blue."
+  - "Smart binding permits handheld operation aboard and outside blue; use an andesite-casing deck and supported links."
+  - "Table exposes Print only with fixed mode2/existing-BE protection. Preserve inputs and cancel legacy non-default jobs without consumption."
+  - "Player subtitles describe the current action and result, without meta-disclaimers or internal verification terminology."
+planning_recommendations:
+  - "Share the opening once; ordinary teaching continues through lectern to smart binding, while smart teaching goes straight to binding."
+  - "Use Create-provided Ponder/Flywheel, without duplicate embedded libraries."
+  - "No Fieldwork stories in Create-only mode; isolator stories in complete integration."
+  - "Interpret copying/recipe wording as existing native blueprint material-checklist outputs; clarify before any different output feature."
+tasks:
+  - id: ponder-13
+    title: Center the balloon support pillars symmetrically
+    status: completed
+    depends_on: [ponder-12]
+    requirements:
+      - "Move both ships' fore/aft pillars onto each balloon's width centerline, retaining symmetric longitudinal anchors."
+      - "Keep every pillar continuous from deck to balloon; remove old side pillars and remount receivers on lamp sides rather than through pillars."
+      - "Check actual render, support continuity, displayed frequencies and all circuit/rotor/replay stages."
+    evidence:
+      - "Fore/aft supports moved from origin+1 to origin+2 on both balloons' width centerlines, retaining symmetric z4/z8 anchors and continuous fences y3 through5. Receivers remounted west-facing on lamp sides at2,3,7 and10,3,7 to leave rear pillars clear."
+      - "Fresh Docker clean build passed in33s, JUnit148/shipping checks passed. Actual Traditional Chinese client passed three scenes/replays,21 captures, exact chapter order, fades, rotor motion and Print-only table UI. Geometry checks cover every centered fence cell, empty old columns, deck/balloon contact and native displayed frequencies."
+      - "Reviewed common/binding captures showing centered supports on both ships. Current artifact SHA-256c917545d1a90c1f3e99ee41985c3ebd993ebc82dc8c54283eb2c067fa76a1ab3."
+  - id: ponder-12
+    title: Place the lectern beside the isolator on the ship side
+    status: completed
+    depends_on: [ponder-11]
+    requirements:
+      - "Lectern at1,3,5 directly west of isolator2,3,5, supported by the ship-side deck and clear of the balloon."
+      - "Interaction hint outside the deck with a leader line, rather than covering the lectern. Remove the previous bow-corner placement."
+      - "Review the rendered lecture step at the active hint stage; retain chapter links, fades and operation behavior."
+    evidence:
+      - "Lectern moved to1,3,5 directly beside isolator2,3,5. Both former positions are empty; overhead clearance and adjacency are checked in the real scene."
+      - "Input hint offset(-4,1,0) from the lectern anchor for70 ticks, with a white leader line. Reviewed active-hint screenshot shows the lectern beside the isolator and the box separately outside the deck."
+      - "Resource-change clean build passed JUnit148/shipping checks; final hint adjustment passed build in26s and the real client in63s, three scenes/replays and21 captures. Current artifact SHA-2561a561739938f02cc341d18beabffab93a587404d5a6a9d17d029cfe221a47c02."
+  - id: ponder-11
+    title: Clear the lectern view and link ordinary teaching onward to smart binding
+    status: completed
+    depends_on: [ponder-09, ponder-10]
+    requirements:
+      - "Move the lectern from5,3,7 under the balloon to1,3,3 at the open bow, face it north and raise the interaction hint above the model."
+      - "Reuse the existing smart binding chapter on the ordinary item's list: basics, lectern, smart binding. Smart item remains basics, smart binding."
+      - "Verify overhead clearance, removal of the old position, exact compiled order, replay and actual render visibility."
+    evidence:
+      - "Lectern moved to the front corner1,3,3, facing north; interaction hint raised one block above its previous anchor. Rendered lectern tabletop/controller is clear of the balloon and hint. Four-block overhead clearance and empty old position are checked during both scene plays."
+      - "Ordinary compiled order is basics, lectern, smart binding; smart order is basics, smart binding. Both items reuse the same binding storyboard and captions."
+      - "Fresh clean Docker build passed in31s with JUnit148/shipping checks; actual Traditional Chinese client passed three scene/replays, fade/rotor checks,21 captures and Print-only table UI. Current artifact SHA-2560330a65757d321563617a942f0b42d65c66341250af3fe04a15e37a268b40964."
+  - id: ponder-10
+    title: Add gradual shared scene entrances
+    status: completed
+    depends_on: [ponder-09]
+    requirements:
+      - "Replace immediate model appearance with native section fade/movement, keeping each ship and its rotor together."
+      - "Stagger ship B slightly after A, then let both finish before subtitles and control actions begin."
+      - "Verify intermediate and settled fade states on playback/replay, and capture the actual unseeked screen entrance."
+    evidence:
+      - "Replaced all four immediate model displays with native directional fades; each ship enters with its rotor, B starts8 ticks later, and the first instruction waits until tick50."
+      - "All three chapters and replays passed fade probes at ticks15/23/45, plus adjusted circuit/rotor and item-order checks. Actual natural entry captures at frames5/15/26/45 show the empty stage, gradual appearance and settled models."
+      - "Docker build passed in26s with JUnit148/shipping checks; actual Traditional Chinese client passed three scenes/replays,21 captures and real Print-only table UI. Current artifact SHA-256a446c53f54872099567c2c67598ea89f1eaa4e5b95637d737f5425510cabacd0."
+  - id: ponder-09
+    title: Share the common introduction and split variant operation chapters
+    status: completed
+    depends_on: [ponder-07, ponder-08]
+    requirements:
+      - "isolator_basics contains the common two-airship experiment once and is associated with both isolators."
+      - "isolator_lectern is ordinary-only; smart_controller_binding is smart-only. Both begin at the isolated-ship state and skip the repeated opening."
+      - "Each item compiles to exactly shared basics followed by its own operation chapter. Keep short action/result captions and Print-only table behavior."
+    evidence:
+      - "Three registered chapters: shared isolator_basics, ordinary-only isolator_lectern and smart-only smart_controller_binding. Both operation chapters start isolated and skip the common introduction. Native Ponder orderAfter constraints and actual compiled item order are verified."
+      - "Clean Docker build passed in34s with JUnit148/shipping checks. Actual Traditional Chinese client verified three full playback/replays, rotor stop/motion stages, nine captures and the real Print-only table menu."
+      - "Current artifact SHA-2563d7a3a4db603c808a420e13bc2b1fe2bc74fc2532dc93c208f09b3d5eeca5ac3. No new gameplay/runtime server phase is claimed for this client-only split."
+  - id: ponder-07
+    title: Rebuild isolator teaching geometry and sequence after owner visual feedback
+    status: completed
+    depends_on: [ponder-04, ponder-05]
+    requirements:
+      - "Use Create andesite casing for the craft deck, as selected by the owner."
+      - "No unsupported floating Redstone Links; put each receiver on its lamp and the lever transmitter on a solid support."
+      - "Start with two assembled airships and matching channels; both rotors respond before placing the isolator on blue. Blue's top then turns red and only blue's rotor continues."
+      - "Turn the lever off before controller tests; ordinary handheld drives orange, the private lectern/bound controller drives blue."
+      - "Ordinary version: unbound handheld denial, then onboard lectern success; remove the external lectern and last-isolator-removal digression."
+      - "Smart version: show binding and handheld success both aboard and outside; no lectern sequence."
+      - "Short, situational bilingual subtitles; visible front-facing rotor sections with independently verified motion."
+    evidence:
+      - "Both assembled airships have andesite-casing decks, supported native frequency displays and visible front bearing/sail rotors. A lever/public-orange/private-blue stages are independently checked, including each visible rotor's motion and stop on playback/replay."
+      - "Final integrated en_us and zh_tw runs each passed two stories/replays and13 captures. Captions now describe only current actions/results."
+  - id: ponder-08
+    title: Remove table teaching and Settings, retaining fixed-policy print/persistence
+    status: completed
+    depends_on: [ponder-05]
+    requirements:
+      - "Remove table story registration, Java, NBTs and language keys; integrated scene count2, Create-only0."
+      - "Remove Settings button/pane, mutation handlers and hidden persisted options. Print is the only menu action."
+      - "Legacy customized jobs cancel without consuming media or losing inventory; legacy default jobs retain exact progress."
+      - "Verify the actual table screen has one Print button and all39 active slots, plus independent-JVM print persistence."
+    evidence:
+      - "Table Java scene, registration, NBTs and Ponder keys removed; integrated associations2, real Create-only0. Settings widgets/pane, menu actions and top-level saved options removed."
+      - "Server scribing239/reload26 and schematic376 passed with complete saves/state close. Legacy customized active and idle tags, default-job progress, unknown actions and item conservation are tested."
+      - "Actual server-backed client screen has only Print and39 active slots in both dependency modes. Final clean build passed JUnit148 and shipping checks; current JAR2b0b5a8a8f876c660a4ff8eb9c59679978c553408c14c07f2317c2105e2d2106 has exactly two story NBTs and no table story class."
+  - id: ponder-research-00
+    title: Record release scope and inspect supplied Ponder reference
+    status: completed
+    depends_on: []
+    evidence:
+      - "Confirmed actual three registry IDs, existing table gameplay/media/persistent job, prior acceptance boundary and pending Ponder work."
+      - "Inspected local Draconic Insight client setup/plugin/NBT generator/client compile and visual smoke sources read-only; recorded hashes because relevant work is uncommitted."
+      - "Existing audited compile libraries include Ponder1.0.82 and Flywheel1.0.6; no dependency/source/build changes made."
+    acceptance_limits:
+      - "No production Ponder code/scenes, new Docker environment, source generation, build or client/runtime verification executed for this scope/planning update."
+      - "Prior table/headless and reference-project results are not new Fieldwork Ponder evidence."
+  - id: ponder-01
+    title: Lock storyboards against current behavior
+    status: completed
+    evidence:
+      - "Owner authorized implementation; docs/design/ponder-teaching.md fixes four storyboards and the explicit ordinary handheld/onboard lectern/WORLD lectern comparison against current contracts."
+    depends_on: [ponder-research-00]
+  - id: ponder-02
+    title: Register a client-only Fieldwork Ponder plugin
+    status: completed
+    evidence:
+      - "Client-only plugin compiled; actual integrated mode registered four unique scenes with expected1/2/2 item associations. Actual Create-only mod list excluded Sable/Aeronautics/Simulated and registered only two table scenes."
+    depends_on: [ponder-01]
+  - id: ponder-03
+    title: Author original structures and localized text
+    status: completed
+    evidence:
+      - "Original deterministic structure generator and four checked-in NBTs; generation then --check passed. Actual client parsed every palette/property, loaded nonempty templates and verified both language catalogs."
+    depends_on: [ponder-02]
+  - id: ponder-04
+    title: Implement and review storyboards
+    status: completed
+    evidence:
+      - "All four production scenes played and replayed. Authored handheld/off, onboard-lectern/on, WORLD-lectern/off and last-isolator/on states checked at four exact times on both passes."
+      - "Captured14 integrated English stages, six Create-only Traditional Chinese stages and14 integrated Traditional Chinese stages. Reviewed handheld denial/onboard success and table output/partial-list images for framing and visible localized text."
+    depends_on: [ponder-03]
+  - id: ponder-05
+    title: Add isolated client registration and playback verification
+    status: completed
+    evidence:
+      - "Isolated ponderSmoke source set and fresh report/mode/scene/replay/language verifier; ordinary runs exclude driver and shipping check excludes pondersmoke classes."
+      - "Reused existing Xvfb image without installing display dependencies; wrapper runs with host numeric UID/GID, project caches and image ID resolved before launch."
+    depends_on: [ponder-04]
+    note: "Develop verifier support alongside registration/scenes; those steps need real client evidence before being called verified."
+  - id: ponder-06
+    title: Close gameplay, distribution and player acceptance
+    status: blocked
+    depends_on: [ponder-05]
+    blocked_by: "Actual player input/readability checks and fresh packaged-JAR smoke are not executed; the worktree has no manually accepted smoke EULA."
+    unblock_when: "Owner/player supplies the appropriate client checks and manually accepts the smoke EULA if packaged installer verification is desired."
+    next_action: "Run the player guide's Ponder checks with the exact candidate hash, then complete the independently gated packaged smoke."
+    evidence:
+      - "Docker clean build -Pmod_version=0.3.0-dev passed in27s; JUnit148, no failures/errors/skips; archive isolation/license checks passed."
+      - "Consecutive independent-JVM scribing240/reload26, network174, binding177 and schematic376 passed with complete saves/state close."
+      - "Candidate SHA-256 c348e08026a042108905a91f8bf82d1e56a6c13b619afd114ad4fd42a3162e37. GPL, adapted MIT notice, four NBTs, no smoke-driver classes or duplicate nested libraries."
+      - "Production acceptance record, feature/scope documents, player/developer guides and docs index updated. No gameplay hooks, default version, dependency pins, commit or publication changed."
+      - "Final verification checked11 documentation files/110 local links, bilingual key parity, catalog-to-source-to-JAR NBT equality, deterministic generator, shell syntax,34 archived render captures and git diff --check."
+      - "Owner-requested rebase onto main3cf9d01 completed as e056094; all20 untracked files restored byte-for-byte and Ponder code/resources/build config unchanged. Fresh Docker clean build passed JUnit148/shipping checks; packaged dependency ranges match main. Current candidate hash9a7cdbd5a2ee4afe302aee086dd7765d77dc376d06adc11a194d02a41179cdb2 supersedes the pre-rebase artifact. No new runtime pass claimed."

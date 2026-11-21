@@ -28,11 +28,13 @@ notes never override those documents.
 
 ### Supporting current contracts
 
+- [Ponder teaching contract](design/ponder-teaching.md): a shared airship opening followed by variant-specific lectern/binding chapters, with native controller distinctions and presentation boundaries.
+- [0.3.0 release scope](design/v030-release-scope.md): scribing-table clipboard/book outputs with a Print-only UI and shared/variant Ponder chapters, with pending player acceptance distinguished.
 - [Managed-controller binding contract](design/controller-binding-v02.md)
 - [D03 recipe and cost rationale](design/2026-11-06-isolator-recipe.md)
 - [Schematic scribing table visuals](design/schematic-scribing-table-visuals.md): approved 0.3.0 desk silhouette, original local assets and preview/client evidence boundaries; functionality is defined separately below.
 - [Schematic scribing table gameplay](design/schematic-scribing-table.md): current workstation inputs, native material semantics, server authority, persistence and performance/client boundaries.
-- [Schematic scribing table UI](design/schematic-scribing-table-ui.md): implemented iron/wood/paper screen, shared slot geometry, native fonts/items, foldout settings and client-test boundaries.
+- [Schematic scribing table UI](design/schematic-scribing-table-ui.md): implemented iron/wood/paper screen, shared slot geometry, native fonts/items, Print-only controls and client-test boundaries.
 
 ### Superseded design history
 
@@ -58,6 +60,8 @@ notes never override those documents.
 
 ### Current dependency research
 
+- [Ponder introduction reference](research/2026-11-14-ponder-reference.md): read-only inspection of the owner-supplied local Draconic Insight implementation, Create-provided libraries and Fieldwork-specific client/runtime boundaries.
+- [0.3.0 Ponder introduction plan](plans/v0.3.0-ponder/plan.md): implementation intent and layered verification; current executed results and remaining player gates are tracked in its checklist and the production acceptance record.
 - [Create schematic ownership and copying](research/2026-11-13-schematic-copy.md): pinned owner/file semantics, fresh construction, server/client dependencies and bounded native probe. The owner declined copying; findings are reference, not an active feature or multiplayer/client acceptance.
 
 ## Historical research
