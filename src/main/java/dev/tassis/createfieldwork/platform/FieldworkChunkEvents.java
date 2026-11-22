@@ -14,14 +14,12 @@ public final class FieldworkChunkEvents {
 
     public static void loaded(ChunkEvent.Load event) {
         if (!(event.getLevel() instanceof ServerLevel level) || !(event.getChunk() instanceof LevelChunk chunk)) return;
-        Runnable index = () -> {
+        ordered(level, chunk.getPos(), () -> {
             var state = FieldworkStateAccess.get(level.getServer());
             state.publications().trackChunk(level, chunk);
             state.refresh().trackChunk(level, chunk);
             state.bindings().trackChunk(level, chunk);
-        };
-        if (level.getServer().isSameThread()) index.run();
-        else level.getServer().execute(index);
+        });
     }
 
     public static void tick(ServerTickEvent.Post event) {
@@ -58,15 +56,23 @@ public final class FieldworkChunkEvents {
     public static void unloaded(ChunkEvent.Unload event) {
         if (!(event.getLevel() instanceof ServerLevel level)) return;
         var chunk = event.getChunk().getPos();
-        Runnable cleanup = () -> {
-            if (!level.getServer().isStopped()) {
-                var state = FieldworkStateAccess.get(level.getServer());
-                state.publications().unloaded(level, chunk);
-                state.refresh().unloaded(level, chunk);
-                state.bindings().unloaded(level, chunk);
-            }
+        ordered(level, chunk, () -> {
+            var state = FieldworkStateAccess.get(level.getServer());
+            state.publications().unloaded(level, chunk);
+            state.refresh().unloaded(level, chunk);
+            state.bindings().unloaded(level, chunk);
+        });
+    }
+
+    private static void ordered(ServerLevel level, net.minecraft.world.level.ChunkPos chunk, Runnable operation) {
+        var server = level.getServer();
+        var order = FieldworkStateAccess.get(server).chunkEvents();
+        long generation = order.begin(level.dimension(), chunk);
+        Runnable current = () -> {
+            if (!order.claim(level.dimension(), chunk, generation) || server.isStopped()) return;
+            operation.run();
         };
-        if (level.getServer().isSameThread()) cleanup.run();
-        else level.getServer().execute(cleanup);
+        if (server.isSameThread()) current.run();
+        else server.execute(current);
     }
 }

@@ -24,7 +24,7 @@ Method signatures below use short class names; source contains actual descriptor
 | `wireless.LinkPublicationMixin` | `RedstoneLinkBlockEntity.read(CompoundTag,HolderLookup.Provider,boolean)V` TAIL require1/allow1 | Unregistered source indexing; reconstruction before Level attachment |
 | `isolator.AssemblyLifecycleMixin` | `assembleBlocks` and `moveBlocks`, one exact WrapMethod each | Outer completion, pre-write source/destination barriers and marker ledger |
 | `isolator.LoadLifecycleMixin` | `fullyLoad(ServerLevel,SubLevelData)ServerSubLevel`, one WrapMethod | Initialization and success/null/failure cleanup |
-| `isolator.ContainerLifecycleMixin` | `allocateSubLevel` RETURN require1/allow1; `removeSubLevel` WrapMethod | UUID INITIALIZING and teardown |
+| `isolator.ContainerLifecycleMixin` | `allocateSubLevel` and `removeSubLevel`, one exact WrapMethod each | UUID INITIALIZING, pre-return partial-allocation rollback/fallback quarantine and teardown |
 | `isolator.SplitLifecycleMixin` | `SubLevelHeatMapManager.split()V`, one WrapMethod | Real heatmap bridge removal/children and identity reconstruction |
 | `isolator.DisassemblyLifecycleMixin` | `SimAssemblyHelper.disassembleSubLevel(...)V`, one WrapMethod | WORLD destination protection and inactive returned markers |
 | `isolator.MarkerMutationMixin` | `LevelChunk.setBlockState(BlockPos,BlockState,boolean)BlockState`, one WrapMethod | Identity/publication transaction; BEGIN fault aborts pre-write |
@@ -51,6 +51,26 @@ Method signatures below use short class names; source contains actual descriptor
 These 25 common and six client entries match the 31 classes listed across the two
 strict production configs. No `Level#getSignal` interception, player-move
 authority hook or replacement of the full network handler is used.
+
+## Lifecycle ordering follow-up (2026-11-22)
+
+An audit after the direct-Sable-allocation fix found no second mixin that assumes
+an absent outer transaction. In particular, lectern reconciliation during an
+active transition resolves affected endpoints through the held barrier as
+`PENDING`; final publication recaptures and stages those endpoints with the
+candidate view. `ServerPlayer#setGameMode` remains a server-authority mutation:
+its reconciliation reaches the common owner-thread check and intentionally fails
+fast rather than silently accepting an off-thread game-mode write.
+
+The audit did find one adjacent event-ordering defect outside the mixin list.
+`FieldworkChunkEvents` queued off-thread load/unload intent, while a newer
+server-thread event could execute immediately. Per-server, per-dimension and
+per-chunk generations now allow only the latest callback to mutate publication,
+Simulated-receiver and smart-binding indexes; server close invalidates queued
+generations. Three JUnit checks cover stale-event rejection, key independence and
+close invalidation. The ordinary lifecycle and binding server phases remain
+regression evidence, not a claim that the pinned runtime naturally reproduced an
+off-thread chunk callback race.
 
 ### Controller target descriptors
 
@@ -161,7 +181,7 @@ Line numbers identify that export only. Bytecode proves composition; dynamic mai
 ## Driver isolation
 
 The `src/tools/acceptance/` tool has publication, visual, marker-write, binding-ledger/grant/
-withdrawal/refresh and lectern-assignment faults plus two counters. Driver-only
+withdrawal/refresh, lectern-assignment and post-removal faults plus two counters. Driver-only
 flags never supply authorization/registry answers or ship. Fault injections
 supply no-op/throw/nested inputs; counters observe work without changing behavior.
 

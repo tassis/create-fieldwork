@@ -8,6 +8,7 @@ import dev.ryanhcode.sable.api.SubLevelAssemblyHelper;
 import dev.ryanhcode.sable.api.sublevel.SubLevelContainer;
 import dev.ryanhcode.sable.api.sublevel.SubLevelObserver;
 import dev.ryanhcode.sable.companion.math.BoundingBox3i;
+import dev.ryanhcode.sable.companion.math.Pose3d;
 import dev.ryanhcode.sable.sublevel.ServerSubLevel;
 import dev.ryanhcode.sable.sublevel.SubLevel;
 import dev.ryanhcode.sable.sublevel.storage.SubLevelRemovalReason;
@@ -29,6 +30,7 @@ import net.minecraft.world.level.block.Rotation;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.BiConsumer;
 
 /** Normal lifecycle APIs and a real observer exception, without a research registry or behavior mixin. */
@@ -41,6 +43,49 @@ final class LifecycleAcceptance {
         var state = FieldworkStateAccess.get(level.getServer());
         var container = SubLevelContainer.getContainer(level);
         BlockPos origin = new BlockPos(192, 120, 0);
+        var pose = new Pose3d();
+        pose.position().set(origin.getX() + 0.5, origin.getY() + 0.5, origin.getZ() + 0.5);
+        int beforeDirectFault = container.getAllSubLevels().size();
+        boolean[] directFault = {true};
+        UUID[] discardedId = {null};
+        BlockPos[] discardedCenter = {null};
+        container.addObserver(new SubLevelObserver() {
+            @Override public void onSubLevelAdded(SubLevel added) {
+                if (directFault[0]) {
+                    directFault[0] = false;
+                    discardedId[0] = added.getUniqueId();
+                    discardedCenter[0] = added.getPlot().getCenterBlock();
+                    throw new IllegalStateException("acceptance direct allocation observer failure");
+                }
+            }
+        });
+        try { container.allocateNewSubLevel(pose); }
+        catch (IllegalStateException expected) {
+            if (!expected.getMessage().equals("acceptance direct allocation observer failure")) throw expected;
+        }
+        check.accept("direct observer fault discards incomplete allocation",
+            !directFault[0] && discardedId[0] != null && container.getSubLevel(discardedId[0]) == null
+                && container.getAllSubLevels().size() == beforeDirectFault);
+        check.accept("successful direct rollback releases allocation transaction",
+            state.transitions().failedTokens().isEmpty() && !state.transitions().active());
+        var direct = (ServerSubLevel) container.allocateNewSubLevel(pose);
+        check.accept("direct rollback releases plot occupancy",
+            direct.getPlot().getCenterBlock().equals(discardedCenter[0]));
+        var directKey = IsolationRuntime.key(direct);
+        check.accept("direct allocation publishes marker-free WORLD craft",
+            state.registry().scope(directKey) == Scope.WORLD && !state.transitions().active());
+        var directCenter = direct.getPlot().getCenterBlock();
+        var directMarker = directCenter.above();
+        direct.getPlot().newEmptyChunk(direct.getPlot().getCenterChunk());
+        level.setBlock(directCenter, Blocks.STONE.defaultBlockState(), 3);
+        level.setBlock(directMarker, FieldworkContent.ISOLATOR.get().defaultBlockState(), 3);
+        check.accept("direct allocation accepts later isolator mutation",
+            state.registry().scope(directKey).equals(Scope.privateCraft(directKey)));
+        level.removeBlock(directMarker, false);
+        check.accept("direct allocation releases after later isolator removal",
+            state.registry().scope(directKey) == Scope.WORLD && state.transitions().failedTokens().isEmpty());
+        container.removeSubLevel(direct, SubLevelRemovalReason.REMOVED);
+        container.processSubLevelRemovals();
         var source = link(origin, false);
         link(origin.offset(6, 0, 0), true);
         var outside = link(origin.offset(10, 0, 0), true);
@@ -87,8 +132,7 @@ final class LifecycleAcceptance {
         }
         check.accept("real observer fault was exercised", !failOnce[0]);
         check.accept("failed load retains main quarantine", !state.transitions().failedTokens().isEmpty());
-        var partial = container.getSubLevel(uuid);
-        if (partial != null) container.removeSubLevel(partial, SubLevelRemovalReason.REMOVED);
+        check.accept("failed nested load discards incomplete allocation", container.getSubLevel(uuid) == null);
         holding.loadHoldingSubLevel(retained);
         restored = (ServerSubLevel) container.getSubLevel(uuid);
         check.accept("normal retry replaces allocation-only failed load token", restored != null && state.transitions().failedTokens().isEmpty());
@@ -113,6 +157,31 @@ final class LifecycleAcceptance {
         for (var marker : returnedMarkers) check.accept("disassembled marker returns to WORLD with inactive visual", level.getBlockState(marker).is(FieldworkContent.ISOLATOR.get()) && !level.getBlockState(marker).getValue(IsolatorBlock.ACTIVE));
         check.accept("load retry split and disassembly leave no failed transaction", state.transitions().failedTokens().isEmpty());
         container.processSubLevelRemovals();
+
+        boolean[] addFault = {true};
+        UUID[] quarantinedId = {null};
+        container.addObserver(new SubLevelObserver() {
+            @Override public void onSubLevelAdded(SubLevel added) {
+                if (addFault[0]) {
+                    addFault[0] = false;
+                    quarantinedId[0] = added.getUniqueId();
+                    AcceptanceFaults.throwSubLevelRemovalAfter = true;
+                    throw new IllegalStateException("acceptance terminal allocation observer failure");
+                }
+            }
+        });
+        IllegalStateException terminalFailure = null;
+        try { container.allocateNewSubLevel(pose); }
+        catch (IllegalStateException expected) { terminalFailure = expected; }
+        check.accept("rollback failure preserves original allocation exception",
+            terminalFailure != null && terminalFailure.getMessage().equals("acceptance terminal allocation observer failure")
+                && terminalFailure.getSuppressed().length == 1
+                && terminalFailure.getSuppressed()[0].getMessage().equals("acceptance allocation rollback failure"));
+        check.accept("rollback callback failure leaves no Sable partial",
+            !addFault[0] && !AcceptanceFaults.throwSubLevelRemovalAfter && quarantinedId[0] != null
+                && container.getSubLevel(quarantinedId[0]) == null);
+        check.accept("rollback failure retains fail-closed transaction",
+            !state.transitions().failedTokens().isEmpty() && !state.transitions().active());
     }
 
     private RedstoneLinkBlockEntity link(BlockPos pos, boolean receiver) {

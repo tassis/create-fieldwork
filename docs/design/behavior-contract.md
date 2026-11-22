@@ -276,6 +276,9 @@ Requirements:
 - Store stable SubLevel identities and block positions, not strong references to unloaded SubLevel objects.
 - Build the initial position set atomically during assembly/load before making endpoints queryable.
 - Register and unregister isolators on placement, replacement, player break, explosion, split/reassembly, unload, disassembly, and server stop.
+- Order load/unload callbacks per logical server, dimension and chunk before they
+  mutate publication, receiver or binding indexes. Delayed off-thread work must
+  not reapply an older chunk generation after a newer lifecycle event.
 - Make duplicate lifecycle events idempotent by tracking positions rather than incrementing an unchecked integer.
 - Clear registry data when its SubLevel is destroyed or unloaded.
 - Reconstruct missing state from isolator block identity, never from visual block-state flags.
@@ -284,6 +287,11 @@ Requirements:
   plot block state; publish removal only after the active container no longer
   contains the UUID. Incomplete removal remains fail-closed. This does not add
   D01 recovery of already-lost serialized data.
+- If Sable allocation throws before returning the new SubLevel to its caller,
+  discard any registered partial through Sable's normal removal API. A standalone
+  allocation may release its barrier only when removal itself returns normally and
+  the UUID index, plot slot and occupancy bit are all absent. A cleanup exception,
+  incomplete postcondition or failed outer load/assembly remains quarantined.
 
 Fail-closed lifecycle behavior:
 

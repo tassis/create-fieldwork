@@ -111,6 +111,25 @@ public final class TransitionCoordinator {
         begin("binding", level, input, change);
     }
 
+    public void beginAllocation(ServerLevel level, UUID id) {
+        state.checkThread();
+        var tx = new Transaction(++nextToken);
+        touch(tx, new CraftKey(level.dimension(), id));
+
+        try {
+            capture(tx, level, List.of());
+            captureControllers(tx);
+            tx.refreshScope = tx.refreshScope.union(stageControllers(tx, null));
+            state.invalidateVisibility();
+            state.refresh().refresh(null, tx.refreshScope);
+            beginRegistry(tx);
+            stack.push(new Frame("allocate", tx, true));
+        } catch (RuntimeException | Error error) {
+            fail(tx, error);
+            throw error;
+        }
+    }
+
     private void begin(String kind, ServerLevel level, Iterable<BlockPos> input, ControllerSources.BindingChange binding) {
         state.checkThread();
 
@@ -169,6 +188,17 @@ public final class TransitionCoordinator {
         state.refresh().refresh(null, tx.refreshScope);
         beginRegistry(tx);
     }
+
+    public void expectAllocation(ServerLevel level, UUID id) {
+        state.checkThread();
+        recordAllocation(stack.peek().transaction, new CraftKey(level.dimension(), id));
+    }
+
+    public void allocationFailed() {
+        state.checkThread();
+        stack.peek().transaction.failed = true;
+    }
+
     public void mutating() {
         state.checkThread();
         stack.peek().transaction.mutated = true;
@@ -222,8 +252,10 @@ public final class TransitionCoordinator {
 
     public void allocated(SubLevel craft) {
         state.checkThread();
-        CraftKey key = IsolationRuntime.key(craft);
-        var tx = stack.peek().transaction;
+        recordAllocation(stack.peek().transaction, IsolationRuntime.key(craft));
+    }
+
+    private void recordAllocation(Transaction tx, CraftKey key) {
         touch(tx, key);
         captureControllers(tx);
         tx.refreshScope = tx.refreshScope.union(stageControllers(tx, null));

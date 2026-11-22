@@ -28,6 +28,7 @@ public final class FieldworkServerState {
     private VisualUpdates visuals;
     private BindingRevocations bindingRevocations;
     private BindingAuthority bindings;
+    private final ChunkEventOrder chunkEvents = new ChunkEventOrder();
     private final UUID session = UUID.randomUUID();
     private final IsolationRegistry registry;
     private long visibilityEpoch;
@@ -53,6 +54,11 @@ public final class FieldworkServerState {
         if (closed) {
             throw new IllegalStateException("Fieldwork server session is closed");
         }
+    }
+
+    /** Thread-safe ordering seam used before chunk callbacks reach the server thread. */
+    ChunkEventOrder chunkEvents() {
+        return chunkEvents;
     }
 
     public IsolationRegistry registry() {
@@ -174,6 +180,7 @@ public final class FieldworkServerState {
         if (closed) {
             return;
         }
+        chunkEvents.clear();
         registry.clear();
         if (transitions != null) {
             transitions.clear();

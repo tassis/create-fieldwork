@@ -10,5 +10,6 @@ public final class AcceptanceFaults {
     public static boolean throwNativeAdd;
     public static boolean throwNativeRemove;
     public static boolean throwNativeUnload;
+    public static boolean throwSubLevelRemovalAfter;
     private AcceptanceFaults() {}
 }

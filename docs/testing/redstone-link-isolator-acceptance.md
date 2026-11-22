@@ -2,7 +2,75 @@
 
 ## Status and evidence boundary
 
-Recorded through 2026-11-21. Production main implements server-owned state/registry, the actual isolator/BE and recipe, Create/Simulated filters, lifecycle/mutation barriers, per-receiver scoped refresh, two-tier controller routing with event-driven reconciliation, fixed-WORLD train conditions, source-publication cache handling, the development scribing-table slice and client Ponder teaching below.
+Recorded through 2026-11-22. Production main implements server-owned state/registry, the actual isolator/BE and recipe, Create/Simulated filters, lifecycle/mutation barriers, per-receiver scoped refresh, two-tier controller routing with event-driven reconciliation, fixed-WORLD train conditions, source-publication cache handling, the development scribing-table slice and client Ponder teaching below.
+
+### Direct Sable allocation compatibility — 2026-11-22
+
+Fieldwork now gives a Sable SubLevel allocated outside the normal assembly/load
+wrappers its own short transaction before the allocation returns to its caller.
+This covers third-party plate-only craft allocation without targeting or depending
+on the third-party mod. If allocation throws before returning, Fieldwork uses
+Sable's normal removal path and releases a standalone barrier only after the UUID,
+plot slot and occupancy bit are all absent without a cleanup exception. Nested
+load/assembly failure and any cleanup callback failure remain quarantined; the
+original exception is rethrown and a cleanup exception is attached as suppressed.
+
+The production-main lifecycle phase passed **33 assertions** at
+`2026-11-22T14:23:08Z`. It covers successful direct rollback, plot reuse, direct
+allocation as READY/WORLD, later isolator insertion as PRIVATE, last-isolator
+removal as WORLD, nested-load partial cleanup with retained outer quarantine and
+post-removal fault fallback with no stranded Sable craft. The verifier confirmed
+complete saves and server-state close. `./scripts/gradle-docker.sh build` then
+passed in 24s, including JUnit and shipping-isolation checks; the acceptance-only
+post-removal fault mixin is absent from the shipping artifact. This is headless
+Sable lifecycle evidence, not a player test of Absolute Kinematics controls or
+rendering.
+
+The owner subsequently reported that the current candidate completed the intended
+single-player path without crashing. The supplied client log records Absolute
+Kinematics 1.0.1, Create 6.0.10, Sable 2.0.6, Aeronautics/Simulated 1.3.3,
+NeoForge 21.1.257 and Fieldwork 0.1.0. While the owner held right-click to assemble
+and disassemble continuously, Sable logged `Received a sub-level movement packet
+for a non-existent sub-level` 15 times between 23:11:28 and 23:18:34. The final
+seven form a 400 ms cadence during the rapid toggle. The log contains no
+`Can't keep up`, Java exception, Rapier panic, unknown tracking-removal packet or
+Fieldwork lifecycle error. The integrated server then completed all-dimension saves,
+stopped normally and started again; no further instance appears through 23:22:13.
+
+Sable 2.0.5 and 2.0.6 emit this exact line when a movement snapshot names a plot
+not present in the client container; that handler logs and skips the entry. Sable
+sends tracking creation/removal over TCP but uses UDP for movement snapshots when
+connected. Rapid toggling can therefore let a movement snapshot arrive before its
+TCP creation or after its TCP removal. Fieldwork does not handle these packets. The
+observed bounded bursts and clean restart support a transient Sable packet-ordering
+race rather than persisted Fieldwork or Sable state damage. Repetition after input
+stops, or an unresponsive replacement craft, would instead match broader open
+upstream Sable desynchronization reports
+([#589](https://github.com/ryanhcode/sable/issues/589),
+[#1582](https://github.com/ryanhcode/sable/issues/1582)) and remains a stop
+condition. Neither report currently carries a maintainer diagnosis or resolution.
+The exact installed Fieldwork artifact hash and operation count were not captured.
+This does not yet establish multiplayer, dedicated-server or broader Sable-version
+compatibility.
+
+### Chunk lifecycle callback ordering — 2026-11-22
+
+The lifecycle-hook follow-up found that off-thread chunk load/unload callbacks
+could queue older index intent while a newer server-thread callback executed
+immediately. Fieldwork now assigns generations in its server-owned state for each
+dimension/chunk and lets only the latest callback mutate source-publication,
+Simulated-receiver and smart-binding indexes. Closing the server state clears all
+unclaimed generations.
+
+`./scripts/gradle-docker.sh build` passed in 24 seconds with **151 JUnit tests**,
+including three new ordering checks, and shipping isolation. The production-main
+`lifecycle` phase then passed **33 assertions** at
+`2026-11-22T14:54:34.970049865Z`; `binding` passed **177 assertions** at
+`2026-11-22T14:55:11.625783025Z`. Both completed all-dimension saves and verified
+server-state close. These server phases cover ordinary unload/reload, publication,
+receiver and binding behavior. The delayed-callback ordering itself is deterministic
+JUnit evidence; this run did not naturally induce an off-thread NeoForge chunk
+callback race.
 
 ### Integration verification — 2026-11-21
 
